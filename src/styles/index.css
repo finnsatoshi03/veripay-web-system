@@ -1,7 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Funnel Sans", sans-serif;
+}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

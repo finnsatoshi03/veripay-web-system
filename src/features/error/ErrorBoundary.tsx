@@ -1,0 +1,83 @@
+import { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export default class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+    };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return {
+      hasError: true,
+      error,
+    };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    // You can log the error to an error reporting service here
+    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+  }
+
+  handleReset = (): void => {
+    this.setState({
+      hasError: false,
+      error: null,
+    });
+    window.location.reload();
+  };
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      return (
+        <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-6 p-4 text-center">
+          <AlertTriangle className="size-16 text-destructive" />
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Something went wrong</h2>
+            <p className="text-muted-foreground">
+              An unexpected error has occurred
+            </p>
+            {this.state.error && (
+              <div className="mt-4 max-w-md overflow-auto rounded-md bg-muted p-4 text-left text-sm">
+                <p className="font-mono">{this.state.error.toString()}</p>
+              </div>
+            )}
+          </div>
+          <Button
+            onClick={this.handleReset}
+            className="flex items-center gap-2"
+            tabIndex={0}
+            aria-label="Try Again"
+            onKeyDown={(e) => e.key === "Enter" && this.handleReset()}
+          >
+            <RefreshCw className="size-4" />
+            Try Again
+          </Button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}

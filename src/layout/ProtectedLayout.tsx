@@ -2,13 +2,15 @@ import { Outlet } from "react-router-dom";
 
 import { AppSidebar } from "@/components/custom/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Header } from "@/components/custom/header";
 
 export default function ProtectedLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex flex-1 flex-col p-2 pl-0">
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <Header />
           <Outlet />
         </div>
       </SidebarInset>

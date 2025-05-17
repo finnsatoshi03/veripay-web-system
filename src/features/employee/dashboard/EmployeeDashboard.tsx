@@ -1,3 +1,3 @@
 export default function EmployeeDashboard() {
-  return <div>EmployeeDashboard</div>;
+  return <div className="flex flex-col gap-2">body</div>;
 }

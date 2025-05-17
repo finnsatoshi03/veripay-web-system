@@ -1,5 +1,6 @@
 import * as React from "react";
 import { ChevronsUpDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import {
   DropdownMenu,
@@ -31,11 +32,19 @@ export function ProfileSwitcher({
   onRoleChange?: (role: Role) => void;
 }) {
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
 
   const [activeRole, setActiveRole] = React.useState(roles[0]);
 
   const handleRoleChange = (role: (typeof roles)[0]) => {
     setActiveRole(role);
+
+    if (role.role === "hr") {
+      navigate("/hr/dashboard");
+    } else if (role.role === "employee") {
+      navigate("/employee/dashboard");
+    }
+
     if (onRoleChange) {
       onRoleChange(role.role);
     }

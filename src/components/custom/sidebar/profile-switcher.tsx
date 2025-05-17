@@ -58,7 +58,10 @@ export function ProfileSwitcher({
     <SidebarMenu>
       <SidebarMenuItem>
         {disabled ? (
-          <SidebarMenuButton size="lg" className="gap-1">
+          <SidebarMenuButton
+            size="lg"
+            className="gap-1 hover:bg-transparent active:bg-transparent data-[active=true]:bg-transparent"
+          >
             <img
               src="/icons/brand-logo-dark.png"
               alt="Veripay"
@@ -74,7 +77,7 @@ export function ProfileSwitcher({
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-1"
+                className="gap-1 hover:bg-transparent active:bg-transparent"
               >
                 <img
                   src="/icons/brand-logo-dark.png"

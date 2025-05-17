@@ -3,6 +3,7 @@ import { AttendanceOverview } from "./components/attendance-overview";
 
 import { RecentPayslip } from "./components/recent-payslip";
 import { LeaveSummary } from "./components/leave-summary";
+import { ReportsStatus } from "./components/reports-status";
 
 export default function EmployeeDashboard() {
   return (
@@ -14,6 +15,7 @@ export default function EmployeeDashboard() {
       <div className="space-y-4">
         <RecentPayslip />
         <LeaveSummary />
+        <ReportsStatus />
       </div>
     </div>
   );

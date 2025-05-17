@@ -9,7 +9,7 @@ import {
 
 import { AttendanceCalendar } from "./attendance-calendar";
 
-export default function AttendanceOverview() {
+export const AttendanceOverview = () => {
   // Calculate statistics from mock data
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
   const averageCheckIn = calculateAverageCheckIn(mockAttendanceRecords);
@@ -50,4 +50,4 @@ export default function AttendanceOverview() {
       <AttendanceCalendar records={mockAttendanceRecords} />
     </div>
   );
-}
+};

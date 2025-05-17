@@ -55,12 +55,12 @@ const employeeNavData = [
     menuItems: [
       {
         title: "Dashboard",
-        url: "#",
+        url: "/employee/dashboard",
         icon: LayoutDashboard,
       },
       {
         title: "Profile",
-        url: "#",
+        url: "/employee/profile",
         icon: UserRound,
       },
     ],
@@ -70,17 +70,17 @@ const employeeNavData = [
     menuItems: [
       {
         title: "Attendance",
-        url: "#",
+        url: "/employee/attendance",
         icon: CalendarCheck,
       },
       {
         title: "Payslips & Tax Docs",
-        url: "#",
+        url: "/employee/payslips",
         icon: ReceiptText,
       },
       {
         title: "Reports",
-        url: "#",
+        url: "/employee/reports",
         icon: FileText,
       },
     ],
@@ -90,7 +90,7 @@ const employeeNavData = [
     menuItems: [
       {
         title: "Leave Overview",
-        url: "#",
+        url: "/employee/leave-overview",
         icon: Plane,
       },
     ],
@@ -103,7 +103,7 @@ const hrNavData: NavHRSection[] = [
     items: [
       {
         title: "Dashboard",
-        url: "#",
+        url: "/hr/dashboard",
         icon: LayoutDashboard,
       },
     ],
@@ -120,23 +120,23 @@ const hrNavData: NavHRSection[] = [
         children: [
           {
             title: "Account Requests",
-            url: "#",
+            url: "/hr/account-requests",
           },
           {
             title: "Add Employee",
-            url: "#",
+            url: "/hr/add-employee",
           },
           {
             title: "Active Employees",
-            url: "#",
+            url: "/hr/active-employee",
           },
           {
             title: "Department Assignment",
-            url: "#",
+            url: "/hr/department-assignment",
           },
           {
             title: "Role Management",
-            url: "#",
+            url: "/hr/role-management",
           },
         ],
       },
@@ -147,22 +147,22 @@ const hrNavData: NavHRSection[] = [
     items: [
       {
         title: "Reports",
-        url: "#",
+        url: "/hr/reports",
         icon: ChartColumnBig,
       },
       {
         title: "Leave Management",
-        url: "#",
+        url: "/hr/leave-management",
         icon: PlaneTakeoff,
       },
       {
         title: "Payroll Management",
-        url: "#",
+        url: "/hr/payroll-management",
         icon: Wallet,
       },
       {
         title: "Announcements",
-        url: "#",
+        url: "/hr/announcements",
         icon: Megaphone,
       },
     ],

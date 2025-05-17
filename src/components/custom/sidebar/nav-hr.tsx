@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -62,9 +63,9 @@ export function NavHR({ sections }: { sections: NavHRSection[] }) {
                         {item.children?.map((child) => (
                           <SidebarMenuSubItem key={child.title}>
                             <SidebarMenuSubButton asChild>
-                              <a href={child.url}>
+                              <Link to={child.url}>
                                 <span>{child.title}</span>
-                              </a>
+                              </Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}
@@ -75,10 +76,10 @@ export function NavHR({ sections }: { sections: NavHRSection[] }) {
               ) : (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
-                    <a href={item.url}>
+                    <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ),

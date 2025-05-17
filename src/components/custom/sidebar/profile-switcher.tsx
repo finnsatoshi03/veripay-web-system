@@ -60,7 +60,7 @@ export function ProfileSwitcher({
         {disabled ? (
           <SidebarMenuButton
             size="lg"
-            className="gap-1 hover:bg-transparent active:bg-transparent data-[active=true]:bg-transparent"
+            className="hover:text-sidebar-foreground gap-1 hover:bg-transparent active:bg-transparent data-[active=true]:bg-transparent"
           >
             <img
               src="/icons/brand-logo-dark.png"
@@ -77,7 +77,7 @@ export function ProfileSwitcher({
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="gap-1 hover:bg-transparent active:bg-transparent"
+                className="hover:text-sidebar-foreground gap-1 hover:bg-transparent active:bg-transparent"
               >
                 <img
                   src="/icons/brand-logo-dark.png"

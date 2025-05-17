@@ -9,9 +9,11 @@ export default function ProtectedLayout() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex h-full min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
+        <div className="flex h-screen flex-col">
           <Header />
-          <Outlet />
+          <div className="flex-1 overflow-auto px-4 pb-4">
+            <Outlet />
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

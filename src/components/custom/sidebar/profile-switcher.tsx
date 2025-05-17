@@ -1,8 +1,6 @@
 import * as React from "react";
 import { ChevronsUpDown } from "lucide-react";
 
-import { useTheme } from "../theme-provider";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,8 +31,6 @@ export function ProfileSwitcher({
   onRoleChange?: (role: Role) => void;
 }) {
   const { isMobile } = useSidebar();
-  const { theme } = useTheme();
-  console.log(theme);
 
   const [activeRole, setActiveRole] = React.useState(roles[0]);
 
@@ -53,13 +49,9 @@ export function ProfileSwitcher({
     <SidebarMenu>
       <SidebarMenuItem>
         {disabled ? (
-          <SidebarMenuButton size="lg">
+          <SidebarMenuButton size="lg" className="gap-1">
             <img
-              src={
-                theme === "dark"
-                  ? "/icons/brand-logo-dark.png"
-                  : "/icons/brand-logo.png"
-              }
+              src="/icons/brand-logo-dark.png"
               alt="Veripay"
               className="flex aspect-square size-8 items-center justify-center rounded-lg"
             />
@@ -73,14 +65,10 @@ export function ProfileSwitcher({
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-1"
               >
                 <img
-                  src={
-                    theme === "dark"
-                      ? "/icons/brand-logo-dark.png"
-                      : "/icons/brand-logo.png"
-                  }
+                  src="/icons/brand-logo-dark.png"
                   alt="Veripay"
                   className="flex aspect-square size-8 items-center justify-center rounded-lg"
                 />

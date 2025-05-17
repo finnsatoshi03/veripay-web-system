@@ -4,8 +4,25 @@ import PublicLayout from "@/layout/PublicLayout";
 import ProtectedLayout from "@/layout/ProtectedLayout";
 
 // Protected Routes
-import EmployeePage from "@/features/employee/EmployeePage";
-import HrPage from "@/features/hr/HrPage";
+// hr routes
+import HrDashboard from "@/features/hr/dashboard/HrDashboard";
+import HrAccountRequests from "@/features/hr/account-requests/HrAccountRequests";
+import HrActiveEmployee from "@/features/hr/active-employee/HrActiveEmployee";
+import HrAddEmployee from "@/features/hr/add-employee/HrAddEmployee";
+import HrDeptAssignment from "@/features/hr/department-assignment/HrDeptAssignment";
+import HrRoleManagement from "@/features/hr/role-management/HrRoleManagement";
+import HrReports from "@/features/hr/reports/HrReports";
+import HrLeaveManagement from "@/features/hr/leave-management/HrLeaveManagement";
+import PayrollManagement from "@/features/hr/payroll-management/PayrollManagement";
+import HrAnnouncements from "@/features/hr/announcements/HrAnnouncements";
+
+// employee routes
+import EmployeeDashboard from "@/features/employee/dashboard/EmployeeDashboard";
+import EmployeeProfile from "@/features/employee/profile/EmployeeProfile";
+import EmployeeAttendance from "@/features/employee/attendance/EmployeeAttendance";
+import EmployeePayslips from "@/features/employee/payslips/EmployeePayslips";
+import EmployeeReports from "@/features/employee/reports/EmployeeReports";
+import EmployeeLeaveOverview from "@/features/employee/leave-overview/EmployeeLeaveOverview";
 
 // Public Routes
 import LoginPage from "@/features/auth/LoginPage";
@@ -13,11 +30,15 @@ import RegisterPage from "@/features/auth/RegisterPage";
 import ForgotPasswordPage from "@/features/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/features/auth/ResetPasswordPage";
 
+// error
+import { NotFound } from "@/features/error";
+
 export default function AppRouter() {
   return (
     <Routes>
       <Route index element={<Navigate to="/login" replace />} />
 
+      <Route path="*" element={<NotFound />} />
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -26,8 +47,31 @@ export default function AppRouter() {
       </Route>
 
       <Route element={<ProtectedLayout />}>
-        <Route path="/hr" element={<HrPage />} />
-        <Route path="/employee" element={<EmployeePage />} />
+        {/* hr routes */}
+        <Route path="/hr/dashboard" element={<HrDashboard />} />
+        <Route path="/hr/account-requests" element={<HrAccountRequests />} />
+        <Route path="/hr/active-employee" element={<HrActiveEmployee />} />
+        <Route path="/hr/add-employee" element={<HrAddEmployee />} />
+        <Route
+          path="/hr/department-assignment"
+          element={<HrDeptAssignment />}
+        />
+        <Route path="/hr/role-management" element={<HrRoleManagement />} />
+        <Route path="/hr/reports" element={<HrReports />} />
+        <Route path="/hr/leave-management" element={<HrLeaveManagement />} />
+        <Route path="/hr/payroll-management" element={<PayrollManagement />} />
+        <Route path="/hr/announcements" element={<HrAnnouncements />} />
+
+        {/* employee routes */}
+        <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
+        <Route path="/employee/profile" element={<EmployeeProfile />} />
+        <Route path="/employee/attendance" element={<EmployeeAttendance />} />
+        <Route path="/employee/payslips" element={<EmployeePayslips />} />
+        <Route path="/employee/reports" element={<EmployeeReports />} />
+        <Route
+          path="/employee/leave-overview"
+          element={<EmployeeLeaveOverview />}
+        />
       </Route>
     </Routes>
   );

@@ -26,7 +26,7 @@ export default function PublicLayout() {
         description={currentPageInfo?.description || ""}
         className="hidden md:block"
       />
-      <div className="bg-background rounded-lg p-4 text-black">
+      <div className="bg-background h-full w-full rounded-lg p-4 text-black">
         <Outlet />
       </div>
     </main>

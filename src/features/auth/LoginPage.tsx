@@ -3,8 +3,8 @@ import { FaGoogle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 
 import { Header } from "@/features/auth/components/header";
-import { LoginForm } from "@/features/auth/components/login-form";
 import { Footer } from "@/features/auth/components/footer";
+import { LoginForm } from "@/features/auth/components/login/login-form";
 
 export default function LoginPage() {
   return (

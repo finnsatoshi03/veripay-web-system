@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -93,9 +94,11 @@ export const LoginForm = () => {
           <Button type="submit" variant="secondary" className="w-full">
             Sign in
           </Button>
-          <Button size="sm" variant="link">
-            Forgot password?
-          </Button>
+          <Link to="/forgot-password">
+            <Button type="button" size="sm" variant="link">
+              Forgot password?
+            </Button>
+          </Link>
         </div>
       </form>
     </Form>

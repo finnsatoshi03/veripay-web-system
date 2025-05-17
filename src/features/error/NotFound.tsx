@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home } from "lucide-react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface NotFoundProps {
   title?: string;

@@ -11,13 +11,14 @@ import {
 
 import type { Attendance_record } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { attendance_config } from "@/lib/configs/hr-config";
 
 const WEEKDAYS = ["Su", "M", "T", "W", "Th", "F", "Sa"];
 
 type CalendarDay = {
   date: Date;
   isCurrentMonth: boolean;
-  attendanceStatus?: "present" | "absent" | "on-leave" | null;
+  attendance?: Attendance_record;
   isToday: boolean;
   isWeekend: boolean;
   isFutureDate: boolean;
@@ -37,48 +38,93 @@ export function AttendanceCalendar({
     [month, records],
   );
 
+  const isLate = (timeIn: string | undefined) => {
+    if (!timeIn) return false;
+    const configTimeIn = attendance_config.time_in;
+    return timeIn > configTimeIn;
+  };
+
+  const getAttendanceStatusClass = (day: CalendarDay) => {
+    if (!day.isCurrentMonth) return "opacity-0";
+    if (day.isFutureDate) return "bg-muted/30";
+
+    const { attendance } = day;
+    if (!attendance) return "bg-slate-100/50 border-slate-200";
+    if (attendance.status === "on-leave")
+      return "bg-yellow-100/50 border-yellow-300";
+    if (!attendance.time_in || !attendance.time_out)
+      return "bg-red-100/50 border-red-300";
+
+    return isLate(attendance.time_in)
+      ? "bg-secondary/20 border-secondary"
+      : "bg-primary/20 border-primary";
+  };
+
+  const getAttendanceStatusText = (day: CalendarDay) => {
+    if (!day.isCurrentMonth || day.isFutureDate) return "";
+
+    const { attendance } = day;
+    if (!attendance) return "";
+    if (attendance.status === "on-leave") return "On leave";
+    if (!attendance.time_in || !attendance.time_out) return "Absent";
+
+    return isLate(attendance.time_in) ? "Late" : "On time";
+  };
+
   return (
     <div className="w-full">
-      <div className="mb-1 grid grid-cols-7 gap-1">
+      <div className="mb-2 grid grid-cols-7 gap-1">
         {WEEKDAYS.map((day) => (
-          <div key={day} className="text-center text-xs font-medium">
+          <div
+            key={day}
+            className="py-2 text-center text-xs font-medium uppercase"
+          >
             {day}
           </div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
         {calendar.map((day, index) => (
-          <DayCell key={index} day={day} />
+          <DayCell
+            key={index}
+            day={day}
+            statusClass={getAttendanceStatusClass(day)}
+            statusText={getAttendanceStatusText(day)}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function DayCell({ day }: { day: CalendarDay }) {
+function DayCell({
+  day,
+  statusClass,
+  statusText,
+}: {
+  day: CalendarDay;
+  statusClass: string;
+  statusText: string;
+}) {
   if (!day.isCurrentMonth) {
-    return <div className="h-16 w-full" />;
+    return <div className="h-24 rounded-md border p-1 opacity-0" />;
   }
 
   return (
     <div
       className={cn(
-        "relative flex h-16 w-full items-center justify-center rounded-lg text-xs font-medium",
-        day.isWeekend
-          ? "bg-primary/20"
-          : day.isFutureDate
-            ? "bg-primary/10"
-            : day.attendanceStatus === "on-leave"
-              ? "bg-amber-200"
-              : day.attendanceStatus === "present"
-                ? "bg-primary text-primary-foreground"
-                : "bg-rose-300",
-        day.isToday && "text-secondary font-bold",
+        "h-24 rounded-md border p-1",
+        day.isWeekend && !day.attendance && "bg-muted/10",
+        day.isToday && "bg-accent",
       )}
     >
-      {format(day.date, "d")}
-      {day.isToday && (
-        <div className="absolute bottom-1 h-1 w-1 rounded-full bg-current"></div>
+      <div className="text-right font-medium">{format(day.date, "d")}</div>
+
+      {/* Show attendance status */}
+      {(day.attendance || !day.isFutureDate) && (
+        <div className={cn("mt-1 rounded border-l-4 p-1 text-xs", statusClass)}>
+          <div className="font-medium">{statusText}</div>
+        </div>
       )}
     </div>
   );
@@ -111,7 +157,6 @@ function buildCalendar(
       isToday: false,
       isWeekend: false,
       isFutureDate: false,
-      attendanceStatus: null,
     });
   }
 
@@ -124,24 +169,10 @@ function buildCalendar(
     const dayOfWeek = getDay(date);
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-    let attendanceStatus: CalendarDay["attendanceStatus"];
-
-    if (record) {
-      if (record.status) {
-        attendanceStatus = record.status;
-      } else if (record.time_in || record.time_out) {
-        attendanceStatus = "present";
-      } else {
-        attendanceStatus = "absent";
-      }
-    } else {
-      attendanceStatus = dayIsFuture ? null : "absent";
-    }
-
     daysInCalendar.push({
       date,
       isCurrentMonth: true,
-      attendanceStatus,
+      attendance: record,
       isToday: dayIsToday,
       isWeekend,
       isFutureDate: dayIsFuture,
@@ -158,7 +189,6 @@ function buildCalendar(
       isToday: false,
       isWeekend: false,
       isFutureDate: true,
-      attendanceStatus: null,
     });
   }
 

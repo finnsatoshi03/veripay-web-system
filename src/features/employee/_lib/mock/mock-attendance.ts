@@ -26,7 +26,7 @@ export const mockAttendanceRecords: Attendance_record[] = [
   {
     attendance_record_id: 3,
     employee_id: 101,
-    date: "2025-05-03T00:00:00.000Z",
+    date: "2025-05-05T00:00:00.000Z",
     time_in: undefined,
     time_out: undefined,
     status: undefined,
@@ -71,7 +71,7 @@ export const mockAttendanceRecords: Attendance_record[] = [
   {
     attendance_record_id: 10,
     employee_id: 101,
-    date: "2025-05-10T00:00:00.000Z",
+    date: "2025-05-12T00:00:00.000Z",
     time_in: "07:44:16",
     time_out: "17:01:22",
     status: "present",
@@ -117,7 +117,7 @@ export const mockAttendanceRecords: Attendance_record[] = [
   {
     attendance_record_id: 17,
     employee_id: 101,
-    date: "2025-05-17T00:00:00.000Z",
+    date: "2025-05-19T00:00:00.000Z",
     time_in: "07:40:12",
     time_out: "16:55:47",
     status: "present",

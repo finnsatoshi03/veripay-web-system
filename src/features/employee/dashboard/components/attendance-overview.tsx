@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 
-import { mockAttendanceRecords } from "../lib/mock/mock-attendance";
 import {
   calculateAverageCheckIn,
   findMostLateCheckIn,
   calculateAttendanceStreak,
 } from "../lib/helpers/attendance";
+import { mockAttendanceRecords } from "@/features/employee/_lib/mock/mock-attendance";
 
 import { AttendanceCalendar } from "./attendance-calendar";
 

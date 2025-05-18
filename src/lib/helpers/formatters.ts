@@ -20,6 +20,15 @@ export const formatMonthYear = (date: string) => {
   });
 };
 
+export const formatTime = (time: string) => {
+  const [hours, minutes] = time.split(":");
+
+  const hour = parseInt(hours, 10);
+  const period = hour >= 12 ? "PM" : "AM";
+  const formattedHour = hour % 12 || 12;
+  return `${formattedHour}:${minutes} ${period}`;
+};
+
 export const formatPlaceValue = (amount: number) => {
   return amount
     .toLocaleString("en-US", {

@@ -1,7 +1,7 @@
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useLocation } from "react-router-dom";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 
 import { cn } from "@/lib/utils";
@@ -34,14 +34,38 @@ export const DateRangePicker = () => {
     clearSelection,
   } = useDateRangeStore();
 
+  const filteredPresets = useMemo(() => {
+    if (pathname.includes("/employee/attendance")) {
+      return datePresets.filter(
+        (group) => group.category !== "Range" && group.category !== "Day",
+      );
+    }
+    return datePresets;
+  }, [pathname]);
+
   useEffect(() => {
     if (!dateRange) {
-      const allTimePreset = datePresets[0].items[0];
-      if (allTimePreset) {
-        selectPreset(allTimePreset);
+      if (pathname.includes("employee/attendance")) {
+        for (const group of datePresets) {
+          if (group.category === "Week") {
+            const weekPreset = group.items.find(
+              (item) => item.name === "This Week",
+            );
+            if (weekPreset) {
+              selectPreset(weekPreset);
+              break;
+            }
+          }
+        }
+      } else {
+        // Default to "This Month" for other pages
+        const allTimePreset = datePresets[2].items[0];
+        if (allTimePreset) {
+          selectPreset(allTimePreset);
+        }
       }
     }
-  }, []);
+  }, [pathname, dateRange, selectPreset]);
 
   const allowedRoutes = [
     "/employee/attendance",
@@ -155,7 +179,7 @@ export const DateRangePicker = () => {
             </div>
             <div className="border-l p-3">
               <div className="grid grid-cols-2 gap-2">
-                {datePresets.map((group) => (
+                {filteredPresets.map((group) => (
                   <div key={group.category} className="space-y-2">
                     <h4 className="text-muted-foreground text-sm font-medium">
                       {group.category}

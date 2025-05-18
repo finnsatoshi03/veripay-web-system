@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Bell } from "lucide-react";
+import type { DateRange } from "react-day-picker";
 
 import { formatInitials } from "@/lib/helpers/formatters";
+
+import { DateRangePicker } from "@/components/custom/date-range-picker";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,12 +16,18 @@ export const Header = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
+  const [date, setDate] = useState<DateRange | undefined>();
+
   const isDashboard = pathname.includes("dashboard");
 
   const userData = {
     name: "John Doe",
     email: "john.doe@example.com",
     image: "https://github.com/shadcn.png",
+  };
+
+  const handleDateChange = (range: DateRange | undefined) => {
+    setDate(range);
   };
 
   return (
@@ -50,6 +60,7 @@ export const Header = () => {
 
       <div className="flex items-center gap-4">
         {isDashboard && <Search />}
+        <DateRangePicker date={date} onDateChange={handleDateChange} />
         <div aria-label="Notifications" className="relative size-8">
           <Bell className="size-8" />
           <Badge

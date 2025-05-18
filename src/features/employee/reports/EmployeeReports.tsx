@@ -43,7 +43,7 @@ export default function EmployeeReports() {
       <div className="flex items-center justify-between">
         <div className="space-y-4">
           <div>
-            <h1 className="text-3xl font-bold">Reports</h1>
+            <h1 className="text-3xl font-bold">Reports History</h1>
             <p className="text-muted-foreground text-sm">{today}</p>
           </div>
           <Separator />
@@ -52,14 +52,16 @@ export default function EmployeeReports() {
       </div>
 
       <div className="flex items-center justify-between">
-        <Search />
-        <Button>
+        <Search size="sm" />
+        <Button size="sm">
           <Plus className="mr-2 size-4" />
           Create new report
         </Button>
       </div>
 
-      <KanbanBoard />
+      <div className="flex h-full min-h-0 flex-1 flex-col">
+        <KanbanBoard />
+      </div>
     </div>
   );
 }

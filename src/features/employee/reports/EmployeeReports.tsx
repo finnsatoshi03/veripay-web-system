@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -7,10 +8,13 @@ import { Search } from "@/components/custom/search";
 
 import { KanbanBoard } from "./components/kanban-board";
 import { ReviewerDisplay } from "./components/reviewer-display";
+import { CreateReportForm } from "./components/create-report-form";
 
 import { today } from "../_lib/helpers";
 
 export default function EmployeeReports() {
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+
   const hrReviewers = [
     {
       name: "John Doe",
@@ -53,7 +57,7 @@ export default function EmployeeReports() {
 
       <div className="flex items-center justify-between">
         <Search size="sm" />
-        <Button size="sm">
+        <Button size="sm" onClick={() => setIsCreateFormOpen(true)}>
           <Plus className="mr-2 size-4" />
           Create new report
         </Button>
@@ -62,6 +66,12 @@ export default function EmployeeReports() {
       <div className="flex h-full min-h-0 flex-1 flex-col">
         <KanbanBoard />
       </div>
+
+      {/* Create Report Form Dialog */}
+      <CreateReportForm
+        open={isCreateFormOpen}
+        onOpenChange={setIsCreateFormOpen}
+      />
     </div>
   );
 }

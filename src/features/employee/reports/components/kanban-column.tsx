@@ -5,9 +5,15 @@ export interface KanbanColumnProps {
   title: string;
   items: KanbanCardProps[];
   icon: React.ReactNode;
+  onCardClick: (card: KanbanCardProps) => void;
 }
 
-export const KanbanColumn = ({ title, items, icon }: KanbanColumnProps) => {
+export const KanbanColumn = ({
+  title,
+  items,
+  icon,
+  onCardClick,
+}: KanbanColumnProps) => {
   return (
     <div className="flex w-full flex-col rounded-lg border-2">
       <div className="bg-border flex items-center gap-2 rounded-t-md border-b p-2 font-medium">
@@ -22,7 +28,12 @@ export const KanbanColumn = ({ title, items, icon }: KanbanColumnProps) => {
         <div className="h-full p-2">
           {items.length > 0 ? (
             items.map((item, index) => (
-              <KanbanCard key={index} {...item} icon={icon} />
+              <KanbanCard
+                key={index}
+                {...item}
+                icon={icon}
+                onClick={() => onCardClick(item)}
+              />
             ))
           ) : (
             <div className="text-muted-foreground flex min-h-20 flex-col items-center justify-center rounded-md border border-dashed p-4 text-center">

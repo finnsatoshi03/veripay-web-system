@@ -29,6 +29,18 @@ export const formatTime = (time: string) => {
   return `${formattedHour}:${minutes} ${period}`;
 };
 
+export const formatNotionDate = (dateString: string) => {
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) return dateString;
+
+  const day = date.getDate();
+  const month = date.toLocaleString("en-US", { month: "long" });
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+};
+
 export const formatPlaceValue = (amount: number) => {
   return amount
     .toLocaleString("en-US", {

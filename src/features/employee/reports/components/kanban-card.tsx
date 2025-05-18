@@ -1,4 +1,4 @@
-import { Calendar, Flag } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,19 +6,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatInitials } from "@/lib/helpers/formatters";
 import { cn } from "@/lib/utils";
 
+// Types
 export interface KanbanCardProps {
+  id?: string;
   category: string;
   title: string;
   description: string;
   date: string;
   importance: "Low" | "Medium" | "High";
+  status?: string;
+  submittedBy?: string;
   assignedTo?: {
     name: string;
     image?: string;
   };
   icon?: React.ReactNode;
+  onClick?: () => void;
 }
 
+// Component
 export const KanbanCard = ({
   category,
   title,
@@ -27,6 +33,7 @@ export const KanbanCard = ({
   importance,
   assignedTo,
   icon,
+  onClick,
 }: KanbanCardProps) => {
   const getImportanceColor = (importance: string) => {
     switch (importance) {
@@ -42,7 +49,14 @@ export const KanbanCard = ({
   };
 
   return (
-    <div className="bg-card mb-2 space-y-2 rounded-md p-3 shadow-sm">
+    <div
+      className="bg-card hover:bg-muted/90 mb-2 cursor-pointer space-y-2 rounded-md p-3 shadow-sm transition-colors"
+      onClick={onClick}
+      tabIndex={0}
+      role="button"
+      onKeyDown={(e) => e.key === "Enter" && onClick?.()}
+      aria-label={`View details for ${title}`}
+    >
       <div className="flex items-center gap-1">
         <Badge variant="outline" className="flex items-center gap-1">
           {icon}
@@ -50,20 +64,20 @@ export const KanbanCard = ({
         </Badge>
       </div>
 
-      <h3 className="text-lg font-medium">{title}</h3>
+      <h3 className="font-medium">{title}</h3>
       <p className="text-muted-foreground line-clamp-2 text-sm">
         {description}
       </p>
 
       {assignedTo && (
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-muted-foreground text-xs">Assigned to</p>
+        <div className="flex items-center gap-2">
           <Avatar className="size-6 rounded-md">
             <AvatarImage src={assignedTo.image} alt={assignedTo.name} />
             <AvatarFallback className="rounded-md">
               {formatInitials(assignedTo.name)}
             </AvatarFallback>
           </Avatar>
+          <p className="text-muted-foreground text-xs">Assigned to</p>
         </div>
       )}
 
@@ -71,15 +85,11 @@ export const KanbanCard = ({
         <div className="text-muted-foreground flex items-center gap-1 text-xs">
           <Calendar className="size-3" /> {date}
         </div>
-        <div
-          className={cn(
-            "flex items-center gap-0.5 text-xs font-medium",
-            getImportanceColor(importance),
-          )}
+        <span
+          className={cn("text-xs font-medium", getImportanceColor(importance))}
         >
-          <Flag className="size-2.5 fill-current" />
           {importance}
-        </div>
+        </span>
       </div>
     </div>
   );

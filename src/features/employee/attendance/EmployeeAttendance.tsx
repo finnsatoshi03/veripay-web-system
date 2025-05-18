@@ -1,14 +1,13 @@
 import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { CalendarView } from "./components/calendar-view";
 import { AttendanceStats } from "./components/attendance-stats";
 import { AttendanceSummary } from "./components/attendance-summary";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
+import { today } from "../_lib/helpers";
 
 export default function EmployeeAttendance() {
-  const today = new Date();
-  const formattedDate = `Today ${format(today, "EEE, MMM dd, yyyy")}`;
-
   const summaryItems = [
     { label: "Total Attendance", value: "5 days" },
     { label: "Total Hours", value: "40 hours" },
@@ -22,7 +21,7 @@ export default function EmployeeAttendance() {
         <div className="space-y-4">
           <div>
             <h1 className="text-3xl font-bold">Attendance History</h1>
-            <p className="text-muted-foreground text-sm">{formattedDate}</p>
+            <p className="text-muted-foreground text-sm">{today}</p>
           </div>
           <Separator />
           <AttendanceStats />

@@ -13,6 +13,13 @@ export const formatDate = (date: string) => {
   });
 };
 
+export const formatMonthYear = (date: string) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+};
+
 export const formatPlaceValue = (amount: number) => {
   return amount
     .toLocaleString("en-US", {

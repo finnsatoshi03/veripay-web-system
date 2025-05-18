@@ -66,9 +66,11 @@ export const LeaveSummary = () => {
     <div className="w-full space-y-2 rounded-lg border p-2">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Leave Summary</h2>
-        <Button variant="outline" size="sm">
-          View Details
-        </Button>
+        <Link to="/employee/leave-overview">
+          <Button variant="outline" size="sm">
+            View Details
+          </Button>
+        </Link>
       </div>
       <div className="bg-border -mx-2 h-px px-2" />
 

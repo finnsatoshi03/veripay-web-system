@@ -8,12 +8,14 @@ import {
 import { mockAttendanceRecords } from "@/features/employee/_lib/mock/mock-attendance";
 
 import { AttendanceCalendar } from "./attendance-calendar";
+import { Link } from "react-router-dom";
 
 export const AttendanceOverview = () => {
   // Calculate statistics from mock data
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
   const averageCheckIn = calculateAverageCheckIn(mockAttendanceRecords);
   const mostLateCheckIn = findMostLateCheckIn(mockAttendanceRecords);
+
   const { count: streakCount, emoji: streakEmoji } = calculateAttendanceStreak(
     mockAttendanceRecords,
   );
@@ -24,9 +26,11 @@ export const AttendanceOverview = () => {
         <h2 className="text-lg font-semibold">
           Attendance Overview - {currentMonth}
         </h2>
-        <Button variant="outline" size="sm">
-          See all
-        </Button>
+        <Link to="/employee/attendance">
+          <Button variant="outline" size="sm">
+            See all
+          </Button>
+        </Link>
       </div>
       <div className="bg-border -mx-2 h-px px-2" />
       <div className="flex w-full items-center justify-between">

@@ -1,4 +1,5 @@
 import { Download } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,9 +50,11 @@ export const RecentPayslip = () => {
     <div className="w-full space-y-2 rounded-lg border p-2">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Recent Payslip</h2>
-        <Button variant="outline" size="sm">
-          View Breakdown
-        </Button>
+        <Link to="/employee/payslips">
+          <Button variant="outline" size="sm">
+            View Breakdown
+          </Button>
+        </Link>
       </div>
       <div className="bg-border -mx-2 h-px px-2" />
 

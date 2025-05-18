@@ -1,3 +1,36 @@
+import { Separator } from "@/components/ui/separator";
+
+import { LeaveAllowanceSection } from "./components/leave-allowance-section";
+import { LeaveRequestSection } from "./components/leave-request-section";
+
+import { ReviewerDisplay } from "../_components/reviewer-display";
+
+import { hrReviewers } from "../_lib/mock/mock-hrReviewers";
+import { today } from "../_lib/helpers";
+
 export default function EmployeeLeaveOverview() {
-  return <div>EmployeeLeaveOverview</div>;
+  return (
+    <div className="flex h-full flex-col gap-4 !overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold">Leave Overview</h1>
+            <p className="text-muted-foreground text-sm">{today}</p>
+          </div>
+          <Separator />
+        </div>
+        <div className="flex items-center gap-4">
+          <ReviewerDisplay
+            reviewers={hrReviewers}
+            description="for incoming leave requests."
+          />
+        </div>
+      </div>
+
+      <div className="flex h-full min-h-0 w-full flex-1 flex-col gap-6">
+        <LeaveAllowanceSection />
+        <LeaveRequestSection />
+      </div>
+    </div>
+  );
 }

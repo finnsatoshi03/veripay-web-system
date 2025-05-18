@@ -1,23 +1,29 @@
-import { useState } from "react";
 import { AlertCircle, Calendar, Clock, Clipboard } from "lucide-react";
 
-import { type KanbanCardProps } from "./kanban-card";
-import { type KanbanColumnProps, KanbanColumn } from "./kanban-column";
+import { KanbanBoard } from "../../_components/kanban";
+import type { KanbanItemProps } from "../../_components/kanban/column";
+
+import { ReportCard } from "./reports-card";
 import { ReportDialog } from "./report-dialog";
 
-export const KanbanBoard = () => {
-  const [selectedReport, setSelectedReport] = useState<KanbanCardProps | null>(
-    null,
-  );
-  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-
-  const handleCardClick = (card: KanbanCardProps) => {
-    setSelectedReport(card);
-    setIsReportDialogOpen(true);
+type ReportItem = KanbanItemProps & {
+  category: string;
+  title: string;
+  description: string;
+  date: string;
+  importance: "Low" | "Medium" | "High";
+  status?: string;
+  submittedBy?: string;
+  assignedTo?: {
+    name: string;
+    image?: string;
   };
+  icon?: React.ReactNode;
+  onClick?: () => void;
+};
 
-  // Sample data
-  const inProgressItems: KanbanCardProps[] = [
+export const ReportsBoard = () => {
+  const inProgressItems: ReportItem[] = [
     {
       id: "RPT-2023-1001",
       category: "HR",
@@ -31,7 +37,7 @@ export const KanbanBoard = () => {
     },
   ];
 
-  const toReviewItems: KanbanCardProps[] = [
+  const toReviewItems: ReportItem[] = [
     {
       id: "RPT-2023-1002",
       category: "Payroll",
@@ -48,7 +54,7 @@ export const KanbanBoard = () => {
     },
   ];
 
-  const resolvedItems: KanbanCardProps[] = [
+  const resolvedItems: ReportItem[] = [
     {
       id: "RPT-2023-1003",
       category: "Compliance",
@@ -66,7 +72,7 @@ export const KanbanBoard = () => {
     },
   ];
 
-  const rejectedItems: KanbanCardProps[] = [
+  const rejectedItems: ReportItem[] = [
     {
       id: "RPT-2023-1004",
       category: "Training",
@@ -83,53 +89,49 @@ export const KanbanBoard = () => {
     },
   ];
 
-  const columns: KanbanColumnProps[] = [
+  const columns = [
     {
       title: "In Progress",
-      items: inProgressItems,
       icon: <Clock className="size-4" />,
-      onCardClick: handleCardClick,
+      items: inProgressItems,
     },
     {
       title: "To Review",
-      items: toReviewItems,
       icon: <Clipboard className="size-4" />,
-      onCardClick: handleCardClick,
+      items: toReviewItems,
     },
     {
       title: "Resolved",
-      items: resolvedItems,
       icon: <Calendar className="size-4" />,
-      onCardClick: handleCardClick,
+      items: resolvedItems,
     },
     {
       title: "Rejected",
-      items: rejectedItems,
       icon: <AlertCircle className="size-4" />,
-      onCardClick: handleCardClick,
+      items: rejectedItems,
     },
   ];
 
   return (
-    <>
-      <div className="flex h-full w-full gap-4 p-1">
-        {columns.map((column) => (
-          <KanbanColumn
-            key={column.title}
-            title={column.title}
-            items={column.items}
-            icon={column.icon}
-            onCardClick={column.onCardClick}
-          />
-        ))}
-      </div>
-
-      {/* Report Detail Dialog */}
-      <ReportDialog
-        report={selectedReport}
-        open={isReportDialogOpen}
-        onOpenChange={setIsReportDialogOpen}
-      />
-    </>
+    <KanbanBoard
+      columns={columns}
+      renderItem={(item, onClick) => (
+        <ReportCard
+          key={item.id}
+          {...item}
+          icon={columns.find((col) => col.items.includes(item))?.icon}
+          onClick={onClick}
+        />
+      )}
+      renderDialog={(selectedItem, isOpen, onOpenChange) => (
+        <ReportDialog
+          report={selectedItem}
+          open={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )}
+      emptyStateText="No reports"
+      emptyStateSubText="Reports will appear here"
+    />
   );
 };

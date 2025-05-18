@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 
 // Types
-export interface KanbanCardProps {
+export interface ReportCardProps {
   id?: string;
   category: string;
   title: string;
@@ -30,7 +30,7 @@ export interface KanbanCardProps {
 }
 
 // Component
-export const KanbanCard = ({
+export const ReportCard = ({
   category,
   title,
   description,
@@ -39,7 +39,7 @@ export const KanbanCard = ({
   assignedTo,
   icon,
   onClick,
-}: KanbanCardProps) => {
+}: ReportCardProps) => {
   const getImportanceColor = (importance: string) => {
     switch (importance) {
       case "High":

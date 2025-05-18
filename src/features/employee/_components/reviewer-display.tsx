@@ -13,12 +13,16 @@ interface ReviewerDisplayProps {
     name: string;
     image?: string;
   }[];
+  description?: string;
 }
 
-export const ReviewerDisplay = ({ reviewers }: ReviewerDisplayProps) => {
+export const ReviewerDisplay = ({
+  reviewers,
+  description,
+}: ReviewerDisplayProps) => {
   return (
     <div className="space-y-1">
-      <div className="relative flex">
+      <div className="relative flex justify-end">
         {reviewers.slice(0, 4).map((reviewer, index) => (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -49,7 +53,7 @@ export const ReviewerDisplay = ({ reviewers }: ReviewerDisplayProps) => {
       </div>
       <p className="text-muted-foreground text-right text-sm leading-none">
         Assigned HR reviewers <br />
-        for incoming reports.
+        {description}
       </p>
     </div>
   );

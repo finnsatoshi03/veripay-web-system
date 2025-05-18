@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { formatInitials, formatNotionDate } from "@/lib/helpers/formatters";
 
-import type { KanbanCardProps } from "./kanban-card";
+import type { KanbanCardProps } from "./reports-card";
 
 interface ReportDialogProps {
   report: KanbanCardProps | null;
@@ -107,7 +107,7 @@ export const ReportDialog = ({
             <div className="text-muted-foreground text-sm">Assigned to</div>
             <div>
               {report.assignedTo ? (
-                <div className="text-muted-foreground flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Avatar className="size-6 rounded-md">
                     <AvatarImage
                       src={report.assignedTo.image}
@@ -120,15 +120,13 @@ export const ReportDialog = ({
                   <span className="text-sm">{report.assignedTo.name}</span>
                 </div>
               ) : (
-                <span className="text-muted-foreground text-sm">
-                  Not assigned
-                </span>
+                <span className="text-sm">Not assigned</span>
               )}
             </div>
 
             {/* Submitted At */}
             <div className="text-muted-foreground text-sm">Submitted at</div>
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm">
               <Calendar className="size-4 text-sm" />
               {formatNotionDate(report.date)}
             </div>
@@ -137,7 +135,7 @@ export const ReportDialog = ({
             <div className="text-muted-foreground text-muted-foreground text-sm">
               Submitted by
             </div>
-            <div className="text-muted-foreground flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <Avatar className="size-6 rounded-md">
                 <AvatarFallback className="bg-primary/10 text-primary rounded-md">
                   {formatInitials(report.submittedBy || "You")}

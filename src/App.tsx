@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import AppRouter from "@/routes/AppRouter";
 import { ErrorBoundary } from "@/features/error";
+
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/custom/theme-provider";
 
 const queryClient = new QueryClient({
@@ -20,14 +22,16 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
-      <ThemeProvider>
-        <ErrorBoundary>
-          <BrowserRouter>
-            <AppRouter />
-            <Toaster />
-          </BrowserRouter>
-        </ErrorBoundary>
-      </ThemeProvider>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <TooltipProvider delayDuration={100}>
+            <BrowserRouter>
+              <AppRouter />
+              <Toaster />
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

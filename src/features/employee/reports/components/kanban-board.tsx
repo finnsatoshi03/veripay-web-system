@@ -4,14 +4,12 @@ import { AlertCircle, Calendar, Clock, Clipboard } from "lucide-react";
 import { type KanbanCardProps } from "./kanban-card";
 import { type KanbanColumnProps, KanbanColumn } from "./kanban-column";
 import { ReportDialog } from "./report-dialog";
-import { CreateReportForm } from "./create-report-form";
 
 export const KanbanBoard = () => {
   const [selectedReport, setSelectedReport] = useState<KanbanCardProps | null>(
     null,
   );
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
   const handleCardClick = (card: KanbanCardProps) => {
     setSelectedReport(card);
@@ -131,12 +129,6 @@ export const KanbanBoard = () => {
         report={selectedReport}
         open={isReportDialogOpen}
         onOpenChange={setIsReportDialogOpen}
-      />
-
-      {/* Create Report Form */}
-      <CreateReportForm
-        open={isCreateFormOpen}
-        onOpenChange={setIsCreateFormOpen}
       />
     </>
   );

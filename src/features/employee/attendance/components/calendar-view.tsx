@@ -156,7 +156,7 @@ export const CalendarView = ({
     return (
       <div className="flex w-full flex-col">
         {/* Day headers */}
-        <div className="grid grid-cols-8 border-b">
+        <div className="grid grid-cols-[100px_repeat(7,1fr)] border-b">
           <div className="border-r"></div>
           {days.map((day, idx) => (
             <div
@@ -172,7 +172,7 @@ export const CalendarView = ({
         </div>
 
         {/* Time grid */}
-        <div className="grid grid-cols-8">
+        <div className="grid grid-cols-[100px_repeat(7,1fr)]">
           {/* Time labels */}
           <div className="border-r">
             {hours.map((hour, idx) => (

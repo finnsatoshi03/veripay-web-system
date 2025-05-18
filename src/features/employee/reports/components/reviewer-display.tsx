@@ -1,4 +1,9 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { formatInitials } from "@/lib/helpers/formatters";
 import { cn } from "@/lib/utils";
@@ -15,18 +20,23 @@ export const ReviewerDisplay = ({ reviewers }: ReviewerDisplayProps) => {
     <div className="space-y-1">
       <div className="relative flex">
         {reviewers.slice(0, 4).map((reviewer, index) => (
-          <Avatar
-            key={reviewer.name}
-            className={cn(
-              "border-background relative -ml-1.5 size-9 rounded-lg border-2 first:ml-0",
-            )}
-            style={{
-              zIndex: index,
-            }}
-          >
-            <AvatarImage src={reviewer.image} alt={reviewer.name} />
-            <AvatarFallback>{formatInitials(reviewer.name)}</AvatarFallback>
-          </Avatar>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Avatar
+                key={reviewer.name}
+                className={cn(
+                  "border-background relative -ml-1.5 size-9 rounded-lg border-2 first:ml-0",
+                )}
+                style={{
+                  zIndex: index,
+                }}
+              >
+                <AvatarImage src={reviewer.image} alt={reviewer.name} />
+                <AvatarFallback>{formatInitials(reviewer.name)}</AvatarFallback>
+              </Avatar>
+            </TooltipTrigger>
+            <TooltipContent>{reviewer.name}</TooltipContent>
+          </Tooltip>
         ))}
         {reviewers.length > 4 && (
           <div

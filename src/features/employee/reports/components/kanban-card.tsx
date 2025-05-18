@@ -5,6 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { formatInitials } from "@/lib/helpers/formatters";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Types
 export interface KanbanCardProps {
@@ -70,14 +75,19 @@ export const KanbanCard = ({
       </p>
 
       {assignedTo && (
-        <div className="flex items-center gap-2">
-          <Avatar className="size-6 rounded-md">
-            <AvatarImage src={assignedTo.image} alt={assignedTo.name} />
-            <AvatarFallback className="rounded-md">
-              {formatInitials(assignedTo.name)}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-xs">Assigned to</p>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Avatar className="size-6 rounded-md">
+                <AvatarImage src={assignedTo.image} alt={assignedTo.name} />
+                <AvatarFallback className="rounded-md">
+                  {formatInitials(assignedTo.name)}
+                </AvatarFallback>
+              </Avatar>
+            </TooltipTrigger>
+            <TooltipContent>{assignedTo.name}</TooltipContent>
+          </Tooltip>
         </div>
       )}
 

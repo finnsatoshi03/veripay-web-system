@@ -1,20 +1,8 @@
 import { CalendarIcon } from "lucide-react";
-import {
-  addDays,
-  format,
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  subWeeks,
-  subMonths,
-} from "date-fns";
-import type { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 import { useLocation } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useRef, useEffect } from "react";
+import toast from "react-hot-toast";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,121 +14,34 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 
-// Define preset type
-type PresetItem = {
-  name: string;
-  getValue: () => { from: Date; to: Date };
-};
+import {
+  useDateRangeStore,
+  datePresets,
+  type PresetItem,
+} from "@/store/dateRangeStore";
 
-type PresetGroup = {
-  category: string;
-  items: PresetItem[];
-};
-
-const presets: PresetGroup[] = [
-  {
-    category: "Range",
-    items: [
-      {
-        name: "All Time",
-        getValue: () => ({
-          from: new Date(2020, 0, 1),
-          to: endOfDay(new Date()),
-        }),
-      },
-    ],
-  },
-  {
-    category: "Year",
-    items: [
-      {
-        name: "This Year",
-        getValue: () => ({
-          from: startOfYear(new Date()),
-          to: endOfDay(new Date()),
-        }),
-      },
-    ],
-  },
-  {
-    category: "Month",
-    items: [
-      {
-        name: "This Month",
-        getValue: () => ({
-          from: startOfMonth(new Date()),
-          to: endOfDay(new Date()),
-        }),
-      },
-      {
-        name: "Past Month",
-        getValue: () => ({
-          from: startOfDay(subMonths(new Date(), 1)),
-          to: endOfMonth(subMonths(new Date(), 1)),
-        }),
-      },
-    ],
-  },
-  {
-    category: "Week",
-    items: [
-      {
-        name: "This Week",
-        getValue: () => ({
-          from: startOfWeek(new Date(), { weekStartsOn: 1 }),
-          to: endOfDay(new Date()),
-        }),
-      },
-      {
-        name: "Past Week",
-        getValue: () => ({
-          from: startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
-          to: endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
-        }),
-      },
-    ],
-  },
-  {
-    category: "Day",
-    items: [
-      {
-        name: "Today",
-        getValue: () => ({
-          from: startOfDay(new Date()),
-          to: endOfDay(new Date()),
-        }),
-      },
-      {
-        name: "Yesterday",
-        getValue: () => {
-          const yesterday = addDays(new Date(), -1);
-          return {
-            from: startOfDay(yesterday),
-            to: endOfDay(yesterday),
-          };
-        },
-      },
-    ],
-  },
-];
-
-type DateRangePickerProps = {
-  date: DateRange | undefined;
-  onDateChange: (date: DateRange | undefined) => void;
-};
-
-export const DateRangePicker = ({
-  date,
-  onDateChange,
-}: DateRangePickerProps) => {
+export const DateRangePicker = () => {
   const { pathname } = useLocation();
-  const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(
-    date?.from,
-  );
-  const [selectedPreset, setSelectedPreset] = useState<
-    PresetItem | undefined
-  >();
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  const {
+    dateRange,
+    selectedPreset,
+    calendarMonth,
+    setDateRange,
+    setCalendarMonth,
+    selectPreset,
+    clearSelection,
+  } = useDateRangeStore();
+
+  useEffect(() => {
+    if (!dateRange) {
+      const allTimePreset = datePresets[0].items[0];
+      if (allTimePreset) {
+        selectPreset(allTimePreset);
+      }
+    }
+  }, []);
 
   const allowedRoutes = [
     "/employee/attendance",
@@ -151,61 +52,34 @@ export const DateRangePicker = ({
 
   const shouldDisplay = allowedRoutes.some((route) => pathname.includes(route));
 
-  useEffect(() => {
-    if (date?.from) {
-      setCalendarMonth(date.from);
-    }
-  }, [date]);
+  const isPresetActive = (preset: PresetItem) => {
+    if (!dateRange?.from || !dateRange?.to) return false;
 
-  useEffect(() => {
-    if (date?.from && date?.to) {
-      // Find the matching preset
-      for (const group of presets) {
-        for (const preset of group.items) {
-          if (isPresetActive(preset)) {
-            setSelectedPreset(preset);
-            return;
-          }
-        }
-      }
-      // If no preset matches, clear the selected preset
-      setSelectedPreset(undefined);
-    } else {
-      setSelectedPreset(undefined);
-    }
-  }, [date]);
-
-  // helper
-  const isPresetActive = (preset: {
-    name: string;
-    getValue: () => { from: Date; to: Date };
-  }) => {
-    if (!date?.from || !date?.to) return false;
+    if (!(dateRange.from instanceof Date) || !(dateRange.to instanceof Date))
+      return false;
 
     const presetRange = preset.getValue();
 
-    const fromMatch =
-      presetRange.from.getFullYear() === date.from.getFullYear() &&
-      presetRange.from.getMonth() === date.from.getMonth() &&
-      presetRange.from.getDate() === date.from.getDate();
+    try {
+      const fromMatch =
+        presetRange.from.getFullYear() === dateRange.from.getFullYear() &&
+        presetRange.from.getMonth() === dateRange.from.getMonth() &&
+        presetRange.from.getDate() === dateRange.from.getDate();
 
-    const toMatch =
-      presetRange.to.getFullYear() === date.to.getFullYear() &&
-      presetRange.to.getMonth() === date.to.getMonth() &&
-      presetRange.to.getDate() === date.to.getDate();
+      const toMatch =
+        presetRange.to.getFullYear() === dateRange.to.getFullYear() &&
+        presetRange.to.getMonth() === dateRange.to.getMonth() &&
+        presetRange.to.getDate() === dateRange.to.getDate();
 
-    return fromMatch && toMatch;
+      return fromMatch && toMatch;
+    } catch {
+      toast.error("Error comparing dates");
+      return false;
+    }
   };
 
-  // handlers
-  const handlePresetSelect = (preset: {
-    name: string;
-    getValue: () => { from: Date; to: Date };
-  }) => {
-    const presetRange = preset.getValue();
-    onDateChange({ from: presetRange.from, to: presetRange.to });
-    setCalendarMonth(presetRange.from);
-    setSelectedPreset(preset);
+  const handlePresetSelect = (preset: PresetItem) => {
+    selectPreset(preset);
 
     if (calendarRef.current) {
       calendarRef.current.scrollIntoView({
@@ -215,12 +89,21 @@ export const DateRangePicker = ({
     }
   };
 
-  const handleClear = () => {
-    onDateChange(undefined);
-    setSelectedPreset(undefined);
-  };
-
   if (!shouldDisplay) return null;
+
+  const formatSafeDate = (date: Date | undefined) => {
+    if (!date || !(date instanceof Date)) return "";
+    try {
+      return format(date, "LLL dd, y");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(`Error formatting date: ${error.message}`);
+      } else {
+        toast.error(`Error formatting date: ${String(error)}`);
+      }
+      return "";
+    }
+  };
 
   return (
     <div className="grid gap-2">
@@ -231,22 +114,22 @@ export const DateRangePicker = ({
             variant="outline"
             className={cn(
               "w-fit justify-start text-left font-normal",
-              !date && "text-muted-foreground",
+              !dateRange && "text-muted-foreground",
             )}
           >
             <CalendarIcon className="size-4" />
-            {date?.from ? (
-              date.to ? (
+            {dateRange?.from && dateRange?.from instanceof Date ? (
+              dateRange.to && dateRange.to instanceof Date ? (
                 <>
-                  {format(date.from, "LLL dd, y")} -{" "}
-                  {format(date.to, "LLL dd, y")}
+                  {formatSafeDate(dateRange.from)} -{" "}
+                  {formatSafeDate(dateRange.to)}
                   {" |"}
                   <span className="text-muted-foreground text-xs">
                     {selectedPreset?.name}
                   </span>
                 </>
               ) : (
-                format(date.from, "LLL dd, y")
+                formatSafeDate(dateRange.from)
               )
             ) : (
               <span>Pick a date range</span>
@@ -258,17 +141,21 @@ export const DateRangePicker = ({
             <div className="p-3" ref={calendarRef}>
               <Calendar
                 mode="range"
-                defaultMonth={calendarMonth}
-                month={calendarMonth}
+                defaultMonth={
+                  calendarMonth instanceof Date ? calendarMonth : new Date()
+                }
+                month={
+                  calendarMonth instanceof Date ? calendarMonth : new Date()
+                }
                 onMonthChange={setCalendarMonth}
-                selected={date}
-                onSelect={onDateChange}
+                selected={dateRange}
+                onSelect={setDateRange}
                 numberOfMonths={2}
               />
             </div>
             <div className="border-l p-3">
               <div className="grid grid-cols-2 gap-2">
-                {presets.map((group) => (
+                {datePresets.map((group) => (
                   <div key={group.category} className="space-y-2">
                     <h4 className="text-muted-foreground text-sm font-medium">
                       {group.category}
@@ -296,14 +183,14 @@ export const DateRangePicker = ({
           </div>
           <Separator />
           <div className="flex justify-end gap-2 p-3">
-            <Button variant="outline" size="sm" onClick={handleClear}>
+            <Button variant="outline" size="sm" onClick={clearSelection}>
               Clear
             </Button>
             <Button
               size="sm"
               onClick={() => {
-                if (date) {
-                  // Apply the selected date range (this is handled by the onSelect in Calendar)
+                if (dateRange) {
+                  // Apply the selected date range (handled by the store)
                 }
               }}
             >

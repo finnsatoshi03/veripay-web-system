@@ -170,9 +170,9 @@ const hrNavData: NavHRSection[] = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // change this to the active role from the user (for now it's hardcoded to HR - it has bug since its hardcoded)
   const [activeRole, setActiveRole] = React.useState<Role>("hr");
-  // Always enable the profile switcher for HR users
-  // In a real app, this would come from authentication
+
   const isHRUser = true;
 
   const handleRoleChange = (role: Role) => {

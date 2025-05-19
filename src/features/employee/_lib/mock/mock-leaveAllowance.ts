@@ -46,3 +46,10 @@ export const leaveAllowances: LeaveAllowance[] = [
     colorClass: "bg-green-700",
   },
 ];
+
+export const leaveAllowance = {
+  vacation: 15,
+  sick: 10,
+  emergency: 5,
+  bereavement: 3,
+};

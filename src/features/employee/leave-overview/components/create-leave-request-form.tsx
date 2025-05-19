@@ -213,7 +213,7 @@ export const CreateLeaveRequestForm = ({
                                 >
                                   <Check
                                     className={cn(
-                                      "mr-2 h-4 w-4",
+                                      "size-4",
                                       type.value === field.value
                                         ? "opacity-100"
                                         : "opacity-0",
@@ -248,7 +248,7 @@ export const CreateLeaveRequestForm = ({
                                 !field.value && "text-muted-foreground",
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              <CalendarIcon className="size-4" />
                               {field.value ? (
                                 format(field.value, "PPP")
                               ) : (
@@ -288,7 +288,7 @@ export const CreateLeaveRequestForm = ({
                                 !field.value && "text-muted-foreground",
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              <CalendarIcon className="size-4" />
                               {field.value ? (
                                 format(field.value, "PPP")
                               ) : (

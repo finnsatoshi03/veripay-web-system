@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 import {
   Collapsible,
@@ -36,6 +38,12 @@ export type NavHRSection = {
 };
 
 export function NavHR({ sections }: { sections: NavHRSection[] }) {
+  const { pathname } = useLocation();
+
+  const isActive = (url: string) => {
+    return pathname.includes(url);
+  };
+
   return (
     <>
       {sections.map((section) => (
@@ -61,7 +69,13 @@ export function NavHR({ sections }: { sections: NavHRSection[] }) {
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         {item.children?.map((child) => (
-                          <SidebarMenuSubItem key={child.title}>
+                          <SidebarMenuSubItem
+                            key={child.title}
+                            className={cn(
+                              isActive(child.url) &&
+                                "bg-primary text-primary-foreground rounded-md",
+                            )}
+                          >
                             <SidebarMenuSubButton asChild>
                               <Link to={child.url}>
                                 <span>{child.title}</span>
@@ -74,7 +88,13 @@ export function NavHR({ sections }: { sections: NavHRSection[] }) {
                   </SidebarMenuItem>
                 </Collapsible>
               ) : (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem
+                  key={item.title}
+                  className={cn(
+                    isActive(item.url) &&
+                      "bg-primary text-primary-foreground rounded-md",
+                  )}
+                >
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <Link to={item.url}>
                       <item.icon />

@@ -1,5 +1,7 @@
+import { Link, useLocation } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -7,7 +9,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
 
 export function NavEmployee({
   items,
@@ -21,6 +22,12 @@ export function NavEmployee({
     }[];
   }[];
 }) {
+  const { pathname } = useLocation();
+
+  const isActive = (url: string) => {
+    return pathname.includes(url);
+  };
+
   return (
     <>
       {items.map((section) => (
@@ -28,7 +35,13 @@ export function NavEmployee({
           <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
           <SidebarMenu>
             {section.menuItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem
+                key={item.title}
+                className={cn(
+                  isActive(item.url) &&
+                    "bg-primary text-primary-foreground rounded-md",
+                )}
+              >
                 <SidebarMenuButton asChild tooltip={item.title}>
                   <Link to={item.url}>
                     <item.icon />

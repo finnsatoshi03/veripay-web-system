@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, X, Check, Filter, ChevronsDown } from "lucide-react";
+import { X, Check, Filter } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Pagination,
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search } from "./search";
 
 // Define generic interfaces
 export interface Column<T> {
@@ -27,7 +28,7 @@ export interface Column<T> {
   renderCell?: (item: T) => React.ReactNode;
 }
 
-export interface TableProps<T> {
+export interface GenericTableProps<T> {
   data: T[];
   columns: Column<T>[];
   title?: string;
@@ -40,10 +41,10 @@ export interface TableProps<T> {
   initialRowsPerPage?: number;
 }
 
-export default function ReusableTable<T extends { id?: string | number }>({
+export default function GenericTableProps<T extends { id?: string | number }>({
   data,
   columns: initialColumns,
-  title = "Table",
+//   title = "Table",
   searchPlaceholder = "Search...",
   showActions = false,
   renderActions,
@@ -51,7 +52,7 @@ export default function ReusableTable<T extends { id?: string | number }>({
   customFilters,
   rowsPerPageOptions = [10, 25, 50, 100],
   initialRowsPerPage = 10,
-}: TableProps<T>) {
+}: GenericTableProps<T>) {
   // State management
   const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
   const [currentPage, setCurrentPage] = useState(1);
@@ -155,6 +156,11 @@ export default function ReusableTable<T extends { id?: string | number }>({
     setCurrentPage(1);
   };
 
+  // Handle search change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
   // Calculate display range
   const startItem = filteredData.length === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
   const endItem = Math.min(currentPage * rowsPerPage, filteredData.length);
@@ -235,7 +241,7 @@ export default function ReusableTable<T extends { id?: string | number }>({
       {visibleColumns.map((column) => (
         <TableHead
           key={column.key}
-          className="font-semibold text-gray-700 py-4 px-6"
+          className="font-semibold text-gray-700 py-4 px-6 text-sm"
           style={{ width: column.width || "auto" }}
         >
           {column.header}
@@ -243,7 +249,7 @@ export default function ReusableTable<T extends { id?: string | number }>({
       ))}
       {showActions && (
         <TableHead
-          className="font-semibold text-gray-700 py-4 px-6 text-right"
+          className="font-semibold text-gray-700 py-4 px-6 text-right text-sm"
         >
           Actions
         </TableHead>
@@ -255,16 +261,13 @@ export default function ReusableTable<T extends { id?: string | number }>({
     <div className="w-full">
       {/* Search and View Controls */}
       <div className="flex justify-between items-center my-4">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="h-10 w-80 pl-6 pr-4 text-sm placeholder-gray-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300"
-          />
-          <Search className="absolute right-5 top-5 transform -translate-y-1/2 h-3 w-4 text-gray-400" />
-        </div>
+        <Search 
+          placeholder={searchPlaceholder}
+          value={searchQuery}
+          onChange={handleSearchChange}
+          size="default"
+          className="w-80 text-sm" 
+        />
 
         <div className="flex items-center space-x-4">
           {customFilters}
@@ -310,12 +313,12 @@ export default function ReusableTable<T extends { id?: string | number }>({
         {useScrollableTable ? (
           <div className="w-full">
             {/* Table with fixed layout to ensure columns align properly */}
-            <Table className="w-full table-fixed text-sm">
+            <Table className="w-full table-fixed">
               <TableHeader>{tableHeaderRow}</TableHeader>
             </Table>
 
             {/* Scrollable body with matching column widths */}
-            <ScrollArea className="w-full h-130">
+            <ScrollArea className="w-full h-132">
               <Table className="w-full table-fixed">
                 <TableBody>
                   {renderTableRows()}

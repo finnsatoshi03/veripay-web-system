@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Eye, Paperclip, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import HeaderSection from "@/components/custom/common/HeaderSection";
-import ReusableTable, { type Column } from "@/components/custom/common/ReusableTable";
+import TableHeader from "@/components/custom/table-header";
+import GenericTable, { type Column } from "@/components/custom/generic-table";
 
 // Define your employee interface
 interface Employee {
@@ -135,9 +135,9 @@ export default function HrActiveEmployee() {
   );
 
   return (
-    <div className="px-4 pt-3 w-full">
+    <div className="px-4 pt-1 w-full">
       <div className="flex justify-between items-center">
-        <HeaderSection title="Active Employees" />
+        <TableHeader title="Active Employees" />
 
         {/* Right side - Stats */}
         <div className="flex">
@@ -177,7 +177,7 @@ export default function HrActiveEmployee() {
       <div className="w-full border-t border-gray-200 my-4"></div>
 
       {/* Using our reusable table component */}
-      <ReusableTable
+      <GenericTable
         data={employeeData}
         columns={columns}
         searchPlaceholder="Search employees..."

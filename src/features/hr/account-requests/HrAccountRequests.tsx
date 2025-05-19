@@ -1,7 +1,7 @@
 
 import { Check, X } from "lucide-react";
-import HeaderSection from "@/components/custom/common/HeaderSection";
-import ReusableTable, { type Column } from "@/components/custom/common/ReusableTable";
+import TableHeader from "@/components/custom/table-header";
+import GenericTable, { type Column } from "@/components/custom/generic-table";
 
 
 // Define your data types
@@ -69,9 +69,9 @@ export default function HrAccountRequests() {
 
   return (
     <div className="p-4">
-      <HeaderSection title="Account Requests" />
+      <TableHeader title="Account Requests" />
       
-      <ReusableTable
+      <GenericTable
         data={accountRequestsData}
         columns={columns}
         title="Account Requests"

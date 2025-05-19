@@ -1,8 +1,8 @@
-import HeaderSection from "@/components/custom/common/HeaderSection";
+import TableHeader from "@/components/custom/table-header";
 
 export default function HrAddEmployee() {
   return <div>HrAddEmployee
-    <HeaderSection title="Add New HR Employee" />
+    <TableHeader title="Add New HR Employee" />
     {/* basic info */}
   </div>;
 }

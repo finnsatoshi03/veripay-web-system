@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface HeaderSectionProps {
+interface TableHeadeProps {
   title: string; // Prop to make the title dynamic
 }
 
@@ -8,7 +8,7 @@ interface HeaderSectionProps {
   const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' } as const;
   const formattedDate = today.toLocaleDateString('en-US', options);
 
-const HeaderSection: React.FC<HeaderSectionProps> = ({ title}) => {
+const TableHeader: React.FC<TableHeadeProps> = ({ title}) => {
   return (
     <div className="mb-5">
       <h2 className="text-xl md:text-2xl font-bold text-gray-800">{title}</h2>
@@ -19,4 +19,4 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({ title}) => {
   );
 };
 
-export default HeaderSection;
+export default TableHeader;

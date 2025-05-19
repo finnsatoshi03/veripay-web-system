@@ -1,5 +1,6 @@
 import * as React from "react";
 import { ChevronsUpDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import {
   DropdownMenu,
@@ -31,11 +32,19 @@ export function ProfileSwitcher({
   onRoleChange?: (role: Role) => void;
 }) {
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
 
   const [activeRole, setActiveRole] = React.useState(roles[0]);
 
   const handleRoleChange = (role: (typeof roles)[0]) => {
     setActiveRole(role);
+
+    if (role.role === "hr") {
+      navigate("/hr/dashboard");
+    } else if (role.role === "employee") {
+      navigate("/employee/dashboard");
+    }
+
     if (onRoleChange) {
       onRoleChange(role.role);
     }
@@ -49,7 +58,10 @@ export function ProfileSwitcher({
     <SidebarMenu>
       <SidebarMenuItem>
         {disabled ? (
-          <SidebarMenuButton size="lg" className="gap-1">
+          <SidebarMenuButton
+            size="lg"
+            className="hover:text-sidebar-foreground gap-1 hover:bg-transparent active:bg-transparent data-[active=true]:bg-transparent"
+          >
             <img
               src="/icons/brand-logo-dark.png"
               alt="Veripay"
@@ -65,7 +77,7 @@ export function ProfileSwitcher({
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-1"
+                className="hover:text-sidebar-foreground gap-1 hover:bg-transparent active:bg-transparent"
               >
                 <img
                   src="/icons/brand-logo-dark.png"

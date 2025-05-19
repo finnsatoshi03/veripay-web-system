@@ -10,6 +10,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Define generic interfaces
 export interface Column<T> {
@@ -142,8 +149,8 @@ export default function ReusableTable<T extends { id?: string | number }>({
     return pages;
   };
 
-  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRowsPerPage = parseInt(e.target.value);
+  const handleRowsPerPageChange = (value: string) => {
+    const newRowsPerPage = parseInt(value);
     setRowsPerPage(newRowsPerPage);
     setCurrentPage(1);
   };
@@ -303,7 +310,7 @@ export default function ReusableTable<T extends { id?: string | number }>({
         {useScrollableTable ? (
           <div className="w-full">
             {/* Table with fixed layout to ensure columns align properly */}
-            <Table className="w-full table-fixed">
+            <Table className="w-full table-fixed text-sm">
               <TableHeader>{tableHeaderRow}</TableHeader>
             </Table>
 
@@ -331,20 +338,21 @@ export default function ReusableTable<T extends { id?: string | number }>({
       <div className="flex justify-between items-center mt-10 py-3 px-4">
         <div className="flex items-center">
           <span className="text-sm text-gray-600 mr-2">Rows per page:</span>
-          <div className="relative">
-            <select
-              className="appearance-none pl-3 pr-8 py-1 border border-gray-300 rounded text-gray-700"
-              value={rowsPerPage}
-              onChange={handleRowsPerPageChange}
-            >
+          <Select 
+            defaultValue={rowsPerPage.toString()} 
+            onValueChange={handleRowsPerPageChange}
+          >
+            <SelectTrigger className="w-16 h-8" size="sm">
+              <SelectValue placeholder={rowsPerPage.toString()} />
+            </SelectTrigger>
+            <SelectContent>
               {rowsPerPageOptions.map(option => (
-                <option key={option} value={option}>{option}</option>
+                <SelectItem key={option} value={option.toString()}>
+                  {option}
+                </SelectItem>
               ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-              <ChevronsDown size={16} />
-            </div>
-          </div>
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Pagination>

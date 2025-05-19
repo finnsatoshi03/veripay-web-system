@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { Check, X } from "lucide-react";
 import HeaderSection from "@/components/custom/common/HeaderSection";
 import ReusableTable, { type Column } from "@/components/custom/common/ReusableTable";
@@ -36,7 +36,7 @@ export default function HrAccountRequests() {
     { 
       key: "status", 
       header: "Status", 
-      width: "20%",
+      width: "15%",
       // Custom rendering for status column
       renderCell: (item) => (
         <div className="flex items-center">
@@ -56,7 +56,7 @@ export default function HrAccountRequests() {
   ];
 
   // Custom action buttons
-  const renderActions = (item: AccountRequest) => (
+  const renderActions = (_item: AccountRequest) => (
     <>
       <button className="hover:text-red-600 flex items-center justify-center">
         <X size={16} />

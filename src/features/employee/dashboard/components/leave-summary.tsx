@@ -1,6 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { CreateLeaveRequestForm } from "@/features/employee/leave-overview/components/create-leave-request-form";
+import { leaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
 
 // types
 interface LeaveTypeProps {
@@ -8,6 +12,7 @@ interface LeaveTypeProps {
   totalDays: number;
   percentage: number;
   label: string;
+  onRequestLeave: (leaveType: string) => void;
 }
 
 // components
@@ -16,6 +21,7 @@ export const LeaveTypeCard = ({
   totalDays,
   percentage,
   label,
+  onRequestLeave,
 }: LeaveTypeProps) => {
   return (
     <div className="space-y-2">
@@ -28,12 +34,14 @@ export const LeaveTypeCard = ({
         </div>
         <p className="text-muted-foreground text-sm">{label} Leave Remaining</p>
       </div>
-      <Link
-        to="#"
-        className="text-primary flex items-center gap-2 text-sm font-medium"
+      <button
+        onClick={() => onRequestLeave(label)}
+        className="text-primary flex cursor-pointer items-center gap-2 text-sm font-medium"
+        tabIndex={0}
+        aria-label={`Request ${label} Leave`}
       >
         Request Leave <ArrowRight className="size-4" />
-      </Link>
+      </button>
     </div>
   );
 };
@@ -46,7 +54,7 @@ export const LeaveSummary = () => {
       days: 6,
       totalDays: 15,
       percentage: 40,
-      label: "Annual",
+      label: "Vacation",
     },
     {
       days: 7,
@@ -58,9 +66,21 @@ export const LeaveSummary = () => {
       days: 3,
       totalDays: 5,
       percentage: 60,
-      label: "Vacation",
+      label: "Emergency",
     },
   ];
+
+  // states
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedLeaveType, setSelectedLeaveType] = useState<string | null>(
+    null,
+  );
+
+  // handlers
+  const handleRequestLeave = (leaveType: string) => {
+    setSelectedLeaveType(leaveType);
+    setIsFormOpen(true);
+  };
 
   return (
     <div className="w-full space-y-2 rounded-lg border p-2">
@@ -82,9 +102,21 @@ export const LeaveSummary = () => {
             totalDays={leaveType.totalDays}
             percentage={leaveType.percentage}
             label={leaveType.label}
+            onRequestLeave={handleRequestLeave}
           />
         ))}
       </div>
+
+      {/* Create Leave Request Form */}
+      {selectedLeaveType && (
+        <CreateLeaveRequestForm
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          allowance={leaveAllowance}
+          preselectedLeaveType={selectedLeaveType}
+          disableLeaveTypeSelection={true}
+        />
+      )}
     </div>
   );
 };

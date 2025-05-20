@@ -1,9 +1,14 @@
-import TableHeader from '@/components/custom/table-header';
+import { type FC } from 'react';
+import { getCurrentPayrollPeriod, getNextCutOff } from '../lib/helper/helper';
+import TableHeader from '@/components/table/table-header';
 
-const PayrollHeader = () => {
-  // in a real app these would come from props or fetched data
-  const currentPayrollPeriod = "May 1–15, 2025";
-  const nextCutOff          = "May 15, 2025";
+interface PayrollHeaderProps {
+  referenceDate?: Date;
+}
+
+const PayrollHeader: FC<PayrollHeaderProps> = ({ referenceDate = new Date() }) => {
+  const currentPayrollPeriod = getCurrentPayrollPeriod(referenceDate);
+  const nextCutOff = getNextCutOff(referenceDate);
 
   return (
     <div className="w-full">

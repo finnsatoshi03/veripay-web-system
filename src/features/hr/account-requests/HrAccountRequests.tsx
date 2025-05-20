@@ -1,7 +1,7 @@
-
+import { useState, useEffect } from "react";
 import { Check, X } from "lucide-react";
-import TableHeader from "@/components/custom/table-header";
-import GenericTable, { type Column } from "@/components/custom/generic-table";
+import GenericTable, { type Column } from "@/components/table/generic-table";
+import TableHeader from "@/components/table/table-header";
 
 
 // Define your data types
@@ -13,13 +13,27 @@ interface AccountRequest {
 }
 
 export default function HrAccountRequests() {
-  // Sample data
-  const accountRequestsData: AccountRequest[] = Array.from({ length: 100 }, (_, i) => ({
-    id: i + 1,
-    name: `Person ${i + 1}`,
-    email: `person${i + 1}@example.com`,
-    status: i % 3 === 0 ? "Approved" : i % 3 === 1 ? "Pending" : "Rejected",
-  }));
+  // State to hold account requests data and loading status
+  const [accountRequestsData, setAccountRequestsData] = useState<AccountRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate fetching data from Supabase
+  useEffect(() => {
+    setIsLoading(true);
+    // In a real app, replace this with your Supabase fetch logic, e.g.:
+    // const fetchData = async () Ours {
+    //   const { data, error } = await supabase.from("account_requests").select("*");
+    //   if (!error) setAccountRequestsData(data || []);
+    //   setIsLoading(false);
+    // };
+    // fetchData();
+
+    // Simulate a delay and set an empty array to test "No data available"
+    setTimeout(() => {
+      setAccountRequestsData([]); // Empty array simulates no data from Supabase
+      setIsLoading(false);
+    }, 500); // 2-second delay to mimic loading
+  }, []);
 
   // Define columns with custom rendering when needed
   const columns: Column<AccountRequest>[] = [
@@ -68,19 +82,22 @@ export default function HrAccountRequests() {
   );
 
   return (
-    <div className="p-4">
+    <div className="">
       <TableHeader title="Account Requests" />
       
-      <GenericTable
-        data={accountRequestsData}
-        columns={columns}
-        title="Account Requests"
-        searchPlaceholder="Search account details"
-        showActions={true}
-        renderActions={renderActions}
-        initialRowsPerPage={10}
-        rowsPerPageOptions={[10, 25, 50, 100]}
-      />
+      {isLoading ? (
+        <div className="text-center py-6 text-gray-500">Loading data...</div>
+      ) : (
+        <GenericTable
+          data={accountRequestsData}
+          columns={columns}
+          searchPlaceholder="Search account details"
+          showActions={true}
+          renderActions={renderActions}
+          initialRowsPerPage={10}
+          rowsPerPageOptions={[10, 25, 50, 100]}
+        />
+      )}
     </div>
   );
 }

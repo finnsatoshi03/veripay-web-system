@@ -13,10 +13,10 @@ import { Separator } from "@/components/ui/separator";
 
 import { formatInitials, formatNotionDate } from "@/lib/helpers/formatters";
 
-import type { KanbanCardProps } from "./reports-card";
+import type { ReportCardProps } from "./reports-card";
 
 interface ReportDialogProps {
-  report: KanbanCardProps | null;
+  report: ReportCardProps | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

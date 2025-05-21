@@ -32,14 +32,17 @@ import { cn } from "@/lib/utils";
 import { Calendar as CalendarIcon, ChevronDown, Check } from "lucide-react";
 
 // Define leave type as a union type
-type LeaveType = "Vacation" | "Sick" | "Emergency" | "Bereavement";
+type LeaveType = "Vacation" | "Sick" | "Emergency" | "Bereavement" | "Annual";
 
 // Form schema using Zod
 const formSchema = z
   .object({
-    leave_type: z.enum(["Vacation", "Sick", "Emergency", "Bereavement"], {
-      required_error: "Please select a leave type.",
-    }),
+    leave_type: z.enum(
+      ["Vacation", "Sick", "Emergency", "Bereavement", "Annual"],
+      {
+        required_error: "Please select a leave type.",
+      },
+    ),
     start_date: z.date({
       required_error: "Start date is required.",
     }),
@@ -74,24 +77,50 @@ interface CreateLeaveRequestFormProps {
     emergency: number;
     bereavement: number;
   };
+  preselectedLeaveType?: string;
+  disableLeaveTypeSelection?: boolean;
 }
 
 export const CreateLeaveRequestForm = ({
   open,
   onOpenChange,
   allowance,
+  preselectedLeaveType,
+  disableLeaveTypeSelection = false,
 }: CreateLeaveRequestFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [leaveSpan, setLeaveSpan] = useState(0);
+
+  // Map preselected type string to the expected format
+  const mapLeaveType = (type: string): LeaveType => {
+    const typeMap: Record<string, LeaveType> = {
+      Annual: "Annual",
+      Sick: "Sick",
+      Vacation: "Vacation",
+      Emergency: "Emergency",
+      Bereavement: "Bereavement",
+    };
+
+    return typeMap[type] || "Vacation";
+  };
 
   // Initialize the form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      leave_type: "Vacation",
+      leave_type: preselectedLeaveType
+        ? mapLeaveType(preselectedLeaveType)
+        : "Vacation",
       reason: "",
     },
   });
+
+  // Update form values when preselectedLeaveType changes
+  useEffect(() => {
+    if (preselectedLeaveType) {
+      form.setValue("leave_type", mapLeaveType(preselectedLeaveType));
+    }
+  }, [preselectedLeaveType, form]);
 
   // Calculate leave span when dates change
   const startDate = form.watch("start_date");
@@ -126,6 +155,7 @@ export const CreateLeaveRequestForm = ({
     { value: "Sick", label: "Sick" },
     { value: "Emergency", label: "Emergency" },
     { value: "Bereavement", label: "Bereavement" },
+    { value: "Annual", label: "Annual" },
   ];
 
   return (
@@ -176,7 +206,10 @@ export const CreateLeaveRequestForm = ({
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger
+                          asChild
+                          disabled={disableLeaveTypeSelection}
+                        >
                           <FormControl>
                             <Button
                               variant="outline"
@@ -184,47 +217,57 @@ export const CreateLeaveRequestForm = ({
                               className={cn(
                                 "w-[200px] justify-between",
                                 !field.value && "text-muted-foreground",
+                                disableLeaveTypeSelection &&
+                                  "cursor-not-allowed opacity-70",
                               )}
+                              disabled={disableLeaveTypeSelection}
                             >
                               {field.value
                                 ? leaveTypes.find(
                                     (type) => type.value === field.value,
                                   )?.label
                                 : "Select leave type"}
-                              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              <ChevronDown
+                                className={cn(
+                                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                                  disableLeaveTypeSelection && "hidden",
+                                )}
+                              />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Search leave type..." />
-                            <CommandEmpty>No leave type found.</CommandEmpty>
-                            <CommandGroup>
-                              {leaveTypes.map((type) => (
-                                <CommandItem
-                                  key={type.value}
-                                  value={type.value}
-                                  onSelect={() => {
-                                    form.setValue(
-                                      "leave_type",
-                                      type.value as LeaveType,
-                                    );
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      type.value === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0",
-                                    )}
-                                  />
-                                  {type.label}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
+                        {!disableLeaveTypeSelection && (
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search leave type..." />
+                              <CommandEmpty>No leave type found.</CommandEmpty>
+                              <CommandGroup>
+                                {leaveTypes.map((type) => (
+                                  <CommandItem
+                                    key={type.value}
+                                    value={type.value}
+                                    onSelect={() => {
+                                      form.setValue(
+                                        "leave_type",
+                                        type.value as LeaveType,
+                                      );
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "size-4",
+                                        type.value === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0",
+                                      )}
+                                    />
+                                    {type.label}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        )}
                       </Popover>
                       <FormMessage />
                     </FormItem>
@@ -248,7 +291,7 @@ export const CreateLeaveRequestForm = ({
                                 !field.value && "text-muted-foreground",
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              <CalendarIcon className="size-4" />
                               {field.value ? (
                                 format(field.value, "PPP")
                               ) : (
@@ -288,7 +331,7 @@ export const CreateLeaveRequestForm = ({
                                 !field.value && "text-muted-foreground",
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              <CalendarIcon className="size-4" />
                               {field.value ? (
                                 format(field.value, "PPP")
                               ) : (

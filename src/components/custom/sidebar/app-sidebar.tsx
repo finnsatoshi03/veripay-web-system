@@ -3,7 +3,6 @@ import {
   CalendarCheck,
   ChartColumnBig,
   FileText,
-  GalleryVerticalEnd,
   LayoutDashboard,
   Megaphone,
   Plane,
@@ -29,25 +28,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const userData = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  roles: [
-    {
-      name: "HR",
-      logo: GalleryVerticalEnd,
-      role: "hr" as Role,
-    },
-    {
-      name: "Employee",
-      logo: UserRound,
-      role: "employee" as Role,
-    },
-  ],
-};
+import { useUser } from "@/store/userStore";
 
 const employeeNavData = [
   {
@@ -170,9 +151,15 @@ const hrNavData: NavHRSection[] = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [activeRole, setActiveRole] = React.useState<Role>("hr");
-  // Always enable the profile switcher for HR users
-  // In a real app, this would come from authentication
+  const { fullName, email, role: userRole } = useUser();
+
+  const role = userRole as Role;
+  const [activeRole, setActiveRole] = React.useState<Role>(role);
+
+  React.useEffect(() => {
+    setActiveRole(role);
+  }, [role]);
+
   const isHRUser = true;
 
   const handleRoleChange = (role: Role) => {
@@ -183,20 +170,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props} variant="floating">
       <SidebarHeader>
         <ProfileSwitcher
-          roles={userData.roles}
+          role={role as Role}
           disabled={!isHRUser}
           onRoleChange={handleRoleChange}
         />
       </SidebarHeader>
       <SidebarContent>
-        {activeRole === "hr" ? (
+        {activeRole === "HR" ? (
           <NavHR sections={hrNavData} />
         ) : (
           <NavEmployee items={employeeNavData} />
         )}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData.user} />
+        <NavUser
+          user={{
+            name: fullName || "User",
+            email: email || "",
+            avatar: "",
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

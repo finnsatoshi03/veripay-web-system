@@ -1,6 +1,11 @@
+import { useState } from "react";
+import { Calendar1, Plus } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar1, Plus } from "lucide-react";
+
+import { CreateLeaveRequestForm } from "../../leave-overview/components/create-leave-request-form";
+import { leaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
 
 // types
 interface ReportCardProps {
@@ -43,11 +48,17 @@ export const ReportsStatus = () => {
     date: "July 16",
   };
 
+  const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
+
   return (
     <div className="w-full space-y-2 rounded-lg border p-2">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Recent Reports</h2>
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsRequestFormOpen(true)}
+        >
           <Plus className="size-4" />
           New Report
         </Button>
@@ -55,6 +66,13 @@ export const ReportsStatus = () => {
       <div className="bg-border -mx-2 h-px px-2" />
 
       <ReportCard {...reportData} />
+
+      {/* form */}
+      <CreateLeaveRequestForm
+        open={isRequestFormOpen}
+        onOpenChange={setIsRequestFormOpen}
+        allowance={leaveAllowance}
+      />
     </div>
   );
 };

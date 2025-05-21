@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, GalleryVerticalEnd, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -16,37 +16,52 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export type Role = "hr" | "employee";
+import { formatRole } from "@/lib/helpers/formatters";
+
+export type Role = "HR" | "Employee";
+
+const roles = [
+  {
+    name: "HR",
+    logo: GalleryVerticalEnd,
+    role: "HR" as Role,
+  },
+  {
+    name: "Employee",
+    logo: UserRound,
+    role: "Employee" as Role,
+  },
+];
 
 export function ProfileSwitcher({
-  roles,
+  role,
   disabled = false,
   onRoleChange,
 }: {
-  roles: {
-    name: string;
-    logo: React.ElementType;
-    role: Role;
-  }[];
+  role: Role;
   disabled?: boolean;
   onRoleChange?: (role: Role) => void;
 }) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
 
-  const [activeRole, setActiveRole] = React.useState(roles[0]);
+  const [activeRole, setActiveRole] = React.useState(role);
 
-  const handleRoleChange = (role: (typeof roles)[0]) => {
+  React.useEffect(() => {
+    setActiveRole(role);
+  }, [role]);
+
+  const handleRoleChange = (role: Role) => {
     setActiveRole(role);
 
-    if (role.role === "hr") {
+    if (role === "HR") {
       navigate("/hr/dashboard");
-    } else if (role.role === "employee") {
+    } else if (role === "Employee") {
       navigate("/employee/dashboard");
     }
 
     if (onRoleChange) {
-      onRoleChange(role.role);
+      onRoleChange(role);
     }
   };
 
@@ -69,7 +84,7 @@ export function ProfileSwitcher({
             />
             <div className="grid flex-1 -space-y-1 text-left text-lg leading-tight">
               <span className="font-logo truncate font-semibold">Veripay</span>
-              <span className="truncate text-xs">{activeRole.role}</span>
+              <span className="truncate text-xs">{formatRole(activeRole)}</span>
             </div>
           </SidebarMenuButton>
         ) : (
@@ -88,7 +103,9 @@ export function ProfileSwitcher({
                   <span className="font-logo truncate font-semibold">
                     Veripay
                   </span>
-                  <span className="truncate text-xs">{activeRole.role}</span>
+                  <span className="truncate text-xs">
+                    {formatRole(activeRole)}
+                  </span>
                 </div>
                 <ChevronsUpDown className="ml-auto" />
               </SidebarMenuButton>
@@ -105,7 +122,7 @@ export function ProfileSwitcher({
               {roles.map((role) => (
                 <DropdownMenuItem
                   key={role.name}
-                  onClick={() => handleRoleChange(role)}
+                  onClick={() => handleRoleChange(role.role)}
                   className="gap-2 p-2"
                 >
                   <div className="flex size-6 items-center justify-center rounded-sm border">

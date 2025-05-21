@@ -10,6 +10,7 @@ import { CreateLeaveRequestForm } from "./create-leave-request-form";
 
 import { KanbanBoard } from "../../_components/kanban";
 import { leaveRequests } from "../../_lib/mock/mock-leaveRequests";
+import { leaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
 
 export const LeaveRequestSection = () => {
   const columns = [
@@ -31,14 +32,6 @@ export const LeaveRequestSection = () => {
   ];
 
   const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
-
-  // Mock data for leave allowance
-  const leaveAllowance = {
-    vacation: 15,
-    sick: 10,
-    emergency: 5,
-    bereavement: 3,
-  };
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col gap-4">

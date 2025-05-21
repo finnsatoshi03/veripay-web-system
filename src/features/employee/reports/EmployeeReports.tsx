@@ -35,7 +35,7 @@ export default function EmployeeReports() {
       <div className="flex items-center justify-between">
         <Search size="sm" />
         <Button size="sm" onClick={() => setIsCreateFormOpen(true)}>
-          <Plus className="mr-2 size-4" />
+          <Plus className="size-4" />
           Create new report
         </Button>
       </div>

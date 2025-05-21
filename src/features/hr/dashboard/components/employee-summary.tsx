@@ -52,7 +52,7 @@ const SummaryHeader = () => (
   <>
     <div className="flex items-center justify-between">
       <h2 className="text-lg font-semibold">Employee Summary</h2>
-      <Link to="/hr/active-employees">
+      <Link to="/hr/account-requests">
         <Button variant="outline" size="sm">
           Manage Employees
         </Button>

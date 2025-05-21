@@ -1,5 +1,8 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { EmployeeSummary } from "./components/employee-summary";
+import { AttendanceOverview } from "./components/attendance-overview";
+import { PayrollSummary } from "./components/payroll-summary";
 
 export default function HrDashboard() {
   return (
@@ -8,6 +11,13 @@ export default function HrDashboard() {
       <ScrollArea className="flex h-full min-h-0">
         <div className="space-y-4">
           <EmployeeSummary />
+          <AttendanceOverview />
+        </div>
+      </ScrollArea>
+
+      <ScrollArea className="flex h-full min-h-0">
+        <div className="space-y-4">
+          <PayrollSummary />
         </div>
       </ScrollArea>
     </div>

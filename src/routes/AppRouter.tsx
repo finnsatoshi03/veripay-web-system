@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import PublicLayout from "@/layout/PublicLayout";
 import ProtectedLayout from "@/layout/ProtectedLayout";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
+import { PublicRoute } from "@/features/auth/components/public-route";
 
 // Protected Routes
 // hr routes
@@ -40,11 +41,15 @@ export default function AppRouter() {
       <Route index element={<Navigate to="/login" replace />} />
 
       <Route path="*" element={<NotFound />} />
+
+      {/* Public routes - redirects if already authenticated */}
       <Route element={<PublicLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+        </Route>
       </Route>
 
       <Route element={<ProtectedLayout />}>

@@ -40,6 +40,8 @@ interface EditProfileParams {
   user_profiles?: EditableUserProfile;
 }
 
+//!! add edit profile pic here
+
 export const editProfile = async (params: EditProfileParams) => {
   const { userId, users, employees, user_profiles } = params;
 

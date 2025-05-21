@@ -2,8 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import PublicLayout from "@/layout/PublicLayout";
 import ProtectedLayout from "@/layout/ProtectedLayout";
-import { ProtectedRoute } from "@/features/auth/components/protected-route";
-import { PublicRoute } from "@/features/auth/components/public-route";
+import { ProtectedRoute } from "@/components/custom/protected-route";
+import { PublicRoute } from "@/components/custom/public-route";
 
 // Protected Routes
 // hr routes

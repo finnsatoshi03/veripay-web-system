@@ -51,7 +51,7 @@ export const formatPlaceValue = (amount: number) => {
 };
 
 export const formatRole = (role: string) => {
-  if (role === "hr") {
+  if (role === "HR") {
     return "Human Resources";
   } else {
     return "Employee";

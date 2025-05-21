@@ -18,18 +18,18 @@ import {
 
 import { formatRole } from "@/lib/helpers/formatters";
 
-export type Role = "hr" | "employee";
+export type Role = "HR" | "Employee";
 
 const roles = [
   {
     name: "HR",
     logo: GalleryVerticalEnd,
-    role: "hr" as Role,
+    role: "HR" as Role,
   },
   {
     name: "Employee",
     logo: UserRound,
-    role: "employee" as Role,
+    role: "Employee" as Role,
   },
 ];
 
@@ -54,9 +54,9 @@ export function ProfileSwitcher({
   const handleRoleChange = (role: Role) => {
     setActiveRole(role);
 
-    if (role === "hr") {
+    if (role === "HR") {
       navigate("/hr/dashboard");
-    } else if (role === "employee") {
+    } else if (role === "Employee") {
       navigate("/employee/dashboard");
     }
 

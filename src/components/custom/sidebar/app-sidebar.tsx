@@ -151,10 +151,9 @@ const hrNavData: NavHRSection[] = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // change this to the active role from the user (for now it's hardcoded to HR - it has bug since its hardcoded)
-  const { role: userRole, fullName, email } = useUser();
+  const { fullName, email, role: userRole } = useUser();
 
-  const role = userRole.toLowerCase() as Role;
+  const role = userRole as Role;
   const [activeRole, setActiveRole] = React.useState<Role>(role);
 
   React.useEffect(() => {
@@ -177,7 +176,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         />
       </SidebarHeader>
       <SidebarContent>
-        {activeRole === "hr" ? (
+        {activeRole === "HR" ? (
           <NavHR sections={hrNavData} />
         ) : (
           <NavEmployee items={employeeNavData} />

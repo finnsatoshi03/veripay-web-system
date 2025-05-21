@@ -162,7 +162,6 @@ export const useUserStore = create<UserState & UserActions>()(
             };
           }
 
-          // Update store with all user data
           set({
             id: userData.id,
             email: userData.email,
@@ -222,7 +221,7 @@ export const useUser = () => {
   }, [role]);
 
   const isHR = useMemo(() => {
-    return role === "hr";
+    return role === "HR";
   }, [role]);
 
   const isEmployee = useMemo(() => {

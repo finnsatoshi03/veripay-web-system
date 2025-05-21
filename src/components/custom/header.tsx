@@ -10,16 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Search } from "@/components/custom/search";
 import { Badge } from "@/components/ui/badge";
 
+import { useUser } from "@/store/userStore";
+
 export const Header = () => {
   const { pathname } = useLocation();
+  const { fullName, email } = useUser();
   const navigate = useNavigate();
 
   const isDashboard = pathname.includes("dashboard");
 
   const userData = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    image: "https://github.com/shadcn.png",
+    name: fullName || "User",
+    email: email || "",
+    image: "",
   };
 
   return (
@@ -28,7 +31,9 @@ export const Header = () => {
         <div className="flex items-center gap-2">
           <Avatar className="size-10 rounded-lg">
             <AvatarImage src={userData.image} />
-            <AvatarFallback>{formatInitials(userData.name)}</AvatarFallback>
+            <AvatarFallback className="rounded-lg">
+              {formatInitials(userData.name)}
+            </AvatarFallback>
           </Avatar>
           <div>
             <h1 className="text-lg leading-none font-semibold">

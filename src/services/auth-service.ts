@@ -1,5 +1,6 @@
 import type { NewUser } from "@/types/api";
 import { clearAuthToken, setAuthToken, supabase } from "./supabase";
+import { useUserStore } from "@/store/userStore";
 
 // ============================
 // Authentication Methods
@@ -20,6 +21,27 @@ export const signInWithPassword = async (email: string, password: string) => {
 
       if (access_token) {
         setAuthToken(access_token);
+      }
+
+      // Get the role from user metadata
+      const role = user.user_metadata?.role || "";
+
+      // Get user details from database after successful authentication
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("identity_id", user.id)
+        .single();
+
+      if (userError) {
+        console.error("Error fetching user from database:", userError);
+        throw userError;
+      }
+
+      // Fetch complete user data using the userStore
+      if (userData?.id) {
+        const userStore = useUserStore.getState();
+        await userStore.fetchUserData(userData.id, role);
       }
 
       return user;
@@ -65,6 +87,10 @@ export const signOut = async () => {
     }
 
     clearAuthToken();
+
+    // Clear user state
+    const userStore = useUserStore.getState();
+    userStore.clearUser();
   } catch (error) {
     console.error("Sign-Out Error:", error);
     throw error;
@@ -78,9 +104,36 @@ export const signOut = async () => {
 // Handle auth state changes (for OAuth token saving)
 export const setupAuthListener = () => {
   const { data: authListener } = supabase.auth.onAuthStateChange(
-    (event, session) => {
+    async (event, session) => {
       if (event === "SIGNED_IN" && session) {
         setAuthToken(session.access_token); // Save token
+
+        // When signed in via OAuth, we need to fetch user data
+        try {
+          // Get the role from user metadata
+          const role = session.user.user_metadata?.role || "";
+
+          // Get user database ID from identity_id
+          const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("id")
+            .eq("identity_id", session.user.id)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user from database:", userError);
+            return;
+          }
+
+          // Fetch complete user data
+          if (userData?.id) {
+            const userStore = useUserStore.getState();
+            await userStore.fetchUserData(userData.id, role);
+          }
+        } catch (error) {
+          console.error("Error loading user data:", error);
+        }
+
         console.log("Authenticated User:", {
           id: session.user.id,
           email: session.user.email,
@@ -91,6 +144,10 @@ export const setupAuthListener = () => {
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
         clearAuthToken();
+
+        // Clear user data
+        const userStore = useUserStore.getState();
+        userStore.clearUser();
       }
     },
   );

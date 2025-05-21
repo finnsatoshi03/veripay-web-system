@@ -49,3 +49,11 @@ export const formatPlaceValue = (amount: number) => {
     })
     .replace(/^/, "₱");
 };
+
+export const formatRole = (role: string) => {
+  if (role === "hr") {
+    return "Human Resources";
+  } else {
+    return "Employee";
+  }
+};

@@ -3,7 +3,6 @@ import {
   CalendarCheck,
   ChartColumnBig,
   FileText,
-  GalleryVerticalEnd,
   LayoutDashboard,
   Megaphone,
   Plane,
@@ -29,25 +28,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const userData = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  roles: [
-    {
-      name: "HR",
-      logo: GalleryVerticalEnd,
-      role: "hr" as Role,
-    },
-    {
-      name: "Employee",
-      logo: UserRound,
-      role: "employee" as Role,
-    },
-  ],
-};
+import { useUser } from "@/store/userStore";
 
 const employeeNavData = [
   {
@@ -171,7 +152,9 @@ const hrNavData: NavHRSection[] = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // change this to the active role from the user (for now it's hardcoded to HR - it has bug since its hardcoded)
-  const [activeRole, setActiveRole] = React.useState<Role>("hr");
+  const { role: userRole, fullName, email } = useUser();
+  const role = userRole.toLowerCase() as Role;
+  const [activeRole, setActiveRole] = React.useState<Role>(role);
 
   const isHRUser = true;
 
@@ -183,7 +166,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props} variant="floating">
       <SidebarHeader>
         <ProfileSwitcher
-          roles={userData.roles}
+          role={role as Role}
           disabled={!isHRUser}
           onRoleChange={handleRoleChange}
         />
@@ -196,7 +179,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData.user} />
+        <NavUser
+          user={{
+            name: fullName || "User",
+            email: email || "",
+            avatar: "",
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

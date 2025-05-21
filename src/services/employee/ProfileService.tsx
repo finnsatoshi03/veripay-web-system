@@ -1,6 +1,91 @@
 import { supabase } from "../supabase";
 import { parseISO, isSameMonth, differenceInMinutes } from "date-fns";
 
+interface User {
+  id: number;
+  email: string;
+  created_at: string;
+  identity_id?: string | null;
+  is_active: boolean;
+}
+
+interface Employee {
+  id: number;
+  user_id: number;
+  employee_code: string;
+  status: string;
+  date_hired: string;
+
+}
+
+interface UserProfile {
+  id: number;
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  contact_number?: string;
+  address?: string;
+  birth_date?: string;
+  gender?: string;
+}
+
+type EditableUser = Partial<Pick<User, "is_active">>;
+type EditableEmployee = Partial<Omit<Employee, "id" | "user_id" | "departments" | "positions" | "attendance_records">>;
+type EditableUserProfile = Partial<Omit<UserProfile, "id" | "user_id">>;
+
+interface EditProfileParams {
+  userId: number;
+  users?: EditableUser;
+  employees?: EditableEmployee;
+  user_profiles?: EditableUserProfile;
+}
+
+export const editProfile = async (params: EditProfileParams) => {
+  const { userId, users, employees, user_profiles } = params;
+
+  try {
+    if (user_profiles) {
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .update(user_profiles)
+        .eq("user_id", userId);
+
+      if (profileError) throw profileError;
+    }
+
+    if (employees) {
+      const { data: empData, error: empFetchError } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("user_id", userId)
+        .single();
+
+      if (empFetchError) throw empFetchError;
+
+      const { error: empUpdateError } = await supabase
+        .from("employees")
+        .update(employees)
+        .eq("id", empData.id);
+
+      if (empUpdateError) throw empUpdateError;
+    }
+
+    if (users) {
+      const { error: userError } = await supabase
+        .from("users")
+        .update(users)
+        .eq("id", userId);
+
+      if (userError) throw userError;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Edit profile error:", error);
+    return false;
+  }
+};
+
 export const getProfile = async (id: number) => {
   try {
     const { data, error } = await supabase
@@ -39,6 +124,7 @@ export const getProfile = async (id: number) => {
     return null
   }
 };
+
 
 export const getAttendanceOverview = async (
   employeeId: number,

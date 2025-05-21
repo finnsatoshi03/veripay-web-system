@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { supabase } from "@/services/supabase";
 import { useEffect, useMemo } from "react";
 
@@ -64,117 +65,138 @@ const initialState: UserState = {
   error: null,
 };
 
-export const useUserStore = create<UserState & UserActions>((set) => ({
-  ...initialState,
+export const useUserStore = create<UserState & UserActions>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  setUser: (userData) => set((state) => ({ ...state, ...userData })),
+      setUser: (userData) => set((state) => ({ ...state, ...userData })),
 
-  clearUser: () => set(initialState),
+      clearUser: () => set(initialState),
 
-  fetchUserData: async (userId, metadataRole = "") => {
-    set({ isLoading: true, error: null });
+      fetchUserData: async (userId, metadataRole = "") => {
+        set({ isLoading: true, error: null });
 
-    try {
-      // Fetch basic user data
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("id, email, is_active, identity_id")
-        .eq("id", userId)
-        .single();
-
-      if (userError) throw userError;
-
-      // Fetch user profile
-      const { data: profileData, error: profileError } = await supabase
-        .from("user_profiles")
-        .select(
-          "id, first_name, last_name, contact_number, address, birth_date, gender",
-        )
-        .eq("user_id", userId)
-        .single();
-
-      // It's okay if profile doesn't exist yet
-      if (profileError && profileError.code !== "PGRST116") throw profileError;
-
-      // Fetch employee data if exists
-      const { data: employeeData, error: employeeError } = await supabase
-        .from("employees")
-        .select(
-          `
-          id, 
-          employee_code, 
-          status, 
-          date_hired, 
-          department_id, 
-          position_id
-        `,
-        )
-        .eq("user_id", userId)
-        .single();
-
-      // It's okay if employee record doesn't exist
-      if (employeeError && employeeError.code !== "PGRST116")
-        throw employeeError;
-
-      // If employee exists, fetch department and position details
-      let employee: Employee | null = null;
-      if (employeeData) {
-        let department: Department | null = null;
-        let position: Position | null = null;
-
-        // Fetch department if exists
-        if (employeeData.department_id) {
-          const { data: deptData, error: deptError } = await supabase
-            .from("departments")
-            .select("id, name, description")
-            .eq("id", employeeData.department_id)
+        try {
+          // Fetch basic user data
+          const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("id, email, is_active, identity_id")
+            .eq("id", userId)
             .single();
 
-          if (!deptError) {
-            department = deptData;
-          }
-        }
+          if (userError) throw userError;
 
-        // Fetch position if exists
-        if (employeeData.position_id) {
-          const { data: posData, error: posError } = await supabase
-            .from("positions")
-            .select("id, title, level, base_salary")
-            .eq("id", employeeData.position_id)
+          // Fetch user profile
+          const { data: profileData, error: profileError } = await supabase
+            .from("user_profiles")
+            .select(
+              "id, first_name, last_name, contact_number, address, birth_date, gender",
+            )
+            .eq("user_id", userId)
             .single();
 
-          if (!posError) {
-            position = posData;
+          // It's okay if profile doesn't exist yet
+          if (profileError && profileError.code !== "PGRST116")
+            throw profileError;
+
+          // Fetch employee data if exists
+          const { data: employeeData, error: employeeError } = await supabase
+            .from("employees")
+            .select(
+              `
+              id, 
+              employee_code, 
+              status, 
+              date_hired, 
+              department_id, 
+              position_id
+            `,
+            )
+            .eq("user_id", userId)
+            .single();
+
+          // It's okay if employee record doesn't exist
+          if (employeeError && employeeError.code !== "PGRST116")
+            throw employeeError;
+
+          // If employee exists, fetch department and position details
+          let employee: Employee | null = null;
+          if (employeeData) {
+            let department: Department | null = null;
+            let position: Position | null = null;
+
+            // Fetch department if exists
+            if (employeeData.department_id) {
+              const { data: deptData, error: deptError } = await supabase
+                .from("departments")
+                .select("id, name, description")
+                .eq("id", employeeData.department_id)
+                .single();
+
+              if (!deptError) {
+                department = deptData;
+              }
+            }
+
+            // Fetch position if exists
+            if (employeeData.position_id) {
+              const { data: posData, error: posError } = await supabase
+                .from("positions")
+                .select("id, title, level, base_salary")
+                .eq("id", employeeData.position_id)
+                .single();
+
+              if (!posError) {
+                position = posData;
+              }
+            }
+
+            employee = {
+              id: employeeData.id,
+              employee_code: employeeData.employee_code,
+              status: employeeData.status,
+              date_hired: employeeData.date_hired,
+              department,
+              position,
+            };
           }
+
+          // Update store with all user data
+          set({
+            id: userData.id,
+            email: userData.email,
+            is_active: userData.is_active,
+            identity_id: userData.identity_id,
+            role: metadataRole,
+            profile: profileData || null,
+            employee,
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          set({ error: (error as Error).message, isLoading: false });
         }
-
-        employee = {
-          id: employeeData.id,
-          employee_code: employeeData.employee_code,
-          status: employeeData.status,
-          date_hired: employeeData.date_hired,
-          department,
-          position,
-        };
-      }
-
-      // Update store with all user data
-      set({
-        id: userData.id,
-        email: userData.email,
-        is_active: userData.is_active,
-        identity_id: userData.identity_id,
-        role: metadataRole,
-        profile: profileData || null,
-        employee,
-        isLoading: false,
-      });
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
-}));
+      },
+    }),
+    {
+      name: "user-storage",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        id: state.id,
+        email: state.email,
+        is_active: state.is_active,
+        identity_id: state.identity_id,
+        role: state.role,
+        profile: state.profile,
+        employee: state.employee,
+        // Excluding transient states
+        isLoading: undefined,
+        error: undefined,
+      }),
+    },
+  ),
+);
 
 export const useUser = () => {
   const {

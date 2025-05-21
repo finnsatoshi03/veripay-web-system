@@ -47,6 +47,10 @@ export function ProfileSwitcher({
 
   const [activeRole, setActiveRole] = React.useState(role);
 
+  React.useEffect(() => {
+    setActiveRole(role);
+  }, [role]);
+
   const handleRoleChange = (role: Role) => {
     setActiveRole(role);
 

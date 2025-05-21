@@ -25,7 +25,7 @@ export const processRegistrationRequest = async (
     const { data, error } = await supabase.functions.invoke(
       "update-registration-status",
       {
-        body: { id: requestId, status: newStatus },
+        body: { id: requestId, newStatus },
       },
     );
 

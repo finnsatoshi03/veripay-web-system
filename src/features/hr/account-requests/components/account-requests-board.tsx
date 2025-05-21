@@ -36,8 +36,27 @@ export const AccountRequestsBoard = () => {
   // Initialize filtered requests when data is loaded
   useEffect(() => {
     if (requests) {
-      setFilteredRequests(requests);
-      applyFilters(requests, searchQuery, selectedStatuses);
+      // Apply current filters to the data
+      let filtered = [...requests];
+
+      // Apply status filter
+      if (selectedStatuses.length > 0) {
+        filtered = filtered.filter((request) =>
+          selectedStatuses.includes(request.status),
+        );
+      }
+
+      // Apply search filter
+      if (searchQuery) {
+        const lowerQuery = searchQuery.toLowerCase();
+        filtered = filtered.filter(
+          (request) =>
+            request.name.toLowerCase().includes(lowerQuery) ||
+            request.email.toLowerCase().includes(lowerQuery),
+        );
+      }
+
+      setFilteredRequests(filtered);
     }
   }, [requests, searchQuery, selectedStatuses]);
 
@@ -72,13 +91,11 @@ export const AccountRequestsBoard = () => {
   const handleStatusFilterChange = (statuses: RequestStatus[]) => {
     setSelectedStatuses(statuses);
     setCurrentPage(1);
-    applyFilters(requests, searchQuery, statuses);
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    applyFilters(requests, query, selectedStatuses);
   };
 
   const handlePageChange = (page: number) => {
@@ -96,33 +113,6 @@ export const AccountRequestsBoard = () => {
         ? prev.filter((id) => id !== columnId)
         : [...prev, columnId],
     );
-  };
-
-  const applyFilters = (
-    allRequests: AccountRequest[],
-    query: string,
-    statuses: RequestStatus[],
-  ) => {
-    let filtered = [...allRequests];
-
-    // Apply status filter
-    if (statuses.length > 0) {
-      filtered = filtered.filter((request) =>
-        statuses.includes(request.status),
-      );
-    }
-
-    // Apply search filter
-    if (query) {
-      const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter(
-        (request) =>
-          request.name.toLowerCase().includes(lowerQuery) ||
-          request.email.toLowerCase().includes(lowerQuery),
-      );
-    }
-
-    setFilteredRequests(filtered);
   };
 
   if (isLoading) {

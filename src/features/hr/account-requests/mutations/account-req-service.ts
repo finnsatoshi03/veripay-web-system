@@ -5,6 +5,7 @@ import {
 } from "@/services/hr/account-requests-service";
 import type { AccountRequest, RequestStatus } from "../lib/data";
 import toast from "react-hot-toast";
+import { formatDate } from "@/lib/helpers/formatters";
 
 // Query key constants
 export const QUERY_KEYS = {
@@ -22,6 +23,7 @@ export const useAccountRequests = () => {
         ...item,
         id: String(item.id), // Ensure ID is a string
         name: `${item.first_name} ${item.last_name}`,
+        requestDate: formatDate(item.created_at),
       }));
     },
   });

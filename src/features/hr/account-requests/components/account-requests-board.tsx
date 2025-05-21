@@ -10,14 +10,17 @@ import {
 } from "./account-requests-table";
 import { StatusFilter, statusOptions } from "./status-filter";
 
-import { mockAccountRequests } from "../lib/data";
 import type { AccountRequest, RequestStatus } from "../lib/data";
+import { useAccountRequests } from "../mutations/account-req-service";
+import { Error } from "@/features/error";
 
 export const AccountRequestsBoard = () => {
-  const [requests, setRequests] =
-    useState<AccountRequest[]>(mockAccountRequests);
-  const [filteredRequests, setFilteredRequests] =
-    useState<AccountRequest[]>(mockAccountRequests);
+  // React Query hooks
+  const { data: requests = [], isLoading, error } = useAccountRequests();
+
+  const [filteredRequests, setFilteredRequests] = useState<AccountRequest[]>(
+    [],
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState<RequestStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,20 +33,31 @@ export const AccountRequestsBoard = () => {
     "actions",
   ]);
 
+  // Initialize filtered requests when data is loaded
+  useEffect(() => {
+    if (requests) {
+      setFilteredRequests(requests);
+      applyFilters(requests, searchQuery, selectedStatuses);
+    }
+  }, [requests, searchQuery, selectedStatuses]);
+
   // Update status counts
   useEffect(() => {
-    const counts = {
+    const counts: Record<RequestStatus, number> = {
       pending: 0,
       approved: 0,
       rejected: 0,
     };
 
     requests.forEach((request) => {
-      counts[request.status]++;
+      if (request.status in counts) {
+        counts[request.status as keyof typeof counts]++;
+      }
     });
 
     statusOptions.forEach((option) => {
-      option.count = counts[option.value as RequestStatus];
+      const status = option.value as RequestStatus;
+      option.count = counts[status];
     });
   }, [requests]);
 
@@ -54,14 +68,6 @@ export const AccountRequestsBoard = () => {
     indexOfFirstItem,
     indexOfLastItem,
   );
-
-  const handleStatusChange = (requestId: string, newStatus: RequestStatus) => {
-    const updatedRequests = requests.map((request) =>
-      request.id === requestId ? { ...request, status: newStatus } : request,
-    );
-    setRequests(updatedRequests);
-    applyFilters(updatedRequests, searchQuery, selectedStatuses);
-  };
 
   const handleStatusFilterChange = (statuses: RequestStatus[]) => {
     setSelectedStatuses(statuses);
@@ -119,6 +125,22 @@ export const AccountRequestsBoard = () => {
     setFilteredRequests(filtered);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        Loading account requests...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Error
+        title={`Error loading account requests: ${error instanceof Error ? error.message : "Unknown error"}`}
+      />
+    );
+  }
+
   return (
     <div className="flex h-full flex-col space-y-4">
       <div>
@@ -147,7 +169,6 @@ export const AccountRequestsBoard = () => {
       <div className="flex-1 overflow-auto rounded-md border">
         <AccountRequestsTable
           requests={currentItems}
-          onStatusChange={handleStatusChange}
           visibleColumns={visibleColumns}
         />
       </div>

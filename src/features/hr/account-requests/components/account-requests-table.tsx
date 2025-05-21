@@ -9,11 +9,10 @@ import {
 } from "@/components/ui/table";
 import { RequestActions } from "./request-actions";
 
-import type { AccountRequest, RequestStatus } from "../lib/data";
+import type { AccountRequest } from "../lib/data";
 
 interface AccountRequestsTableProps {
   requests: AccountRequest[];
-  onStatusChange: (requestId: string, newStatus: RequestStatus) => void;
   visibleColumns?: string[];
 }
 
@@ -27,7 +26,6 @@ export const ACCOUNT_TABLE_COLUMNS = [
 
 export const AccountRequestsTable = ({
   requests,
-  onStatusChange,
   visibleColumns = ["name", "email", "requestDate", "status", "actions"],
 }: AccountRequestsTableProps) => {
   // Filter columns by visibility
@@ -98,10 +96,7 @@ export const AccountRequestsTable = ({
               )}
               {visibleColumns.includes("actions") && (
                 <TableCell>
-                  <RequestActions
-                    request={request}
-                    onStatusChange={onStatusChange}
-                  />
+                  <RequestActions request={request} />
                 </TableCell>
               )}
             </TableRow>

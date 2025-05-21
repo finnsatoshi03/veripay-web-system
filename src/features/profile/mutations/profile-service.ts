@@ -1,3 +1,5 @@
+import toast from "react-hot-toast";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/services/supabase";
 import { useUserStore } from "@/store/userStore";
@@ -55,16 +57,16 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const fetchUserData = useUserStore((state) => state.fetchUserData);
   const userId = useUserStore((state) => state.id);
+  const role = useUserStore((state) => state.role);
 
   return useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {
-      // Invalidate queries that depend on user data
+      toast.success("Profile updated successfully");
       queryClient.invalidateQueries({ queryKey: ["userData"] });
 
-      // Refresh the user store data
       if (userId) {
-        fetchUserData(userId);
+        fetchUserData(userId, role);
       }
     },
   });

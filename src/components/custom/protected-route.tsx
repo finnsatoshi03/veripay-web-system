@@ -46,14 +46,13 @@ export const ProtectedRoute = ({
   useEffect(() => {
     if (isAuthenticated && user?.id && !userLoading && !hasAttemptedFetch) {
       setHasAttemptedFetch(true);
-      fetchUserData(Number(user.id), user.role);
+      fetchUserData(Number(user.id));
     }
   }, [
     isAuthenticated,
     user?.id,
     userLoading,
     fetchUserData,
-    user?.role,
     hasAttemptedFetch,
   ]);
 

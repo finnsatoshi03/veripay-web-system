@@ -29,7 +29,7 @@ export default function App() {
             <BrowserRouter>
               <AuthInitializer />
               <AppRouter />
-              <Toaster />
+              <Toaster position="bottom-right" />
             </BrowserRouter>
           </TooltipProvider>
         </ThemeProvider>

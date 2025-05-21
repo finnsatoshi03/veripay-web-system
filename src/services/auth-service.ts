@@ -1,4 +1,4 @@
-import type { NewUser, RegistrationReqeust } from "@/types/api";
+import type { NewUser } from "@/types/api";
 import { clearAuthToken, setAuthToken, supabase } from "./supabase";
 
 export const signInWithPassword = async (email: string, password: string) => {
@@ -102,23 +102,19 @@ export const processRegistrationRequest = async (
   newStatus: string,
 ) => {
   try {
-    let query = supabase
-      .from("registration_requests")
-      .select("*")
-      .eq("id", requestId);
-
-    if (newStatus) {
-      query = query.eq("status", newStatus);
-    }
-
-    const { data, error } = await query.single();
+    const { data, error } = await supabase.functions.invoke(
+      "update-registration-status",
+      {
+        body: { id: requestId, status: newStatus },
+      },
+    );
 
     if (error) {
       console.error("Error fetching registration request:", error);
       return null;
     }
 
-    return data as RegistrationReqeust;
+    return data;
   } catch (error) {
     console.error("Exception in getRegistrationRequest:", error);
     return null;

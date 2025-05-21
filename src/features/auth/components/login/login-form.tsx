@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -29,7 +29,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export const LoginForm = () => {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<FormValues>({
@@ -43,11 +42,7 @@ export const LoginForm = () => {
   const loginMutation = useLogin();
 
   const handleSubmit = (values: FormValues) => {
-    loginMutation.mutate(values, {
-      onSuccess: () => {
-        navigate("/dashboard");
-      },
-    });
+    loginMutation.mutate(values);
   };
 
   return (

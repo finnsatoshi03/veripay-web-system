@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import PublicLayout from "@/layout/PublicLayout";
 import ProtectedLayout from "@/layout/ProtectedLayout";
+import { ProtectedRoute } from "@/features/auth/components/protected-route";
 
 // Protected Routes
 // hr routes
@@ -47,31 +48,38 @@ export default function AppRouter() {
       </Route>
 
       <Route element={<ProtectedLayout />}>
-        {/* hr routes */}
-        <Route path="/hr/dashboard" element={<HrDashboard />} />
-        <Route path="/hr/account-requests" element={<HrAccountRequests />} />
-        <Route path="/hr/active-employee" element={<HrActiveEmployee />} />
-        <Route path="/hr/add-employee" element={<HrAddEmployee />} />
-        <Route
-          path="/hr/department-assignment"
-          element={<HrDeptAssignment />}
-        />
-        <Route path="/hr/role-management" element={<HrRoleManagement />} />
-        <Route path="/hr/reports" element={<HrReports />} />
-        <Route path="/hr/leave-management" element={<HrLeaveManagement />} />
-        <Route path="/hr/payroll-management" element={<PayrollManagement />} />
-        <Route path="/hr/announcements" element={<HrAnnouncements />} />
+        {/* HR Routes - protected by HR role */}
+        <Route element={<ProtectedRoute allowedRoles={["HR"]} />}>
+          <Route path="/hr/dashboard" element={<HrDashboard />} />
+          <Route path="/hr/account-requests" element={<HrAccountRequests />} />
+          <Route path="/hr/active-employee" element={<HrActiveEmployee />} />
+          <Route path="/hr/add-employee" element={<HrAddEmployee />} />
+          <Route
+            path="/hr/department-assignment"
+            element={<HrDeptAssignment />}
+          />
+          <Route path="/hr/role-management" element={<HrRoleManagement />} />
+          <Route path="/hr/reports" element={<HrReports />} />
+          <Route path="/hr/leave-management" element={<HrLeaveManagement />} />
+          <Route
+            path="/hr/payroll-management"
+            element={<PayrollManagement />}
+          />
+          <Route path="/hr/announcements" element={<HrAnnouncements />} />
+        </Route>
 
-        {/* employee routes */}
-        <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
-        <Route path="/employee/profile" element={<EmployeeProfile />} />
-        <Route path="/employee/attendance" element={<EmployeeAttendance />} />
-        <Route path="/employee/payslips" element={<EmployeePayslips />} />
-        <Route path="/employee/reports" element={<EmployeeReports />} />
-        <Route
-          path="/employee/leave-overview"
-          element={<EmployeeLeaveOverview />}
-        />
+        {/* Employee Routes - protected by EMPLOYEE role */}
+        <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
+          <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
+          <Route path="/employee/profile" element={<EmployeeProfile />} />
+          <Route path="/employee/attendance" element={<EmployeeAttendance />} />
+          <Route path="/employee/payslips" element={<EmployeePayslips />} />
+          <Route path="/employee/reports" element={<EmployeeReports />} />
+          <Route
+            path="/employee/leave-overview"
+            element={<EmployeeLeaveOverview />}
+          />
+        </Route>
       </Route>
     </Routes>
   );

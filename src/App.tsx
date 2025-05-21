@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import AppRouter from "@/routes/AppRouter";
 import { ErrorBoundary } from "@/features/error";
+import { AuthProvider } from "@/features/auth/context/AuthContext";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/custom/theme-provider";
@@ -26,8 +27,10 @@ export default function App() {
         <ThemeProvider>
           <TooltipProvider delayDuration={100}>
             <BrowserRouter>
-              <AppRouter />
-              <Toaster />
+              <AuthProvider>
+                <AppRouter />
+                <Toaster />
+              </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
         </ThemeProvider>

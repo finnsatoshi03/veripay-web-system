@@ -32,5 +32,6 @@ export const getProfile = async (id: any) => {
   } catch (error) {
     console.log(error);
     // toast (error)
+    return null
   }
 };

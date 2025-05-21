@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getProfile } from '@/services/employee/ProfileService';
-
-
+import { getAccountRequest } from '@/services/hr/EmployeeService';
 export default function LoginPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<any>(null);
@@ -9,15 +8,23 @@ export default function LoginPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await getProfile(24);
-        setData(response);
+        const data = await getAccountRequest();
+
+        if (!data){
+          console.log("no user found");
+          return;  
+        }
+        
+        setData(data);
+
       } catch (err) {
         setError(err);
       }
     };
 
     fetchProfile();
-  )}
+  }, []);
+
   return (
     <div style={{ padding: '1rem' }}>
       <h1>API Test: Profile</h1>

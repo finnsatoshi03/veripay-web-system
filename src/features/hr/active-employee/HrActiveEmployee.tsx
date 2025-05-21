@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Eye, Paperclip, Clock } from "lucide-react";
+import { Eye, Paperclip, Clock, Code2, Wallet, Handshake } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import GenericTable, { type Column } from "@/components/table/generic-table";
 import TableHeader from "@/components/table/table-header";
+import { Separator } from "@/components/ui/separator";
+import { EmpStats } from "./components/EmpStats";
+import type { JSX } from "react/jsx-runtime";
 
 // Define your employee interface
 interface Employee {
@@ -19,14 +22,6 @@ interface Employee {
 export default function HrActiveEmployee() {
   // Toggle whether to show avatar alongside name
   const [showAvatar] = useState(true);
-
-  // Status breakdown data
-  const statusData = [
-    { status: 'On time', percentage: 80, color: 'bg-blue-500' },
-    { status: 'Late', percentage: 20, color: 'bg-yellow-500' },
-    { status: 'On leave', percentage: 0, color: 'bg-gray-500' }
-  ];
-
   const stats = { totalActive: 139, notLoggedIn: 7, onLeave: 2 };
 
 
@@ -50,9 +45,9 @@ export default function HrActiveEmployee() {
       header: 'Name',
       width: '35%',
       renderCell: (item: Employee) => (
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           {showAvatar && (
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-6 h-6">
               {item.avatarUrl ? (
                 <AvatarImage src={item.avatarUrl} alt={item.name} />
               ) : (
@@ -72,15 +67,27 @@ export default function HrActiveEmployee() {
         const colors: Record<string, string> = {
           'IT': 'bg-blue-100 text-blue-800 font-bold',
           'Human Resources': 'bg-pink-100 text-pink-800 font-bold',
-          'Finance': 'bg-green-100 text-green-800 font-bold'
+          'Finance': 'bg-green-100 text-green-800 font-bold',
         };
+
+        const icons: Record<string, JSX.Element> = {
+          'IT': <Code2 size={14} className="mr-1" />,
+          'Human Resources': <Handshake size={14} className="mr-1" />,
+          'Finance': <Wallet size={14} className="mr-1" />,
+        };
+
         return (
-          <span className={`px-2 py-1 rounded-full text-xs ${colors[item.department] || 'bg-gray-100 text-gray-800'}`}>
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${colors[item.department] || 'bg-gray-100 text-gray-800'
+              }`}
+          >
+            {icons[item.department] ?? null}
             {item.department}
           </span>
         );
-      }
+      },
     },
+
     {
       key: 'timeIn',
       header: 'Time in',
@@ -136,50 +143,16 @@ export default function HrActiveEmployee() {
   );
 
   return (
-    <div className="w-full">
-      {/* Header section matching the image layout exactly */}
-      <div className="">
-        <div className="flex justify-between items-start">
-          {/* Left side - Title and Date */}
-          <TableHeader title="Active Employees" />
+    <div className="flex h-full flex-col">
 
-          {/* Right side - Stats */}
-          <div className="text-right">
-            <div className="flex space-x-12">
-              {/* Total Active */}
-              <div>
-                <p className="text-xs text-gray-500">Total Active</p>
-                <p className="text-sm font-bold">{stats.totalActive} emp.</p>
-              </div>
-
-              {/* Not Yet Logged In */}
-              <div>
-                <p className="text-xs text-gray-500">Not Yet Logged In</p>
-                <p className="text-sm font-bold">{stats.notLoggedIn} emp.</p>
-              </div>
-            </div>
-
-            {/* On Leave - positioned below */}
-            <div className="mt-4">
-              <p className="text-xs text-gray-500">On Leave</p>
-              <p className="text-sm font-bold">{stats.onLeave} emp.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Horizontal line separator */}
-        <div className="border-t border-gray-300 "></div>
-
-        {/* Status indicators in a pill/rounded box as shown in the image */}
-        <div className="inline-flex items-center bg-gray-200 px-3 py-1 rounded-full">
-          {statusData.map((item) => (
-            <div key={item.status} className="flex items-center mr-8">
-              <div className={`h-3 w-3 rounded-full ${item.color} mr-2`}></div>
-              <span className="text-sm font-medium">{item.status} {item.percentage}%</span>
-            </div>
-          ))}
+      <div className="flex items-center justify-between">
+        <div className="space-y-4">
+          <TableHeader title="Add New HR Employee" />
+          <Separator />
+          <EmpStats />
         </div>
       </div>
+
 
       {/* Using our reusable table component */}
       <GenericTable
@@ -188,8 +161,8 @@ export default function HrActiveEmployee() {
         searchPlaceholder="Search employees..."
         showActions={true}
         renderActions={renderActions}
-        initialRowsPerPage={7}
-        rowsPerPageOptions={[7, 25, 50, 100]}
+        initialRowsPerPage={9}
+        rowsPerPageOptions={[9, 25, 50, 100]}
       />
     </div>
   );

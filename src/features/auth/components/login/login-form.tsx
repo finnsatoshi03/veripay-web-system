@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -15,32 +15,47 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useLogin } from "@/features/auth/mutations/login-service";
 
 const formSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
   }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
+  password: z.string().min(3, {
+    message: "Password must be at least 3 characters.",
   }),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 export const LoginForm = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const form = useForm<z.infer<typeof formSchema>>({
+
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
+      password: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const loginMutation = useLogin();
+
+  const handleSubmit = (values: FormValues) => {
+    loginMutation.mutate(values, {
+      onSuccess: () => {
+        navigate("/dashboard");
+      },
+    });
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="w-full space-y-6"
+      >
         <FormField
           control={form.control}
           name="email"
@@ -91,8 +106,13 @@ export const LoginForm = () => {
           )}
         />
         <div>
-          <Button type="submit" variant="secondary" className="w-full">
-            Sign in
+          <Button
+            type="submit"
+            variant="secondary"
+            className="w-full"
+            disabled={loginMutation.isPending}
+          >
+            {loginMutation.isPending ? "Signing in..." : "Sign in"}
           </Button>
           <Link to="/forgot-password">
             <Button type="button" size="sm" variant="link">

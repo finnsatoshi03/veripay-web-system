@@ -1,14 +1,18 @@
 import type { NewUser, RegistrationReqeust } from "@/types/api";
 import { clearAuthToken, setAuthToken, supabase } from "./supabase";
 
+// ============================
+// Authentication Methods
+// ============================
+
 export const signInWithPassword = async (email: string, password: string) => {
   try {
-    const { data } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    console.log(data);
+    if (error) throw error;
 
     if (data.user) {
       const { user } = data;
@@ -20,28 +24,56 @@ export const signInWithPassword = async (email: string, password: string) => {
 
       return user;
     }
+
+    throw new Error("Authentication failed: No user returned");
   } catch (error) {
     console.error("Error signing in:", error);
+    throw error;
   }
 };
 
 export const signInWithGoogle = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: window.location.origin,
-      scopes: "email profile",
-    },
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+        scopes: "email profile",
+      },
+    });
 
-  if (error) {
-    console.error("Google Sign-In Error:", error.message);
+    if (error) {
+      console.error("Google Sign-In Error:", error.message);
+      throw error;
+    }
+
+    return data; // Returns { provider, url }
+  } catch (error) {
+    console.error("Google Sign-In Error:", error);
     throw error;
   }
-
-  console.log("Google OAuth URL:", data.url);
-  return data; // Returns { provider, url }
 };
+
+// Sign out
+export const signOut = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Sign-Out Error:", error.message);
+      throw error;
+    }
+
+    clearAuthToken();
+  } catch (error) {
+    console.error("Sign-Out Error:", error);
+    throw error;
+  }
+};
+
+// ============================
+// Auth State Management
+// ============================
 
 // Handle auth state changes (for OAuth token saving)
 export const setupAuthListener = () => {
@@ -67,15 +99,9 @@ export const setupAuthListener = () => {
   return () => authListener.subscription.unsubscribe();
 };
 
-// Sign out
-export const signOut = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error("Sign-Out Error:", error.message);
-    throw error;
-  }
-  clearAuthToken();
-};
+// ============================
+// Registration Management
+// ============================
 
 export const createRegistrationRequest = async (employee: NewUser) => {
   try {
@@ -88,12 +114,13 @@ export const createRegistrationRequest = async (employee: NewUser) => {
       });
 
     if (error) {
-      throw new Error(error.message);
+      throw error;
     }
 
     return data;
   } catch (error) {
     console.error("Error creating registration request:", error);
+    throw error;
   }
 };
 
@@ -115,12 +142,12 @@ export const processRegistrationRequest = async (
 
     if (error) {
       console.error("Error fetching registration request:", error);
-      return null;
+      throw error;
     }
 
     return data as RegistrationReqeust;
   } catch (error) {
     console.error("Exception in getRegistrationRequest:", error);
-    return null;
+    throw error;
   }
 };

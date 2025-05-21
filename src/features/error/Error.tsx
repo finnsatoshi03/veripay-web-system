@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -8,9 +8,9 @@ interface ErrorProps {
   action?: {
     label: string;
     onClick: () => void;
-    icon?: ReactNode;
+    icon?: React.ReactNode;
   };
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 export default function Error({

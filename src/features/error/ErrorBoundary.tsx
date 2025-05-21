@@ -1,10 +1,12 @@
-import { Component, ErrorInfo, ReactNode } from "react";
+import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import toast from "react-hot-toast";
+
 import { Button } from "@/components/ui/button";
 
 interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -12,7 +14,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export default class ErrorBoundary extends Component<
+export default class ErrorBoundary extends React.Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
@@ -31,9 +33,9 @@ export default class ErrorBoundary extends Component<
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     // You can log the error to an error reporting service here
-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+    toast.error(`Error caught by ErrorBoundary: ${error.message} ${errorInfo}`);
   }
 
   handleReset = (): void => {
@@ -44,7 +46,7 @@ export default class ErrorBoundary extends Component<
     window.location.reload();
   };
 
-  render(): ReactNode {
+  render(): React.ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -52,14 +54,14 @@ export default class ErrorBoundary extends Component<
 
       return (
         <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-6 p-4 text-center">
-          <AlertTriangle className="size-16 text-destructive" />
+          <AlertTriangle className="text-destructive size-16" />
           <div className="space-y-2">
             <h2 className="text-2xl font-bold">Something went wrong</h2>
             <p className="text-muted-foreground">
               An unexpected error has occurred
             </p>
             {this.state.error && (
-              <div className="mt-4 max-w-md overflow-auto rounded-md bg-muted p-4 text-left text-sm">
+              <div className="bg-muted mt-4 max-w-md overflow-auto rounded-md p-4 text-left text-sm">
                 <p className="font-mono">{this.state.error.toString()}</p>
               </div>
             )}

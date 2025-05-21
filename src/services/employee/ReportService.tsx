@@ -75,9 +75,14 @@ export const getReportById = async (id: number) => {
 };
 
 
-export const getAllReports = async () => {
+export const getAllReports = async (start?: string, end?: string) => {
   try {
-    const { data, error } = await supabase.from("reports").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .gte("created_at", start)
+      .lte("created_at", end); 
 
     if (error) throw new Error(error.message);
     return data;

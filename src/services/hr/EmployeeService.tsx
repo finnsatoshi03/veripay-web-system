@@ -23,6 +23,7 @@ export const getAccountRequest = async (page = 1, pageSize = 10) => {
       throw new Error(error.message);
     }
 
+
     return data;
   } catch (error) {
     console.log(error);

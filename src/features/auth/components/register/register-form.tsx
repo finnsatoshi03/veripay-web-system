@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import { useCreateRegistrationRequest } from "@/features/auth/mutations/register-service";
+
 const formSchema = z.object({
   first_name: z.string().min(1, {
     message: "First name is required.",
@@ -25,8 +27,10 @@ const formSchema = z.object({
   }),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 export const RegisterForm = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       first_name: "",
@@ -35,13 +39,21 @@ export const RegisterForm = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const registerMutation = useCreateRegistrationRequest();
+
+  const handleSubmit = (values: FormValues) => {
+    registerMutation.mutate(values);
+    if (registerMutation.isSuccess) {
+      form.reset();
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="w-full space-y-6"
+      >
         <div className="grid grid-cols-2 gap-2">
           <FormField
             control={form.control}
@@ -84,8 +96,13 @@ export const RegisterForm = () => {
           )}
         />
         <div>
-          <Button type="submit" variant="secondary" className="w-full">
-            Request Access
+          <Button
+            type="submit"
+            variant="secondary"
+            className="w-full"
+            disabled={registerMutation.isPending}
+          >
+            {registerMutation.isPending ? "Submitting..." : "Request Access"}
           </Button>
         </div>
       </form>

@@ -42,19 +42,12 @@ export const ProtectedRoute = ({
     );
   };
 
-  // Fetch user data if authenticated - only once
   useEffect(() => {
-    if (isAuthenticated && user?.id && !userLoading && !hasAttemptedFetch) {
+    if (isAuthenticated && user && !userLoading && !hasAttemptedFetch) {
       setHasAttemptedFetch(true);
-      fetchUserData(Number(user.id));
+      fetchUserData(Number(user.id), user.role);
     }
-  }, [
-    isAuthenticated,
-    user?.id,
-    userLoading,
-    fetchUserData,
-    hasAttemptedFetch,
-  ]);
+  }, [isAuthenticated, user, userLoading, hasAttemptedFetch]);
 
   // Update dialog visibility based on profile completeness
   useEffect(() => {

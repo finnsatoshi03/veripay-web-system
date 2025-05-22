@@ -1,10 +1,11 @@
+import { useEffect, useMemo, useRef } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { supabase } from "@/services/supabase";
-import { useEffect, useMemo } from "react";
+
+import { getProfile } from "@/services/employee/profile-service";
 
 export interface UserProfile {
-  id: number;
+  id?: number;
   first_name: string | null;
   last_name: string | null;
   contact_number: string | null;
@@ -14,20 +15,20 @@ export interface UserProfile {
 }
 
 export interface Department {
-  id: number;
+  id?: number;
   name: string;
   description: string | null;
 }
 
 export interface Position {
-  id: number;
+  id?: number;
   title: string;
   level: number;
   base_salary: number;
 }
 
 export interface Employee {
-  id: number;
+  id?: number;
   employee_code: string | null;
   status: string;
   date_hired: string | null;
@@ -67,98 +68,69 @@ const initialState: UserState = {
 
 export const useUserStore = create<UserState & UserActions>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
 
       setUser: (userData) => set((state) => ({ ...state, ...userData })),
 
       clearUser: () => set(initialState),
 
-      fetchUserData: async (userId, metadataRole = "") => {
+      fetchUserData: async (userId, metadataRole) => {
+        const currentState = get();
+        // Preserve current role if no new role is provided
+        const roleToUse = metadataRole || currentState.role || "";
+
+        if (
+          currentState.isLoading ||
+          (currentState.id === userId &&
+            currentState.profile &&
+            currentState.role === roleToUse)
+        ) {
+          return;
+        }
+
         set({ isLoading: true, error: null });
 
         try {
-          // Fetch basic user data
-          const { data: userData, error: userError } = await supabase
-            .from("users")
-            .select("id, email, is_active, identity_id")
-            .eq("id", userId)
-            .single();
+          // Use the profile service to fetch all user data in a single call
+          const userData = await getProfile(userId.toString());
 
-          if (userError) throw userError;
+          // Map the response to match our state structure
+          const profile: UserProfile | null = userData.user_profiles?.[0]
+            ? {
+                first_name: userData.user_profiles[0].first_name,
+                last_name: userData.user_profiles[0].last_name,
+                contact_number: userData.user_profiles[0].contact_number,
+                address: userData.user_profiles[0].address,
+                birth_date: userData.user_profiles[0].birth_date,
+                gender: userData.user_profiles[0].gender,
+              }
+            : null;
 
-          // Fetch user profile
-          const { data: profileData, error: profileError } = await supabase
-            .from("user_profiles")
-            .select(
-              "id, first_name, last_name, contact_number, address, birth_date, gender",
-            )
-            .eq("user_id", userId)
-            .single();
-
-          // It's okay if profile doesn't exist yet
-          if (profileError && profileError.code !== "PGRST116")
-            throw profileError;
-
-          // Fetch employee data if exists
-          const { data: employeeData, error: employeeError } = await supabase
-            .from("employees")
-            .select(
-              `
-              id, 
-              employee_code, 
-              status, 
-              date_hired, 
-              department_id, 
-              position_id
-            `,
-            )
-            .eq("user_id", userId)
-            .single();
-
-          // It's okay if employee record doesn't exist
-          if (employeeError && employeeError.code !== "PGRST116")
-            throw employeeError;
-
-          // If employee exists, fetch department and position details
+          // Map employee data if it exists
           let employee: Employee | null = null;
-          if (employeeData) {
-            let department: Department | null = null;
-            let position: Position | null = null;
-
-            // Fetch department if exists
-            if (employeeData.department_id) {
-              const { data: deptData, error: deptError } = await supabase
-                .from("departments")
-                .select("id, name, description")
-                .eq("id", employeeData.department_id)
-                .single();
-
-              if (!deptError) {
-                department = deptData;
-              }
-            }
-
-            // Fetch position if exists
-            if (employeeData.position_id) {
-              const { data: posData, error: posError } = await supabase
-                .from("positions")
-                .select("id, title, level, base_salary")
-                .eq("id", employeeData.position_id)
-                .single();
-
-              if (!posError) {
-                position = posData;
-              }
-            }
+          if (userData.employees?.[0]) {
+            const employeeData = userData.employees[0];
+            const departmentData = employeeData.departments?.[0];
+            const positionData = employeeData.positions?.[0];
 
             employee = {
-              id: employeeData.id,
               employee_code: employeeData.employee_code,
               status: employeeData.status,
               date_hired: employeeData.date_hired,
-              department,
-              position,
+              department: departmentData
+                ? {
+                    name: departmentData.name,
+                    description: null,
+                  }
+                : null,
+              position: positionData
+                ? {
+                    title: positionData.title,
+                    level: positionData.level,
+                    base_salary: positionData.base_salary,
+                  }
+                : null,
             };
           }
 
@@ -167,8 +139,8 @@ export const useUserStore = create<UserState & UserActions>()(
             email: userData.email,
             is_active: userData.is_active,
             identity_id: userData.identity_id,
-            role: metadataRole,
-            profile: profileData || null,
+            role: roleToUse, // Use the determined role
+            profile,
             employee,
             isLoading: false,
           });
@@ -210,6 +182,8 @@ export const useUser = () => {
     error,
   } = useUserStore();
 
+  const didFetchRef = useRef(false);
+
   // Computed properties
   const fullName = useMemo(() => {
     if (!profile) return "";
@@ -228,12 +202,16 @@ export const useUser = () => {
     return employee !== null;
   }, [employee]);
 
-  // Fetch user data if needed
   useEffect(() => {
-    // This is just for development purposes - in production
-    // the user data should be already loaded by the auth service
-    if (id && !profile && !isLoading) {
-      useUserStore.getState().fetchUserData(id);
+    if (!id || profile || isLoading || didFetchRef.current) {
+      return;
+    }
+
+    didFetchRef.current = true;
+    const isFetching = useUserStore.getState().isLoading;
+    if (!isFetching) {
+      const currentRole = useUserStore.getState().role;
+      useUserStore.getState().fetchUserData(id, currentRole);
     }
   }, [id, profile, isLoading]);
 

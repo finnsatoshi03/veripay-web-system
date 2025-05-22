@@ -1,12 +1,14 @@
 import { supabase } from "../supabase";
 
-export const getProfile = async (id: any) => {
+export const getProfile = async (id: string) => {
+  console.log("id", id);
+
   try {
     const { data, error } = await supabase
       .from("users")
       .select(
         `
-          id, email, created_at,
+          id, email, is_active, created_at, identity_id,
           employees (
             employee_code, status, date_hired,
             departments (
@@ -27,10 +29,10 @@ export const getProfile = async (id: any) => {
     if (error) {
       throw new Error(error.message);
     }
-    
+
     return data;
   } catch (error) {
-    console.log(error);
-    // toast (error)
+    console.error("Error fetching profile:", error);
+    throw error;
   }
 };

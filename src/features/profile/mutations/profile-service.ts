@@ -66,7 +66,7 @@ export const useUpdateProfile = () => {
       queryClient.invalidateQueries({ queryKey: ["userData"] });
 
       if (userId) {
-        fetchUserData(userId, role);
+        fetchUserData(userId.toString(), role);
       }
     },
   });

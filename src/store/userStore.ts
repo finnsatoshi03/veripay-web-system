@@ -51,7 +51,7 @@ export interface UserState {
 export interface UserActions {
   setUser: (user: Partial<UserState>) => void;
   clearUser: () => void;
-  fetchUserData: (userId: number, metadataRole?: string) => Promise<void>;
+  fetchUserData: (userId: string, metadataRole?: string) => Promise<void>;
 }
 
 const initialState: UserState = {
@@ -82,7 +82,7 @@ export const useUserStore = create<UserState & UserActions>()(
 
         if (
           currentState.isLoading ||
-          (currentState.id === userId &&
+          (currentState.id === Number(userId) &&
             currentState.profile &&
             currentState.role === roleToUse)
         ) {
@@ -92,46 +92,66 @@ export const useUserStore = create<UserState & UserActions>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Use the profile service to fetch all user data in a single call
           const userData = await getProfile(userId.toString());
+          console.log("API Response:", userData);
 
           // Map the response to match our state structure
-          const profile: UserProfile | null = userData.user_profiles?.[0]
-            ? {
-                first_name: userData.user_profiles[0].first_name,
-                last_name: userData.user_profiles[0].last_name,
-                contact_number: userData.user_profiles[0].contact_number,
-                address: userData.user_profiles[0].address,
-                birth_date: userData.user_profiles[0].birth_date,
-                gender: userData.user_profiles[0].gender,
-              }
-            : null;
+          let profile: UserProfile | null = null;
+          if (userData.user_profiles) {
+            // Handle both array and direct object formats
+            const profileData = Array.isArray(userData.user_profiles)
+              ? userData.user_profiles[0]
+              : userData.user_profiles;
+
+            if (profileData) {
+              profile = {
+                first_name: profileData.first_name,
+                last_name: profileData.last_name,
+                contact_number: profileData.contact_number,
+                address: profileData.address,
+                birth_date: profileData.birth_date,
+                gender: profileData.gender,
+              };
+            }
+          }
 
           // Map employee data if it exists
           let employee: Employee | null = null;
-          if (userData.employees?.[0]) {
-            const employeeData = userData.employees[0];
-            const departmentData = employeeData.departments?.[0];
-            const positionData = employeeData.positions?.[0];
+          if (userData.employees) {
+            // Handle both array and direct object formats
+            const employeeData = Array.isArray(userData.employees)
+              ? userData.employees[0]
+              : userData.employees;
 
-            employee = {
-              employee_code: employeeData.employee_code,
-              status: employeeData.status,
-              date_hired: employeeData.date_hired,
-              department: departmentData
-                ? {
-                    name: departmentData.name,
-                    description: null,
-                  }
-                : null,
-              position: positionData
-                ? {
-                    title: positionData.title,
-                    level: positionData.level,
-                    base_salary: positionData.base_salary,
-                  }
-                : null,
-            };
+            if (employeeData) {
+              const departmentData = Array.isArray(employeeData.departments)
+                ? employeeData.departments[0]
+                : employeeData.departments;
+
+              const positionData = Array.isArray(employeeData.positions)
+                ? employeeData.positions[0]
+                : employeeData.positions;
+
+              employee = {
+                id: employeeData.id,
+                employee_code: employeeData.employee_code,
+                status: employeeData.status,
+                date_hired: employeeData.date_hired,
+                department: departmentData
+                  ? {
+                      name: departmentData.name,
+                      description: null,
+                    }
+                  : null,
+                position: positionData
+                  ? {
+                      title: positionData.title,
+                      level: positionData.level,
+                      base_salary: positionData.base_salary,
+                    }
+                  : null,
+              };
+            }
           }
 
           set({
@@ -211,7 +231,7 @@ export const useUser = () => {
     const isFetching = useUserStore.getState().isLoading;
     if (!isFetching) {
       const currentRole = useUserStore.getState().role;
-      useUserStore.getState().fetchUserData(id, currentRole);
+      useUserStore.getState().fetchUserData(id.toString(), currentRole);
     }
   }, [id, profile, isLoading]);
 

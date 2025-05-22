@@ -9,9 +9,13 @@ import { mockAttendanceRecords } from "@/features/employee/_lib/mock/mock-attend
 
 import { AttendanceCalendar } from "./attendance-calendar";
 import { Link } from "react-router-dom";
+import { useUserStore } from "@/store/userStore";
 
 export const AttendanceOverview = () => {
   // Calculate statistics from mock data
+  const { employee } = useUserStore();
+  console.log(employee?.id);
+
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
   const averageCheckIn = calculateAverageCheckIn(mockAttendanceRecords);
   const mostLateCheckIn = findMostLateCheckIn(mockAttendanceRecords);

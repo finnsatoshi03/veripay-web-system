@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 
 interface ImportanceOption {
-  value: string;
+  value: "Low" | "Normal" | "High";
   label: string;
   icon: React.ReactNode;
   color: string;
@@ -18,7 +18,7 @@ interface ImportanceOption {
 
 interface ImportancePopoverProps {
   selected: string;
-  onSelect: (value: string) => void;
+  onSelect: (value: "Low" | "Normal" | "High") => void;
 }
 
 export const ImportancePopover = ({
@@ -36,8 +36,8 @@ export const ImportancePopover = ({
       description: "Minimal impact, non-urgent",
     },
     {
-      value: "Medium",
-      label: "Medium",
+      value: "Normal",
+      label: "Normal",
       icon: <CheckCircle className="size-4" />,
       color: "bg-yellow-100 text-yellow-700 border-yellow-200",
       description: "Moderate impact, needs attention",
@@ -54,7 +54,7 @@ export const ImportancePopover = ({
   const selectedImportance =
     importanceOptions.find((i) => i.value === selected) || importanceOptions[1];
 
-  const handleSelect = (value: string) => {
+  const handleSelect = (value: "Low" | "Normal" | "High") => {
     onSelect(value);
     setOpen(false);
   };

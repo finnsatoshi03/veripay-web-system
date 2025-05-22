@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useReportsByUser } from "../mutations/useReportsByUser";
 import { useUserStore } from "@/store/userStore";
 import { CreateReportForm } from "../../reports/components/create-report-form";
+import { cn } from "@/lib/utils";
 
 // types
 type Report = {
@@ -35,9 +36,18 @@ const ReportCard = ({ report }: ReportCardProps) => {
     ? format(new Date(submitted_at), "MMMM d")
     : "Date not available";
 
+  const categoryColor = (status: string) => {
+    if (status === "In Progress") return "bg-primary";
+    if (status === "To Review") return "bg-secondary";
+    if (status === "Resolved") return "bg-green-500";
+    if (status === "Rejected") return "bg-red-500";
+  };
+
   return (
     <div>
-      <Badge variant="secondary">{status}</Badge>
+      <Badge className={cn(categoryColor(status), "text-white")}>
+        {status}
+      </Badge>
       <h1 className="text-xl font-semibold">{description}</h1>
       <div className="flex justify-between">
         <div className="flex items-center gap-1">

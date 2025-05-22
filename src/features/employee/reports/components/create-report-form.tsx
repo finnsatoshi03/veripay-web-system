@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,19 +17,21 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { CategoryPopover } from "./category-popover";
 import { ImportancePopover } from "./importance-popover";
+import { useCreateReport } from "../mutation/useCreateReport";
+import { useUserStore } from "@/store/userStore";
 
 // Form schema using Zod
 const formSchema = z.object({
   title: z.string().min(3, {
     message: "Title must be at least 3 characters.",
   }),
-  category: z.string({
+  category: z.enum(["Attendance", "Payroll"], {
     required_error: "Please select a category.",
   }),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  importance: z.enum(["Low", "Medium", "High"], {
+  importance: z.enum(["Low", "Normal", "High"], {
     required_error: "Please select the importance level.",
   }),
 });
@@ -45,33 +47,47 @@ export const CreateReportForm = ({
   open,
   onOpenChange,
 }: CreateReportFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { id: userId } = useUserStore();
+  const { mutateAsync: createReportMutation, isPending } = useCreateReport();
 
   // Initialize the form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      category: "",
+      category: "Payroll",
       description: "",
-      importance: "Medium",
+      importance: "Normal",
     },
   });
 
   const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
+    if (!userId) {
+      toast.error("User ID not found. Please try again later.");
+      return;
+    }
 
     try {
-      // For now, just log the values
-      console.log("Submitted values:", values);
+      const currentDate = new Date().toISOString();
 
-      // Close the dialog after successful submission
+      await createReportMutation({
+        title: values.title,
+        category: values.category,
+        description: values.description,
+        flag_level: values.importance,
+        status: "To Review", // Default status for new reports
+        submitted_by: userId,
+        submitted_at: currentDate,
+        assigned_to: null,
+      });
+
+      toast.success("Report submitted successfully.");
+
       onOpenChange(false);
       form.reset();
     } catch (error) {
       console.error("Error submitting form:", error);
-    } finally {
-      setIsSubmitting(false);
+      toast.error("Failed to submit report. Please try again.");
     }
   };
 
@@ -174,8 +190,8 @@ export const CreateReportForm = ({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Submit Report"}
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "Submitting..." : "Submit Report"}
                 </Button>
               </div>
             </form>

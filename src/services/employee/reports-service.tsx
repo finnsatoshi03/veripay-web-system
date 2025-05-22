@@ -4,6 +4,7 @@ type Report = {
   id: number;
   category: "Attendance" | "Payroll";
   status: "In Progress" | "To Review" | "Resolved" | "Rejected";
+  title: string;
   assigned_to: number | null;
   submitted_by: number;
   submitted_at: string;
@@ -77,6 +78,7 @@ export const getReportByUser = async (userId: number) => {
     return [];
   }
 };
+
 export const getReportById = async (id: number) => {
   try {
     const { data, error } = await supabase

@@ -137,17 +137,3 @@ export const isLateCheckIn = (timeIn: string): boolean => {
 
   return timeTotalMinutes > configTotalMinutes;
 };
-
-/**
- * Check if an attendance record is an early departure based on config
- */
-export const isEarlyDeparture = (timeOut: string): boolean => {
-  const configTime = attendance_config.time_out;
-  const [configHours, configMinutes] = configTime.split(":").map(Number);
-  const configTotalMinutes = configHours * 60 + configMinutes;
-
-  const [hours, minutes] = timeOut.split(":").map(Number);
-  const timeTotalMinutes = hours * 60 + minutes;
-
-  return timeTotalMinutes < configTotalMinutes;
-};

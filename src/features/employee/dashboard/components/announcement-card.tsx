@@ -10,7 +10,8 @@ export interface AnnouncementCardProps {
   date: string;
   title: string;
   author: string;
-  department: string;
+  author_avatar?: string;
+  author_name: string;
   content: string;
 }
 
@@ -19,7 +20,8 @@ export const AnnouncementCard = ({
   date,
   title,
   author,
-  department,
+  author_avatar,
+  author_name,
   content,
 }: AnnouncementCardProps) => {
   return (
@@ -33,12 +35,12 @@ export const AnnouncementCard = ({
       <h3 className="text-4xl font-semibold">{title}</h3>
       <div className="flex items-center gap-2">
         <Avatar className="size-6 rounded-md">
-          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarImage src={author_avatar} />
           <AvatarFallback className="rounded-md">
             {formatInitials(author)}
           </AvatarFallback>
         </Avatar>
-        <p className="text-muted-foreground text-sm">{department}</p>
+        <p className="text-muted-foreground text-sm">{author_name}</p>
       </div>
       <p className="text-muted-foreground text-sm">{content}</p>
     </div>

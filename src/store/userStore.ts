@@ -93,7 +93,6 @@ export const useUserStore = create<UserState & UserActions>()(
 
         try {
           const userData = await getProfile(userId.toString());
-          console.log("API Response:", userData);
 
           // Map the response to match our state structure
           let profile: UserProfile | null = null;

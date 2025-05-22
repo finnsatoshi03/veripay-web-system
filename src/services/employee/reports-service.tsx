@@ -12,7 +12,9 @@ type Report = {
   created_at: string;
 };
 
-export const createReport = async (report: Omit<Report, "id" | "created_at">) => {
+export const createReport = async (
+  report: Omit<Report, "id" | "created_at">,
+) => {
   try {
     const { data, error } = await supabase
       .from("reports")
@@ -28,7 +30,10 @@ export const createReport = async (report: Omit<Report, "id" | "created_at">) =>
   }
 };
 
-export const editReport = async (id: number, updates: Partial<Omit<Report, "id" | "created_at">>) => {
+export const editReport = async (
+  id: number,
+  updates: Partial<Omit<Report, "id" | "created_at">>,
+) => {
   try {
     const { data, error } = await supabase
       .from("reports")
@@ -45,7 +50,6 @@ export const editReport = async (id: number, updates: Partial<Omit<Report, "id" 
   }
 };
 
-
 export const deleteReport = async (id: number) => {
   try {
     const { error } = await supabase.from("reports").delete().eq("id", id);
@@ -57,7 +61,22 @@ export const deleteReport = async (id: number) => {
   }
 };
 
+export const getReportByUser = async (userId: number) => {
+  try {
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*, submitted_by(user_profiles(first_name, last_name))")
+      .eq("submitted_by", userId)
+      .order("created_at", { ascending: false });
 
+    if (error) throw new Error(error.message);
+
+    return data;
+  } catch (error) {
+    console.error("Get Report By User Error:", error);
+    return [];
+  }
+};
 export const getReportById = async (id: number) => {
   try {
     const { data, error } = await supabase
@@ -74,7 +93,6 @@ export const getReportById = async (id: number) => {
   }
 };
 
-
 export const getAllReports = async (start?: string, end?: string) => {
   try {
     const { data, error } = await supabase
@@ -82,7 +100,7 @@ export const getAllReports = async (start?: string, end?: string) => {
       .select("*")
       .order("created_at", { ascending: false })
       .gte("created_at", start)
-      .lte("created_at", end); 
+      .lte("created_at", end);
 
     if (error) throw new Error(error.message);
     return data;

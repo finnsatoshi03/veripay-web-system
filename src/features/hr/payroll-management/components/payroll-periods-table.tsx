@@ -1,0 +1,151 @@
+import { CheckCircle2, Clock, Loader2 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { PayrollActions } from "./payroll-actions";
+import type { PayrollPeriod } from "../lib/data";
+
+interface PayrollPeriodsTableProps {
+  payrolls: PayrollPeriod[];
+  visibleColumns?: string[];
+}
+
+export const PAYROLL_TABLE_COLUMNS = [
+  { id: "period", label: "Period" },
+  { id: "status", label: "Status" },
+  { id: "employeeCount", label: "# of Employees" },
+  { id: "totalGross", label: "Total Gross" },
+  { id: "totalDeductions", label: "Total Deductions" },
+  { id: "totalNet", label: "Total Net" },
+  { id: "actions", label: "Actions" },
+];
+
+export const PayrollPeriodsTable = ({
+  payrolls,
+  visibleColumns = ["period", "status", "employeeCount", "totalGross", "totalDeductions", "totalNet", "actions"],
+}: PayrollPeriodsTableProps) => {
+  // Filter columns by visibility
+  const columns = PAYROLL_TABLE_COLUMNS.filter((col) =>
+    visibleColumns.includes(col.id),
+  );
+
+  const getColSpan = () => visibleColumns.length || 1;
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "processed":
+        return (
+          <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+            <CheckCircle2 className="size-3 mr-1" />
+            Processed
+          </Badge>
+        );
+      case "processing":
+        return (
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+            <Loader2 className="size-3 mr-1 animate-spin" />
+            Processing
+          </Badge>
+        );
+      case "scheduled":
+        return (
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+            <Clock className="size-3 mr-1" />
+            Scheduled
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline">
+            {status}
+          </Badge>
+        );
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    if (amount === 0) return "--";
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const formatEmployeeCount = (count: number) => {
+    if (count === 0) return "--";
+    return count.toString();
+  };
+
+  return (
+    <Table>
+      <TableHeader className="sticky top-0 bg-zinc-200">
+        <TableRow>
+          {columns.map((column) => (
+            <TableHead
+              key={column.id}
+              className={`font-medium ${column.id === "actions" ? "w-[100px]" : ""}`}
+            >
+              {column.label}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {payrolls.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={getColSpan()} className="h-24 text-center">
+              No payroll periods found.
+            </TableCell>
+          </TableRow>
+        ) : (
+          payrolls.map((payroll) => (
+            <TableRow key={payroll.id} className="hover:bg-muted/50">
+              {visibleColumns.includes("period") && (
+                <TableCell className="font-medium">
+                  {payroll.period}
+                </TableCell>
+              )}
+              {visibleColumns.includes("status") && (
+                <TableCell>
+                  {getStatusBadge(payroll.status)}
+                </TableCell>
+              )}
+              {visibleColumns.includes("employeeCount") && (
+                <TableCell className="">
+                  {formatEmployeeCount(payroll.employeeCount)}
+                </TableCell>
+              )}
+              {visibleColumns.includes("totalGross") && (
+                <TableCell className="font-mono">
+                  {formatCurrency(payroll.totalGross)}
+                </TableCell>
+              )}
+              {visibleColumns.includes("totalDeductions") && (
+                <TableCell className="font-mono">
+                  {formatCurrency(payroll.totalDeductions)}
+                </TableCell>
+              )}
+              {visibleColumns.includes("totalNet") && (
+                <TableCell className="font-mono font-semibold">
+                  {formatCurrency(payroll.totalNet)}
+                </TableCell>
+              )}
+              {visibleColumns.includes("actions") && (
+                <TableCell>
+                  <PayrollActions payroll={payroll} />
+                </TableCell>
+              )}
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  );
+};

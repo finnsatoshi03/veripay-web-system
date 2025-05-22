@@ -113,7 +113,7 @@ export default function HrReports() {
             </div>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
   );
 }

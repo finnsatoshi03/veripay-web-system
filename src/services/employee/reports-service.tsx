@@ -66,7 +66,9 @@ export const getReportByUser = async (userId: number) => {
   try {
     const { data, error } = await supabase
       .from("reports")
-      .select("*, submitted_by(user_profiles(first_name, last_name))")
+      .select(
+        "*, submitted_by(user_profiles(first_name, last_name)), assigned_to(user_profiles(first_name, last_name))",
+      )
       .eq("submitted_by", userId)
       .order("created_at", { ascending: false });
 

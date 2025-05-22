@@ -7,27 +7,50 @@ import {
 
 import { formatInitials } from "@/lib/helpers/formatters";
 import { cn } from "@/lib/utils";
+import { useHrEmployees } from "../_mutations/useHrEmployees";
 
 interface ReviewerDisplayProps {
-  reviewers: {
+  reviewers?: {
     name: string;
     image?: string;
   }[];
   description?: string;
+  useHrData?: boolean;
 }
 
 export const ReviewerDisplay = ({
-  reviewers,
+  reviewers: propReviewers,
   description,
+  useHrData = true,
 }: ReviewerDisplayProps) => {
+  const { data: hrEmployees, isLoading } = useHrEmployees({
+    enabled: useHrData,
+  });
+
+  const reviewers =
+    useHrData && hrEmployees
+      ? hrEmployees.map((employee) => ({
+          name: `${employee.user_id.user_profiles.first_name} ${employee.user_id.user_profiles.last_name}`,
+          image: employee.image_url,
+        }))
+      : propReviewers || [];
+
+  if (useHrData && isLoading) {
+    return (
+      <div className="flex justify-end space-x-2 py-2">
+        <div className="bg-muted h-9 w-9 animate-pulse rounded-lg"></div>
+        <div className="bg-muted h-9 w-9 animate-pulse rounded-lg"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-1">
       <div className="relative flex justify-end">
         {reviewers.slice(0, 4).map((reviewer, index) => (
-          <Tooltip>
+          <Tooltip key={reviewer.name}>
             <TooltipTrigger asChild>
               <Avatar
-                key={reviewer.name}
                 className={cn(
                   "border-background relative -ml-1.5 size-9 rounded-lg border-2 first:ml-0",
                 )}
@@ -36,7 +59,9 @@ export const ReviewerDisplay = ({
                 }}
               >
                 <AvatarImage src={reviewer.image} alt={reviewer.name} />
-                <AvatarFallback>{formatInitials(reviewer.name)}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {formatInitials(reviewer.name)}
+                </AvatarFallback>
               </Avatar>
             </TooltipTrigger>
             <TooltipContent>{reviewer.name}</TooltipContent>

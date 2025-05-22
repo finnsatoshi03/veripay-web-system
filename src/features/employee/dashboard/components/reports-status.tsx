@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useReportsByUser } from "../mutations/useReportsByUser";
+import { useReportsByUser } from "../../_mutations/useReportsByUser";
 import { useUserStore } from "@/store/userStore";
 import { CreateReportForm } from "../../reports/components/create-report-form";
 import { cn } from "@/lib/utils";

@@ -461,3 +461,48 @@ export const getAttendanceSummary =
       throw error;
     }
   };
+
+export interface Report {
+  id: string;
+  category: string;
+  status: "To Review" | "In Progress" | "Resolved" | "Rejected";
+  assigned_to: {
+    id: number;
+    user_profiles: {
+      first_name: string;
+      last_name: string;
+      profile_image?: string;
+    };
+  };
+  submitted_at: string;
+  submitted_by: {
+    id: number;
+    user_profiles: {
+      first_name: string;
+      last_name: string;
+      profile_image?: string;
+    };
+  };
+  flag_level: "Low" | "Normal" | "High";
+  title: string;
+  description: string;
+  created_at: string;
+}
+
+export const getReportsToReview = async (): Promise<Report[]> => {
+  try {
+    const { data: reports, error: reportsError } = await supabase
+      .from("reports")
+      .select(
+        "*, assigned_to(id, user_profiles(first_name, last_name, profile_image)), submitted_by(id, user_profiles(first_name, last_name, profile_image))",
+      )
+      .in("status", ["To Review", "In Progress"]);
+
+    if (reportsError) throw reportsError;
+
+    return reports || [];
+  } catch (error) {
+    console.error("Error fetching reports to review:", error);
+    throw error;
+  }
+};

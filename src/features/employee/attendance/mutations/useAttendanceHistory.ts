@@ -49,6 +49,15 @@ const transformAttendanceData = (
   }));
 };
 
+// Calculate actual attendance excluding absent records
+const calculateActualAttendance = (
+  records: AttendanceHistoryResponse["attendanceRecords"],
+) => {
+  return records.filter((record) => {
+    return record.status === "on leave" || record.time_in || record.time_out;
+  }).length;
+};
+
 // Summary data interface for the attendance stats
 export interface AttendanceSummaryData {
   totalAttendance: string;
@@ -101,8 +110,13 @@ export const useAttendanceHistory = () => {
 
       const attendanceRecords = transformAttendanceData(data, employeeId);
 
+      // Calculate actual attendance excluding absent records
+      const actualAttendance = calculateActualAttendance(
+        data.attendanceRecords,
+      );
+
       const summaryData: AttendanceSummaryData = {
-        totalAttendance: `${data.totalAttendance} days`,
+        totalAttendance: `${actualAttendance} days`,
         totalHours: `${data.totalHours} hours`,
         averageCheckIn: data.averageCheckIn || "N/A",
         averageCheckOut: data.averageCheckOut || "N/A",

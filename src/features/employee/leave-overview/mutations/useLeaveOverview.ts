@@ -11,6 +11,7 @@ import { useUser } from "@/store/userStore";
 
 import type { LeaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
 import type { LeaveRequestCardProps } from "../components/leave-request-card";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 // Enhanced interface for leave request with calculated days
 export interface EnhancedLeaveRequest extends LeaveRequest {
@@ -147,7 +148,7 @@ export const useLeaveOverview = () => {
   const employeeId = employee?.id;
 
   return useQuery({
-    queryKey: ["leaveOverview", employeeId],
+    queryKey: [queryKeys.OVERVIEW.leaveOverview, employeeId],
     queryFn: async (): Promise<LeaveAllowanceData> => {
       if (!employeeId) {
         throw new Error("Employee ID is required");

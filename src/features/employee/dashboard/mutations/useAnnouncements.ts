@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAnnouncements } from "@/services/employee/dashboard-service";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 export type Announcement = {
   id: number;
@@ -32,7 +33,7 @@ export type AnnouncementsResult = {
  */
 export const useAnnouncements = (role: string, page = 0, pageSize = 10) => {
   return useQuery({
-    queryKey: ["announcements", role, page, pageSize],
+    queryKey: [queryKeys.ANNOUNCEMENTS, role, page, pageSize],
     queryFn: async (): Promise<AnnouncementsResult> => {
       const result = await getAnnouncements(role, page, pageSize);
 

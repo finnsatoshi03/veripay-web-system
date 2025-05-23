@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/services/supabase";
 import { useUser, useUserStore } from "@/store/userStore";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 export type EditProfileParams = {
   profile: {
@@ -76,7 +77,7 @@ export const useEditProfile = () => {
 
     onSuccess: () => {
       toast.success("Profile updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["userData"] });
+      queryClient.invalidateQueries({ queryKey: [queryKeys.USER_DATA] });
 
       if (identity_id) {
         fetchUserData(identity_id.toString(), role, true);

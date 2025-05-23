@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/lib/supabase";
 import toast from "react-hot-toast";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 interface AssignDepartmentParams {
   employeeId: number;
@@ -30,7 +31,7 @@ export const useAssignDepartment = () => {
     onSuccess: () => {
       toast.success("Employee successfully assigned to department!");
       queryClient.invalidateQueries({
-        queryKey: ["employees"],
+        queryKey: [queryKeys.EMPLOYEES.employees],
       });
     },
     onError: (error: Error) => {

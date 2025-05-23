@@ -3,6 +3,7 @@ import {
   getEmployeeSummary,
   type EmployeeSummaryData,
 } from "@/services/hr/dashboard-service";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 /**
  * Custom hook to fetch employee summary data including total counts,
@@ -13,7 +14,7 @@ import {
  */
 export const useEmployeeSummary = () => {
   return useQuery({
-    queryKey: ["employeeSummary"],
+    queryKey: [queryKeys.SUMMARY.employeeSummary],
     queryFn: getEmployeeSummary,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,

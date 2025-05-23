@@ -7,6 +7,7 @@ import {
   findMostLateCheckIn,
   calculateAttendanceStreak,
 } from "../lib/helpers/attendance";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 // Define the type for the data returned from the API
 type ApiAttendanceRecord = {
@@ -34,7 +35,7 @@ export const useAttendanceOverview = (employeeId: number | undefined) => {
   const currentMonth = format(new Date(), "yyyy-MM");
 
   return useQuery({
-    queryKey: ["attendanceOverview", employeeId, currentMonth],
+    queryKey: [queryKeys.OVERVIEW.attendanceOverview, employeeId, currentMonth],
     queryFn: async (): Promise<AttendanceOverviewData | null> => {
       if (!employeeId) return null;
 

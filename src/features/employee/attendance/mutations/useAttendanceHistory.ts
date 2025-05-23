@@ -6,6 +6,7 @@ import { useUser } from "@/store/userStore";
 import { useDateRangeStore } from "@/store/dateRangeStore";
 
 import type { Attendance_record } from "@/lib/types";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 // Types based on the API response from getAttendanceHistory
 export interface AttendanceHistoryResponse {
@@ -82,7 +83,7 @@ export const useAttendanceHistory = () => {
   const endDate = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : null;
 
   return useQuery({
-    queryKey: ["attendanceHistory", employeeId, startDate, endDate],
+    queryKey: [queryKeys.ATTENDANCE_HISTORY, employeeId, startDate, endDate],
     queryFn: async () => {
       if (!employeeId || !startDate || !endDate) {
         throw new Error("Missing required parameters for attendance history");

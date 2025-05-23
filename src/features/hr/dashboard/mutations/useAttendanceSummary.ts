@@ -3,6 +3,7 @@ import {
   getAttendanceSummary,
   type AttendanceSummaryData,
 } from "@/services/hr/dashboard-service";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 /**
  * Custom hook to fetch attendance summary data including today's attendance,
@@ -12,7 +13,7 @@ import {
  */
 export const useAttendanceSummary = () => {
   return useQuery({
-    queryKey: ["attendanceSummary"],
+    queryKey: [queryKeys.SUMMARY.attendanceSummary],
     queryFn: getAttendanceSummary,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,

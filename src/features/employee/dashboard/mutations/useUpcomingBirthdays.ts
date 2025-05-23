@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUpcomingBirthdays } from "@/services/employee/dashboard-service";
 import { format } from "date-fns";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 export type UserProfile = {
   id: number;
@@ -22,7 +23,7 @@ export type BirthdaysResult = {
  */
 export const useUpcomingBirthdays = (page = 0, pageSize = 10) => {
   return useQuery({
-    queryKey: ["upcomingBirthdays", page, pageSize],
+    queryKey: [queryKeys.EMPLOYEES.upcomingBirthdays, page, pageSize],
     queryFn: async (): Promise<BirthdaysResult> => {
       const result = await getUpcomingBirthdays(page, pageSize);
 

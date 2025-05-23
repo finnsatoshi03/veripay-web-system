@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createReport } from "@/services/employee/reports-service";
+import { queryKeys } from "@/lib/configs/query-keys";
 
 type CreateReportParams = {
   category: "Attendance" | "Payroll";
@@ -19,7 +20,7 @@ export const useCreateReport = () => {
     mutationFn: (data: CreateReportParams) => createReport(data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["reports", data.submitted_by],
+        queryKey: [queryKeys.REPORTS, data.submitted_by],
       });
     },
   });

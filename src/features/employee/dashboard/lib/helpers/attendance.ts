@@ -63,6 +63,10 @@ export const findMostLateCheckIn = (records: Attendance_record[]): string => {
 export const calculateAttendanceStreak = (
   records: Attendance_record[],
 ): { count: number; emoji: string } => {
+  if (records.length === 0) {
+    return { count: 0, emoji: "🙂" };
+  }
+
   // Sort records by date in ascending order
   const sortedRecords = [...records].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -70,7 +74,7 @@ export const calculateAttendanceStreak = (
 
   let currentStreak = 0;
   let maxStreak = 0;
-  let previousDate: Date | null = null;
+  let lastPresentDate: Date | null = null;
 
   for (const record of sortedRecords) {
     const currentDate = new Date(record.date);
@@ -79,11 +83,20 @@ export const calculateAttendanceStreak = (
     const dayOfWeek = currentDate.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) continue;
 
-    // Check if present
-    if (record.status === "present") {
-      // Check if this is the next day after previous present day
-      if (previousDate) {
-        const expectedNextDate = new Date(previousDate);
+    // Check if present (including late arrivals)
+    // Count as present if: has time_in OR status is "present" OR status is "on-leave"
+    const isPresent =
+      record.time_in ||
+      record.status === "present" ||
+      record.status === "on-leave";
+
+    if (isPresent) {
+      if (lastPresentDate === null) {
+        // First present day
+        currentStreak = 1;
+      } else {
+        // Check if this is the next consecutive workday
+        const expectedNextDate = new Date(lastPresentDate);
         expectedNextDate.setDate(expectedNextDate.getDate() + 1);
 
         // Skip weekends when calculating next expected date
@@ -95,31 +108,52 @@ export const calculateAttendanceStreak = (
         }
 
         if (currentDate.toDateString() === expectedNextDate.toDateString()) {
+          // Consecutive day - increment streak
           currentStreak++;
         } else {
-          // Streak broken
-          currentStreak = 1;
+          // Gap found - check if there are missing workdays between lastPresentDate and currentDate
+          const daysDiff = Math.floor(
+            (currentDate.getTime() - lastPresentDate.getTime()) /
+              (1000 * 60 * 60 * 24),
+          );
+
+          // Count only workdays in between
+          let workdaysBetween = 0;
+          for (let i = 1; i < daysDiff; i++) {
+            const checkDate = new Date(lastPresentDate);
+            checkDate.setDate(checkDate.getDate() + i);
+            const checkDay = checkDate.getDay();
+            if (checkDay !== 0 && checkDay !== 6) {
+              workdaysBetween++;
+            }
+          }
+
+          if (workdaysBetween === 0) {
+            // No workdays missed (e.g., over weekend) - continue streak
+            currentStreak++;
+          } else {
+            // Workdays were missed - reset streak
+            currentStreak = 1;
+          }
         }
-      } else {
-        currentStreak = 1;
       }
 
-      previousDate = currentDate;
+      lastPresentDate = currentDate;
       maxStreak = Math.max(maxStreak, currentStreak);
     } else {
-      // Streak broken for absences or undefined status
+      // Absent - reset streak
       currentStreak = 0;
-      previousDate = null;
+      lastPresentDate = null;
     }
   }
 
   // Determine emoji based on streak threshold
-  let emoji = "🔥";
+  let emoji = "🙂";
   if (maxStreak >= 20) emoji = "💯";
   else if (maxStreak >= 15) emoji = "⚡";
   else if (maxStreak >= 10) emoji = "🔥";
   else if (maxStreak >= 5) emoji = "✨";
-  else emoji = "🙂";
+  else if (maxStreak >= 1) emoji = "🙂";
 
   return { count: maxStreak, emoji };
 };

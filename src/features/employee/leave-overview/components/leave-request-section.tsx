@@ -8,7 +8,7 @@ import { LeaveRequestCard } from "./leave-request-card";
 import { LeaveRequestDialog } from "./leave-request-dialog";
 import { CreateLeaveRequestForm } from "./create-leave-request-form";
 
-import { KanbanBoard } from "../../_components/kanban";
+import { KanbanBoard } from "@/components/custom/kanban/board";
 import type { LeaveRequestCardProps } from "./leave-request-card";
 import type { LeaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
 

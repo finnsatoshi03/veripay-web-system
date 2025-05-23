@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface KanbanItemProps {
@@ -12,8 +14,10 @@ export interface KanbanColumnProps<T extends KanbanItemProps> {
   icon: ReactNode;
   renderItem: (item: T, onClick: () => void) => ReactNode;
   onItemClick: (item: T) => void;
+  onItemDrop?: (itemId: string, fromColumn: string, toColumn: string) => void;
   emptyStateText?: string;
   emptyStateSubText?: string;
+  columnId: string;
 }
 
 export const KanbanColumn = <T extends KanbanItemProps>({
@@ -22,11 +26,34 @@ export const KanbanColumn = <T extends KanbanItemProps>({
   icon,
   renderItem,
   onItemClick,
+  onItemDrop,
   emptyStateText = "No items",
   emptyStateSubText,
+  columnId,
 }: KanbanColumnProps<T>) => {
+  const columnRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = columnRef.current;
+    if (!element || !onItemDrop) return;
+
+    return dropTargetForElements({
+      element,
+      getData: () => ({ columnId }),
+      onDrop: ({ source }) => {
+        const sourceData = source.data;
+        const itemId = sourceData.itemId as string;
+        const fromColumn = sourceData.columnId as string;
+
+        if (fromColumn !== columnId && itemId) {
+          onItemDrop(itemId, fromColumn, columnId);
+        }
+      },
+    });
+  }, [columnId, onItemDrop]);
+
   return (
-    <div className="flex w-full flex-col rounded-lg border-2">
+    <div ref={columnRef} className="flex w-full flex-col rounded-lg border-2">
       <div className="bg-border flex items-center gap-2 rounded-t-md border-b p-2 font-medium">
         {icon}
         {title}

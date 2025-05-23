@@ -1,7 +1,7 @@
 import { AlertCircle, Calendar, Clock, Clipboard } from "lucide-react";
 
-import { KanbanBoard } from "../../_components/kanban";
-import type { KanbanItemProps } from "../../_components/kanban/column";
+import { KanbanBoard } from "@/components/custom/kanban/board";
+import type { KanbanItemProps } from "@/components/custom/kanban/column";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { ReportCard } from "./reports-card";

@@ -45,3 +45,28 @@ export interface Position {
   base_salary: number;
   department_id: number;
 }
+
+export interface Report {
+  id: number;
+  category: string;
+  status: "In Progress" | "To Review" | "Resolved" | "Rejected";
+  title: string;
+  description: string;
+  assigned_to: {
+    id: number;
+    user_profiles: {
+      first_name: string;
+      last_name: string;
+    };
+  } | null;
+  submitted_by: {
+    id: number;
+    user_profiles: {
+      first_name: string;
+      last_name: string;
+    };
+  };
+  submitted_at: string;
+  flag_level: "Low" | "Normal" | "High";
+  created_at: string;
+}

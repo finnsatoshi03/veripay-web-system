@@ -17,7 +17,11 @@ export const useCreateReport = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateReportParams) => createReport(data),
+    mutationFn: (data: CreateReportParams) => {
+      return createReport(
+        data as unknown as Parameters<typeof createReport>[0],
+      );
+    },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: [queryKeys.REPORTS, data.submitted_by],

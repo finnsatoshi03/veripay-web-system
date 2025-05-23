@@ -1,17 +1,5 @@
 import supabase from "@/lib/supabase";
-
-type Report = {
-  id: number;
-  category: "Attendance" | "Payroll";
-  status: "In Progress" | "To Review" | "Resolved" | "Rejected";
-  title: string;
-  assigned_to: number | null;
-  submitted_by: number;
-  submitted_at: string;
-  description: string;
-  flag_level: "Low" | "Normal" | "High";
-  created_at: string;
-};
+import type { Report } from "@/features/hr/_lib/types";
 
 export const createReport = async (
   report: Omit<Report, "id" | "created_at">,
@@ -97,16 +85,17 @@ export const getReportById = async (id: number) => {
   }
 };
 
-export const getAllReports = async (start?: string, end?: string) => {
+export const getAllReports = async (): Promise<Report[]> => {
   try {
     const { data, error } = await supabase
       .from("reports")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .gte("created_at", start)
-      .lte("created_at", end);
+      .select(
+        "*, submitted_by(user_profiles(first_name, last_name)), assigned_to(user_profiles(first_name, last_name))",
+      )
+      .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
+
     return data;
   } catch (error) {
     console.error("Get All Reports Error:", error);

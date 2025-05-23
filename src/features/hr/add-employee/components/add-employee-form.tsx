@@ -24,7 +24,7 @@ import {
 import {
   useDepartments,
   usePositions,
-} from "@/features/hr/_mutations/department-and-positions-queries";
+} from "@/features/hr/_mutations/useDeptAndPositions";
 
 const formSchema = z.object({
   firstName: z.string().min(2, {

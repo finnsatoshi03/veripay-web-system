@@ -156,7 +156,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setActiveRole(role);
   }, [role]);
 
-  const isHRUser = true;
+  const isHRUser = role === "HR";
 
   const handleRoleChange = (role: Role) => {
     setActiveRole(role);

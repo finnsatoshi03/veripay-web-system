@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { supabase } from "@/services/supabase";
+import toast from "react-hot-toast";
 
 type AuthUser = {
   id: string;
@@ -13,14 +14,16 @@ interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isSigningOut: boolean;
 
   // Actions
   setUser: (user: AuthUser | null) => void;
   setLoading: (isLoading: boolean) => void;
+  setSigningOut: (isSigningOut: boolean) => void;
 
   // Auth operations
   checkSession: () => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ success: boolean; error?: string }>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,6 +33,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: true,
+      isSigningOut: false,
 
       // Actions
       setUser: (user) =>
@@ -39,6 +43,8 @@ export const useAuthStore = create<AuthState>()(
         }),
 
       setLoading: (isLoading) => set({ isLoading }),
+
+      setSigningOut: (isSigningOut) => set({ isSigningOut }),
 
       // Auth operations
       checkSession: async () => {
@@ -71,13 +77,32 @@ export const useAuthStore = create<AuthState>()(
 
       signOut: async () => {
         try {
-          set({ isLoading: true });
-          await supabase.auth.signOut();
-          set({ user: null, isAuthenticated: false });
+          set({ isSigningOut: true });
+
+          const { error } = await supabase.auth.signOut();
+
+          if (error) {
+            toast.error(`Supabase sign out error: ${error.message}`);
+            return { success: false, error: error.message };
+          }
+
+          set({
+            user: null,
+            isAuthenticated: false,
+            isSigningOut: false,
+          });
+
+          return { success: true };
         } catch (error) {
-          console.error("Error signing out:", error);
-        } finally {
-          set({ isLoading: false });
+          toast.error(`Unexpected error during sign out: ${error}`);
+          set({ isSigningOut: false });
+          return {
+            success: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : "An unexpected error occurred",
+          };
         }
       },
     }),
@@ -94,7 +119,7 @@ export const useAuthStore = create<AuthState>()(
 
 // Setup auth listener
 export const setupAuthListener = () => {
-  const { setUser } = useAuthStore.getState();
+  const { setUser, setSigningOut } = useAuthStore.getState();
 
   const { data: authListener } = supabase.auth.onAuthStateChange(
     (event, session) => {
@@ -107,8 +132,10 @@ export const setupAuthListener = () => {
           email: userData.email || "",
           role: userRole,
         });
+        setSigningOut(false); // Ensure signing out state is cleared
       } else if (event === "SIGNED_OUT") {
         setUser(null);
+        setSigningOut(false); // Ensure signing out state is cleared
       }
     },
   );

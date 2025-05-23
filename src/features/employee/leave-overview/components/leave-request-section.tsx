@@ -64,16 +64,19 @@ export const LeaveRequestSection = ({
 
   const columns = [
     {
+      id: "pending",
       title: "Pending",
       icon: <Clock className="size-4" />,
       items: leaveRequests?.pending || [],
     },
     {
+      id: "approved",
       title: "Approved",
       icon: <CheckCircle className="size-4" />,
       items: leaveRequests?.approved || [],
     },
     {
+      id: "rejected",
       title: "Rejected",
       icon: <XCircle className="size-4" />,
       items: leaveRequests?.rejected || [],

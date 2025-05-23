@@ -79,21 +79,25 @@ export const ReportsBoard = () => {
 
   const columns = [
     {
+      id: "in-progress",
       title: "In Progress",
       icon: <Clock className="size-4" />,
       items: inProgressItems,
     },
     {
+      id: "to-review",
       title: "To Review",
       icon: <Clipboard className="size-4" />,
       items: toReviewItems,
     },
     {
+      id: "resolved",
       title: "Resolved",
       icon: <Calendar className="size-4" />,
       items: resolvedItems,
     },
     {
+      id: "rejected",
       title: "Rejected",
       icon: <AlertCircle className="size-4" />,
       items: rejectedItems,

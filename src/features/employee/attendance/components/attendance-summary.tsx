@@ -1,3 +1,5 @@
+import { formatTime } from "@/lib/helpers/formatters";
+
 type SummaryItem = {
   label: string;
   value: string;
@@ -15,7 +17,11 @@ export const AttendanceSummary = ({ items }: AttendanceSummaryProps) => {
           <p className="text-muted-foreground text-sm font-medium">
             {item.label}
           </p>
-          <p className="text-2xl font-semibold">{item.value}</p>
+          <p className="text-2xl font-semibold">
+            {item.label === "Ave. Check-in" || item.label === "Ave. Check-out"
+              ? formatTime(item.value)
+              : item.value}
+          </p>
         </div>
       ))}
     </div>

@@ -135,7 +135,7 @@ export const getAttendanceHistory = async (
   try {
     const { data, error } = await supabase
       .from("attendance_records")
-      .select("date, time_in, time_out, status")
+      .select("date, time_in, time_out, status, source")
       .eq("employee_id", employeeId)
       .gte("date", start)
       .lte("date", end)

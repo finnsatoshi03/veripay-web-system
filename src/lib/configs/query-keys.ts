@@ -12,6 +12,7 @@ export const queryKeys = {
     hrEmployees: "hrEmployees",
     reportsToReview: "reportsToReview",
     accountRequests: "accountRequests",
+    leaveRequests: "leaveRequests",
   },
   EMPLOYEES: {
     employees: "employees",

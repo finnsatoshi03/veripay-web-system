@@ -339,7 +339,7 @@ export const AddEmployeeForm = () => {
                     </FormControl>
                     <SelectContent>
                       {isDepartmentsLoading ? (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="none" disabled>
                           Loading departments...
                         </SelectItem>
                       ) : (
@@ -387,7 +387,7 @@ export const AddEmployeeForm = () => {
                     </FormControl>
                     <SelectContent>
                       {isPositionsLoading ? (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="none" disabled>
                           Loading positions...
                         </SelectItem>
                       ) : (

@@ -71,3 +71,40 @@ export interface Report {
   created_at: string;
   rejection_reason?: string;
 }
+
+export interface LeaveRequest {
+  id: number;
+  employee_id: {
+    id: number;
+    user_id: {
+      user_profiles: {
+        first_name: string;
+        last_name: string;
+        profile_image?: string;
+      };
+    };
+    position_id: {
+      positions: {
+        title: string;
+      };
+    };
+  };
+  leave_type_id: {
+    id: number;
+    name: string;
+  };
+  reason: string;
+  requested_at: string;
+  reviewed_by: {
+    id: number;
+    user_profiles: {
+      first_name: string;
+      last_name: string;
+      profile_image?: string;
+    };
+  };
+  rejection_reason?: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+}

@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { Calendar as CalendarIcon, ChevronDown, Check } from "lucide-react";
 
 // Define leave type as a union type
-type LeaveType = "Vacation" | "Sick" | "Emergency" | "Bereavement" | "Annual";
+type LeaveType = "Vacation" | "Sick" | "Emergency" | "Bereavement";
 
 // Form schema using Zod
 const formSchema = z
@@ -94,7 +94,6 @@ export const CreateLeaveRequestForm = ({
   // Map preselected type string to the expected format
   const mapLeaveType = (type: string): LeaveType => {
     const typeMap: Record<string, LeaveType> = {
-      Annual: "Annual",
       Sick: "Sick",
       Vacation: "Vacation",
       Emergency: "Emergency",

@@ -1,16 +1,13 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { Loader } from "./loader";
 
 export const PublicRoute = () => {
   const { user, isAuthenticated, isLoading } = useAuthStore();
 
   // Show loading screen while checking authentication
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <Loader />;
   }
 
   // If user is authenticated, redirect to their dashboard based on role

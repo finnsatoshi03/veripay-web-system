@@ -9,16 +9,13 @@ import { Error } from "@/features/error";
 import { hrReviewers } from "../_lib/mock/mock-hrReviewers";
 import { today } from "../_lib/helpers";
 import { useLeaveOverview } from "./mutations/useLeaveOverview";
+import { Loader } from "@/components/custom/loader";
 
 export default function EmployeeLeaveOverview() {
   const { data: leaveData, isLoading, error } = useLeaveOverview();
 
   if (isLoading) {
-    return (
-      <div className="flex h-full flex-col gap-4 !overflow-hidden">
-        <p>Loading leave data...</p>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {

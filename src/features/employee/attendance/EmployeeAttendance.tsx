@@ -8,6 +8,7 @@ import { AttendanceSummary } from "./components/attendance-summary";
 
 import { today } from "../_lib/helpers";
 import { useAttendanceHistory } from "./mutations/useAttendanceHistory";
+import { Loader } from "@/components/custom/loader";
 
 export default function EmployeeAttendance() {
   const { data: attendanceData, isLoading, error } = useAttendanceHistory();
@@ -36,11 +37,7 @@ export default function EmployeeAttendance() {
       ];
 
   if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        Loading attendance data...
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {

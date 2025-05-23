@@ -8,6 +8,7 @@ import {
 import { formatInitials } from "@/lib/helpers/formatters";
 import { cn } from "@/lib/utils";
 import { useHrEmployees } from "../_mutations/useHrEmployees";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ReviewerDisplayProps {
   reviewers?: {
@@ -38,8 +39,8 @@ export const ReviewerDisplay = ({
   if (useHrData && isLoading) {
     return (
       <div className="flex justify-end space-x-2 py-2">
-        <div className="bg-muted h-9 w-9 animate-pulse rounded-lg"></div>
-        <div className="bg-muted h-9 w-9 animate-pulse rounded-lg"></div>
+        <Skeleton className="size-9 rounded-lg" />
+        <Skeleton className="size-9 rounded-lg" />
       </div>
     );
   }

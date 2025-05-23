@@ -3,6 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { useUserStore } from "@/store/userStore";
 import { ProfileCompletionDialog } from "@/features/profile/components/profile-completion-dialog";
+import { Loader } from "./loader";
 
 type ProtectedRouteProps = {
   allowedRoles?: string[];
@@ -78,11 +79,7 @@ export const ProtectedRoute = ({
   };
 
   if (authLoading || (userLoading && hasAttemptedFetch)) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <Loader />;
   }
 
   // Not authenticated - redirect to login

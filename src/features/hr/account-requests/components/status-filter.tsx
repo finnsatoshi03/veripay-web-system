@@ -1,13 +1,21 @@
-import { CheckCircle2, Clock, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, type LucideIcon } from "lucide-react";
 import { FacetedFilter } from "@/components/custom/table/faceted-filter";
 import type { RequestStatus } from "../lib/data";
+
+interface StatusOption {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  count: number;
+}
 
 interface StatusFilterProps {
   selectedStatuses: RequestStatus[];
   onChange: (statuses: RequestStatus[]) => void;
+  statusOptions?: StatusOption[];
 }
 
-export const statusOptions = [
+export const defaultStatusOptions = [
   {
     label: "Pending",
     value: "pending",
@@ -28,9 +36,13 @@ export const statusOptions = [
   },
 ];
 
+// Keep the original export for backward compatibility
+export const statusOptions = defaultStatusOptions;
+
 export const StatusFilter = ({
   selectedStatuses,
   onChange,
+  statusOptions = defaultStatusOptions,
 }: StatusFilterProps) => {
   return (
     <FacetedFilter

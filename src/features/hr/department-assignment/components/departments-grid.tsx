@@ -89,7 +89,7 @@ export const DepartmentsGrid = ({
                 key={department.id}
                 className={`transition-all duration-200 hover:shadow-md ${
                   isDraggedOver
-                    ? "border-primary bg-primary/5 scale-105 border-2 shadow-lg"
+                    ? "border-primary bg-primary/5 border-2"
                     : "border-border"
                 }`}
                 onDragOver={(e) => handleDragOver(e, department.id)}

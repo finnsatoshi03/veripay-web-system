@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { KanbanItemProps } from "./column";
 import { KanbanColumn } from "./column";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 export interface KanbanBoardProps<T extends KanbanItemProps> {
   columns: Array<{
@@ -9,6 +10,7 @@ export interface KanbanBoardProps<T extends KanbanItemProps> {
     title: string;
     items: T[];
     icon: ReactNode;
+    allowDrop?: boolean;
   }>;
   renderItem: (item: T, onClick: () => void) => ReactNode;
   renderDialog: (
@@ -31,6 +33,14 @@ export const KanbanBoard = <T extends KanbanItemProps>({
 }: KanbanBoardProps<T>) => {
   const [selectedItem, setSelectedItem] = useState<T | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+
+  useEffect(() => {
+    return monitorForElements({
+      onDragStart: () => setIsDragActive(true),
+      onDrop: () => setIsDragActive(false),
+    });
+  }, []);
 
   const handleItemClick = (item: T) => {
     setSelectedItem(item);
@@ -52,6 +62,8 @@ export const KanbanBoard = <T extends KanbanItemProps>({
             onItemDrop={onItemDrop}
             emptyStateText={emptyStateText}
             emptyStateSubText={emptyStateSubText}
+            isDragActive={isDragActive}
+            allowDrop={column.allowDrop}
           />
         ))}
       </div>

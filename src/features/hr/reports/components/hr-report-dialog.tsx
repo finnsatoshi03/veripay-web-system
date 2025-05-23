@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Calendar,
   CheckCircle,
@@ -15,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { formatInitials, formatNotionDate } from "@/lib/helpers/formatters";
 import { useUpdateReportStatus } from "../mutations/useUpdateReportStatus";
+import { RejectionDialog } from "./rejection-dialog";
 
 import type { ReportCardProps } from "@/features/employee/reports/components/reports-card";
 
@@ -29,6 +31,16 @@ export const HrReportDialog = ({
   open,
   onOpenChange,
 }: HrReportDialogProps) => {
+  const [rejectionDialog, setRejectionDialog] = useState<{
+    isOpen: boolean;
+    reportId: number | null;
+    reportTitle: string;
+  }>({
+    isOpen: false,
+    reportId: null,
+    reportTitle: "",
+  });
+
   const updateStatusMutation = useUpdateReportStatus();
 
   if (!report) return null;
@@ -85,20 +97,14 @@ export const HrReportDialog = ({
     );
   };
 
-  const handleReject = () => {
+  const handleRejectClick = () => {
     if (!report.id) return;
 
-    updateStatusMutation.mutate(
-      {
-        reportId: parseInt(report.id),
-        status: "Rejected",
-      },
-      {
-        onSuccess: () => {
-          onOpenChange(false);
-        },
-      },
-    );
+    setRejectionDialog({
+      isOpen: true,
+      reportId: parseInt(report.id),
+      reportTitle: report.title,
+    });
   };
 
   const status = report.status || "In Progress";
@@ -106,133 +112,158 @@ export const HrReportDialog = ({
   const canTakeAction = status === "In Progress";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px]">
-        <div className="space-y-6">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm">
-            <span>Reports</span>
-            <span>/</span>
-            <span className="text-muted-foreground text-sm">{reportId}</span>
-          </div>
-
-          {/* Title */}
-          <h2 className="text-3xl font-bold">{report.title}</h2>
-          <Separator />
-
-          {/* Grid layout for details - Notion style with labels on left */}
-          <div className="grid grid-cols-[200px_1fr] gap-y-6">
-            {/* Category */}
-            <div className="text-muted-foreground text-sm">Category</div>
-            <div>
-              <Badge variant="outline" className="flex items-center gap-1">
-                {report.icon}
-                {report.category}
-              </Badge>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[650px]">
+          <div className="space-y-6">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-sm">
+              <span>Reports</span>
+              <span>/</span>
+              <span className="text-muted-foreground text-sm">{reportId}</span>
             </div>
 
-            {/* Status */}
-            <div className="text-muted-foreground text-sm">Status</div>
-            <div>
-              <Badge
-                className={`flex items-center gap-1 ${getStatusStyles(status)}`}
-              >
-                {getStatusIcon(status)}
-                {status}
-              </Badge>
-            </div>
+            {/* Title */}
+            <h2 className="text-3xl font-bold">{report.title}</h2>
+            <Separator />
 
-            {/* Assigned To */}
-            <div className="text-muted-foreground text-sm">Assigned to</div>
-            <div>
-              {report.assignedTo ? (
-                <div className="flex items-center gap-2">
-                  <Avatar className="size-6 rounded-md">
-                    <AvatarImage
-                      src={report.assignedTo.image}
-                      alt={assignedToName}
-                    />
-                    <AvatarFallback className="rounded-md">
-                      {formatInitials(assignedToName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">{assignedToName}</span>
-                </div>
-              ) : (
-                <span className="text-sm">Not assigned</span>
+            {/* Grid layout for details - Notion style with labels on left */}
+            <div className="grid grid-cols-[200px_1fr] gap-y-6">
+              {/* Category */}
+              <div className="text-muted-foreground text-sm">Category</div>
+              <div>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  {report.icon}
+                  {report.category}
+                </Badge>
+              </div>
+
+              {/* Status */}
+              <div className="text-muted-foreground text-sm">Status</div>
+              <div>
+                <Badge
+                  className={`flex items-center gap-1 ${getStatusStyles(status)}`}
+                >
+                  {getStatusIcon(status)}
+                  {status}
+                </Badge>
+              </div>
+
+              {/* Assigned To */}
+              <div className="text-muted-foreground text-sm">Assigned to</div>
+              <div>
+                {report.assignedTo ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="size-6 rounded-md">
+                      <AvatarImage
+                        src={report.assignedTo.image}
+                        alt={assignedToName}
+                      />
+                      <AvatarFallback className="rounded-md">
+                        {formatInitials(assignedToName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{assignedToName}</span>
+                  </div>
+                ) : (
+                  <span className="text-sm">Not assigned</span>
+                )}
+              </div>
+
+              {/* Submitted At */}
+              <div className="text-muted-foreground text-sm">Submitted at</div>
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="size-4 text-sm" />
+                {formatNotionDate(report.date)}
+              </div>
+
+              {/* Submitted By */}
+              <div className="text-muted-foreground text-muted-foreground text-sm">
+                Submitted by
+              </div>
+              <div className="flex items-center gap-2">
+                <Avatar className="size-6 rounded-md">
+                  <AvatarFallback className="bg-primary/10 text-primary rounded-md">
+                    {formatInitials(report.submittedBy || "Unknown")}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm">
+                  {report.submittedBy || "Unknown"}
+                </span>
+              </div>
+
+              {/* Importance */}
+              <div className="text-muted-foreground text-sm">Importance</div>
+              <div>
+                <Badge
+                  className={` ${
+                    report.importance === "High"
+                      ? "bg-red-100 text-red-700"
+                      : report.importance === "Medium"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-green-100 text-green-700"
+                  } `}
+                >
+                  {report.importance}
+                </Badge>
+              </div>
+
+              {/* Description */}
+              <div className="text-muted-foreground text-sm">Description</div>
+              <div className="text-sm whitespace-pre-wrap">
+                {report.description}
+              </div>
+
+              {/* Rejection Reason (if rejected) */}
+              {status === "Rejected" && report.rejectionReason && (
+                <>
+                  <div className="text-muted-foreground text-sm">
+                    Rejection Reason
+                  </div>
+                  <div className="rounded-r-md border-l-4 border-red-200 bg-red-50 p-3 text-sm whitespace-pre-wrap">
+                    {report.rejectionReason}
+                  </div>
+                </>
               )}
             </div>
 
-            {/* Submitted At */}
-            <div className="text-muted-foreground text-sm">Submitted at</div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="size-4 text-sm" />
-              {formatNotionDate(report.date)}
-            </div>
-
-            {/* Submitted By */}
-            <div className="text-muted-foreground text-muted-foreground text-sm">
-              Submitted by
-            </div>
-            <div className="flex items-center gap-2">
-              <Avatar className="size-6 rounded-md">
-                <AvatarFallback className="bg-primary/10 text-primary rounded-md">
-                  {formatInitials(report.submittedBy || "Unknown")}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{report.submittedBy || "Unknown"}</span>
-            </div>
-
-            {/* Importance */}
-            <div className="text-muted-foreground text-sm">Importance</div>
-            <div>
-              <Badge
-                className={` ${
-                  report.importance === "High"
-                    ? "bg-red-100 text-red-700"
-                    : report.importance === "Medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                } `}
-              >
-                {report.importance}
-              </Badge>
-            </div>
-
-            {/* Description */}
-            <div className="text-muted-foreground text-sm">Description</div>
-            <div className="text-sm whitespace-pre-wrap">
-              {report.description}
-            </div>
+            {/* Action Buttons for HR */}
+            {canTakeAction && (
+              <>
+                <Separator />
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
+                    onClick={handleRejectClick}
+                    disabled={updateStatusMutation.isPending}
+                  >
+                    <XCircle className="mr-2 size-4" />
+                    Reject Report
+                  </Button>
+                  <Button
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    onClick={handleResolve}
+                    disabled={updateStatusMutation.isPending}
+                  >
+                    <CheckCircle className="mr-2 size-4" />
+                    Resolve Report
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
+        </DialogContent>
+      </Dialog>
 
-          {/* Action Buttons for HR */}
-          {canTakeAction && (
-            <>
-              <Separator />
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
-                  onClick={handleReject}
-                  disabled={updateStatusMutation.isPending}
-                >
-                  <XCircle className="mr-2 size-4" />
-                  Reject Report
-                </Button>
-                <Button
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                  onClick={handleResolve}
-                  disabled={updateStatusMutation.isPending}
-                >
-                  <CheckCircle className="mr-2 size-4" />
-                  Resolve Report
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+      <RejectionDialog
+        reportId={rejectionDialog.reportId}
+        reportTitle={rejectionDialog.reportTitle}
+        open={rejectionDialog.isOpen}
+        onOpenChange={(open) =>
+          setRejectionDialog((prev) => ({ ...prev, isOpen: open }))
+        }
+      />
+    </>
   );
 };

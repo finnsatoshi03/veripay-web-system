@@ -63,6 +63,7 @@ export const ReportsBoard = () => {
                 image: undefined, // Add if available in your data
               }
             : undefined,
+          rejectionReason: report.rejection_reason,
         };
 
         // Add to appropriate column based on status
@@ -101,24 +102,28 @@ export const ReportsBoard = () => {
       title: "To Assigned",
       icon: <Clipboard className="size-4" />,
       items: toReviewItems,
+      allowDrop: false,
     },
     {
       id: "inProgress",
       title: "Assigned",
       icon: <Clock className="size-4" />,
       items: inProgressItems,
+      allowDrop: true,
     },
     {
       id: "resolved",
       title: "Resolved",
       icon: <CheckCircle className="size-4" />,
       items: resolvedItems,
+      allowDrop: false,
     },
     {
       id: "rejected",
       title: "Rejected",
       icon: <AlertCircle className="size-4" />,
       items: rejectedItems,
+      allowDrop: false,
     },
   ];
 

@@ -6,15 +6,23 @@ import toast from "react-hot-toast";
 interface UpdateReportStatusParams {
   reportId: number;
   status: "Resolved" | "Rejected";
+  rejectionReason?: string;
 }
 
 const updateReportStatus = async ({
   reportId,
   status,
+  rejectionReason,
 }: UpdateReportStatusParams) => {
+  const updateData: { status: string; rejection_reason?: string } = { status };
+
+  if (status === "Rejected" && rejectionReason) {
+    updateData.rejection_reason = rejectionReason;
+  }
+
   const { data, error } = await supabase
     .from("reports")
-    .update({ status })
+    .update(updateData)
     .eq("id", reportId)
     .select()
     .single();

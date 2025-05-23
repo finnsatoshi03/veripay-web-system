@@ -69,4 +69,5 @@ export interface Report {
   submitted_at: string;
   flag_level: "Low" | "Normal" | "High";
   created_at: string;
+  rejection_reason?: string;
 }

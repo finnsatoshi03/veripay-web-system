@@ -26,6 +26,7 @@ export interface ReportCardProps {
     last_name: string;
     image?: string;
   };
+  rejectionReason?: string;
   icon?: React.ReactNode;
   onClick?: () => void;
 }

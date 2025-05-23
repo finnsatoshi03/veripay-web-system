@@ -115,10 +115,6 @@ const hrNavData: NavHRSection[] = [
             title: "Department Assignment",
             url: "/hr/department-assignment",
           },
-          {
-            title: "Role Management",
-            url: "/hr/role-management",
-          },
         ],
       },
     ],

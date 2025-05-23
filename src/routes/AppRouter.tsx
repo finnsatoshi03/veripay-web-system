@@ -12,7 +12,6 @@ import HrAccountRequests from "@/features/hr/account-requests/HrAccountRequests"
 import HrActiveEmployee from "@/features/hr/active-employee/HrActiveEmployee";
 import HrAddEmployee from "@/features/hr/add-employee/HrAddEmployee";
 import HrDeptAssignment from "@/features/hr/department-assignment/HrDeptAssignment";
-import HrRoleManagement from "@/features/hr/role-management/HrRoleManagement";
 import HrReports from "@/features/hr/reports/HrReports";
 import HrLeaveManagement from "@/features/hr/leave-management/HrLeaveManagement";
 import PayrollManagement from "@/features/hr/payroll-management/PayrollManagement";
@@ -63,7 +62,6 @@ export default function AppRouter() {
             path="/hr/department-assignment"
             element={<HrDeptAssignment />}
           />
-          <Route path="/hr/role-management" element={<HrRoleManagement />} />
           <Route path="/hr/reports" element={<HrReports />} />
           <Route path="/hr/leave-management" element={<HrLeaveManagement />} />
           <Route

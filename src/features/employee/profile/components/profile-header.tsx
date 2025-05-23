@@ -10,9 +10,6 @@ export type UserData = {
   is_active: boolean;
   phone: string;
   address: string;
-  city: string;
-  state: string;
-  zip: string;
   gender: string;
   department: string;
   position: string;

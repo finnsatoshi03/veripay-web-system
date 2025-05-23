@@ -22,6 +22,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useEditProfile } from "../mutations/useEditProfile";
 
 import type { UserData } from "./profile-header";
 
@@ -43,6 +44,7 @@ type ProfileInfoProps = {
 
 export const ProfileInfo = ({ userData }: ProfileInfoProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { mutate: editProfile, isPending } = useEditProfile();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -56,7 +58,30 @@ export const ProfileInfo = ({ userData }: ProfileInfoProps) => {
   });
 
   const handleSubmit = (values: ProfileFormValues) => {
-    console.log("Form values:", values);
+    // Extract first name and last name from the full name
+    const nameParts = values.name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    // Format birth date to YYYY-MM-DD if it's not already in that format
+    const formattedBirthDate = values.birth_date.includes("T")
+      ? values.birth_date.split("T")[0]
+      : values.birth_date;
+
+    // Prepare data for mutation
+    editProfile({
+      profile: {
+        first_name: firstName,
+        last_name: lastName,
+        contact_number: values.phone,
+        address: values.address,
+        birth_date: formattedBirthDate,
+      },
+      user: {
+        email: values.email,
+      },
+    });
+
     setIsEditing(false);
   };
 
@@ -80,7 +105,7 @@ export const ProfileInfo = ({ userData }: ProfileInfoProps) => {
               size="sm"
               variant="default"
               onClick={form.handleSubmit(handleSubmit)}
-              disabled={!isDirty}
+              disabled={!isDirty || isPending}
             >
               <Save className="mr-1 size-4" /> Save
             </Button>

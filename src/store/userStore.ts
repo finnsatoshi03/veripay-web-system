@@ -34,6 +34,7 @@ export interface Employee {
   date_hired: string | null;
   department: Department | null;
   position: Position | null;
+  created_at: string | null;
 }
 
 export interface UserState {
@@ -51,7 +52,11 @@ export interface UserState {
 export interface UserActions {
   setUser: (user: Partial<UserState>) => void;
   clearUser: () => void;
-  fetchUserData: (userId: string, metadataRole?: string) => Promise<void>;
+  fetchUserData: (
+    userId: string,
+    metadataRole?: string,
+    force?: boolean,
+  ) => Promise<void>;
 }
 
 const initialState: UserState = {
@@ -75,14 +80,15 @@ export const useUserStore = create<UserState & UserActions>()(
 
       clearUser: () => set(initialState),
 
-      fetchUserData: async (userId, metadataRole) => {
+      fetchUserData: async (userId, metadataRole, force) => {
         const currentState = get();
         // Preserve current role if no new role is provided
         const roleToUse = metadataRole || currentState.role || "";
 
         if (
           currentState.isLoading ||
-          (currentState.id === Number(userId) &&
+          (!force &&
+            currentState.id === Number(userId) &&
             currentState.profile &&
             currentState.role === roleToUse)
         ) {
@@ -149,6 +155,7 @@ export const useUserStore = create<UserState & UserActions>()(
                       base_salary: positionData.base_salary,
                     }
                   : null,
+                created_at: employeeData.created_at,
               };
             }
           }

@@ -100,7 +100,7 @@ export const getProfile = async (id: string) => {
         `
           id, email, is_active, created_at, identity_id, is_active,
           employees (
-            id, employee_code, status, date_hired,
+            id, employee_code, status, date_hired, created_at,
             departments (
               name
             ),

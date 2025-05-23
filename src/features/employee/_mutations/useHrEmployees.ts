@@ -3,7 +3,7 @@ import { getHrEmployees } from "@/services/employee/hr-employees";
 
 export const useHrEmployees = (options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: ["hr-employees"],
+    queryKey: ["hrEmployees"],
     queryFn: getHrEmployees,
     enabled: options?.enabled !== false,
   });

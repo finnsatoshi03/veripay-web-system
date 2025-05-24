@@ -1,7 +1,7 @@
 import { supabase } from "../supabase";
 
 export const getUpcomingBirthdays = async (page = 0, pageSize = 10) => {
-  try {    
+  try {
     const { data, error } = await supabase
       .from("user_profiles")
       .select("id, first_name, last_name, birth_date");
@@ -9,13 +9,15 @@ export const getUpcomingBirthdays = async (page = 0, pageSize = 10) => {
     if (error) {
       throw new Error(error.message);
     }
-    
+
     const today = new Date();
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(today.getDate() + 7);
 
     const formatMonthDay = (date: Date) =>
-      `${date.getMonth() + 1}`.padStart(2, "0") + "-" + `${date.getDate()}`.padStart(2, "0");
+      `${date.getMonth() + 1}`.padStart(2, "0") +
+      "-" +
+      `${date.getDate()}`.padStart(2, "0");
 
     const todayMD = formatMonthDay(today);
     const futureMD = formatMonthDay(sevenDaysFromNow);
@@ -34,7 +36,7 @@ export const getUpcomingBirthdays = async (page = 0, pageSize = 10) => {
     };
 
     const upcoming = data.filter((user) => isInRange(user.birth_date));
-    
+
     const start = page * pageSize;
     const end = start + pageSize;
     const paginated = upcoming.slice(start, end);
@@ -51,12 +53,18 @@ export const getUpcomingBirthdays = async (page = 0, pageSize = 10) => {
   }
 };
 
-export const getAnnouncements = async (role: string, page = 0, pageSize = 10) => {
+export const getAnnouncements = async (
+  role: string,
+  page = 0,
+  pageSize = 10,
+) => {
   try {
     const { data, error } = await supabase
       .from("announcements")
-      .select("*, roles(name)")
-      .order("created_at", { ascending: false }); 
+      .select(
+        "*, roles(name), created_by(user_profiles(first_name, last_name, profile_image))",
+      )
+      .order("created_at", { ascending: false });
 
     if (error) {
       throw new Error(error.message);

@@ -41,6 +41,9 @@ export const signInWithPassword = async (email: string, password: string) => {
       // Fetch complete user data using the userStore
       if (userData?.id) {
         const userStore = useUserStore.getState();
+        // First set the role to ensure it's available
+        userStore.setUser({ role });
+        // Then fetch user data with the role
         await userStore.fetchUserData(userData.id, role);
       }
 
@@ -125,9 +128,9 @@ export const setupAuthListener = () => {
             return;
           }
 
-          // Fetch complete user data
           if (userData?.id) {
             const userStore = useUserStore.getState();
+            userStore.setUser({ role });
             await userStore.fetchUserData(userData.id, role);
           }
         } catch (error) {

@@ -4,17 +4,18 @@ import { ArrowLeft, Bell } from "lucide-react";
 import { formatInitials } from "@/lib/helpers/formatters";
 
 import { DateRangePicker } from "@/components/custom/date-range-picker";
+import { ThemeToggle } from "@/components/custom/theme-toggle";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Search } from "@/components/custom/search";
+import { SpotlightSearch } from "@/components/custom/spotlight-search";
 import { Badge } from "@/components/ui/badge";
 
 import { useUser } from "@/store/userStore";
 
 export const Header = () => {
   const { pathname } = useLocation();
-  const { fullName, email } = useUser();
+  const { fullName, email, profile } = useUser();
   const navigate = useNavigate();
 
   const isDashboard = pathname.includes("dashboard");
@@ -22,18 +23,16 @@ export const Header = () => {
   const userData = {
     name: fullName || "User",
     email: email || "",
-    image: "",
+    image: profile?.profile_image || "",
   };
 
   return (
     <div className="flex items-center justify-between p-4">
       {isDashboard ? (
         <div className="flex items-center gap-2">
-          <Avatar className="size-10 rounded-lg">
+          <Avatar className="size-10">
             <AvatarImage src={userData.image} />
-            <AvatarFallback className="rounded-lg">
-              {formatInitials(userData.name)}
-            </AvatarFallback>
+            <AvatarFallback>{formatInitials(userData.name)}</AvatarFallback>
           </Avatar>
           <div>
             <h1 className="text-lg leading-none font-semibold">
@@ -55,9 +54,10 @@ export const Header = () => {
         </Button>
       )}
 
-      <div className="flex items-center gap-4">
-        {isDashboard && <Search />}
+      <div className="flex items-center gap-2">
+        {isDashboard && <SpotlightSearch />}
         <DateRangePicker />
+        <ThemeToggle />
         <div aria-label="Notifications" className="relative size-6">
           <Bell className="size-6" />
           <Badge

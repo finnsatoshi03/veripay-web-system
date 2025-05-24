@@ -65,6 +65,7 @@ export const ReportDialog = ({
   };
 
   const status = report.status || "In Progress";
+  const assignedToName = `${report.assignedTo?.first_name} ${report.assignedTo?.last_name}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -111,13 +112,13 @@ export const ReportDialog = ({
                   <Avatar className="size-6 rounded-md">
                     <AvatarImage
                       src={report.assignedTo.image}
-                      alt={report.assignedTo.name}
+                      alt={assignedToName}
                     />
                     <AvatarFallback className="rounded-md">
-                      {formatInitials(report.assignedTo.name)}
+                      {formatInitials(assignedToName)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm">{report.assignedTo.name}</span>
+                  <span className="text-sm">{assignedToName}</span>
                 </div>
               ) : (
                 <span className="text-sm">Not assigned</span>

@@ -1,4 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import { ProfileImageSelector } from "@/components/custom/profile-image-selector";
 
 import { formatInitials, formatMonthYear } from "@/lib/helpers/formatters";
 import { cn } from "@/lib/utils";
@@ -10,14 +11,12 @@ export type UserData = {
   is_active: boolean;
   phone: string;
   address: string;
-  city: string;
-  state: string;
-  zip: string;
   gender: string;
   department: string;
   position: string;
   created_at: string;
   birth_date: string;
+  profile_image?: string;
 };
 
 type ProfileHeaderProps = {
@@ -25,16 +24,28 @@ type ProfileHeaderProps = {
 };
 
 export const ProfileHeader = ({ userData }: ProfileHeaderProps) => {
+  const [profileImage, setProfileImage] = useState<string>(
+    userData.profile_image || "",
+  );
   const genderPronoun = userData.gender === "Male" ? "He/Him" : "She/Her";
+
+  const handleImageChange = (imageUrl: string) => {
+    setProfileImage(imageUrl);
+  };
 
   return (
     <>
       {/* cover photo */}
       <div className="bg-primary relative h-[30vh] w-full rounded-lg">
-        <Avatar className="border-background absolute -bottom-10 left-1/2 h-20 w-20 -translate-x-1/2 border-2">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>{formatInitials(userData.name)}</AvatarFallback>
-        </Avatar>
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+          <ProfileImageSelector
+            currentImage={userData.profile_image || profileImage}
+            fallbackText={formatInitials(userData.name)}
+            size="md"
+            showEditButton={true}
+            onImageChange={handleImageChange}
+          />
+        </div>
       </div>
       {/* profile details */}
       <div className="flex flex-col items-center gap-1">

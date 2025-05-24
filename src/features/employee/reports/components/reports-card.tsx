@@ -18,13 +18,15 @@ export interface ReportCardProps {
   title: string;
   description: string;
   date: string;
-  importance: "Low" | "Medium" | "High";
+  importance: "Low" | "Medium" | "High" | "Normal";
   status?: string;
   submittedBy?: string;
   assignedTo?: {
-    name: string;
+    first_name: string;
+    last_name: string;
     image?: string;
   };
+  rejectionReason?: string;
   icon?: React.ReactNode;
   onClick?: () => void;
 }
@@ -45,6 +47,7 @@ export const ReportCard = ({
       case "High":
         return "text-red-500";
       case "Medium":
+      case "Normal": // Handle both Medium and Normal
         return "text-yellow-500";
       case "Low":
         return "text-green-500";
@@ -53,9 +56,11 @@ export const ReportCard = ({
     }
   };
 
+  const assignedToName = `${assignedTo?.first_name} ${assignedTo?.last_name}`;
+
   return (
     <div
-      className="bg-card hover:bg-muted/90 mb-2 cursor-pointer space-y-2 rounded-md p-3 shadow-sm transition-colors"
+      className="bg-card hover:bg-border/90 mb-2 cursor-pointer space-y-2 rounded-md p-3 shadow-sm transition-colors"
       onClick={onClick}
       tabIndex={0}
       role="button"
@@ -80,13 +85,13 @@ export const ReportCard = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Avatar className="size-6 rounded-md">
-                <AvatarImage src={assignedTo.image} alt={assignedTo.name} />
+                <AvatarImage src={assignedTo.image} alt={assignedToName} />
                 <AvatarFallback className="rounded-md">
-                  {formatInitials(assignedTo.name)}
+                  {formatInitials(assignedToName)}
                 </AvatarFallback>
               </Avatar>
             </TooltipTrigger>
-            <TooltipContent>{assignedTo.name}</TooltipContent>
+            <TooltipContent>{assignedToName}</TooltipContent>
           </Tooltip>
         </div>
       )}

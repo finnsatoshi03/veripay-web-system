@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { CheckCircle2, Clock, XCircle } from "lucide-react";
 
 import { Search } from "@/components/custom/search";
 import { ColumnToggle } from "@/components/custom/table/column-toggle";
@@ -8,11 +9,32 @@ import {
   ACCOUNT_TABLE_COLUMNS,
   AccountRequestsTable,
 } from "./account-requests-table";
-import { StatusFilter, statusOptions } from "./status-filter";
+import { StatusFilter } from "./status-filter";
 
 import type { AccountRequest, RequestStatus } from "../lib/data";
 import { useAccountRequests } from "../mutations/account-req-service";
 import { Error } from "@/features/error";
+
+const baseStatusOptions = [
+  {
+    label: "Pending",
+    value: "pending",
+    icon: Clock,
+    count: 0,
+  },
+  {
+    label: "Approved",
+    value: "approved",
+    icon: CheckCircle2,
+    count: 0,
+  },
+  {
+    label: "Rejected",
+    value: "rejected",
+    icon: XCircle,
+    count: 0,
+  },
+];
 
 export const AccountRequestsBoard = () => {
   // React Query hooks
@@ -33,52 +55,56 @@ export const AccountRequestsBoard = () => {
     "actions",
   ]);
 
-  // Initialize filtered requests when data is loaded
-  useEffect(() => {
-    if (requests) {
-      // Apply current filters to the data
-      let filtered = [...requests];
+  const stableRequests = useMemo(() => {
+    if (isLoading) return [];
+    return Array.isArray(requests) ? requests : [];
+  }, [requests, isLoading]);
 
-      // Apply status filter
-      if (selectedStatuses.length > 0) {
-        filtered = filtered.filter((request) =>
-          selectedStatuses.includes(request.status),
-        );
-      }
-
-      // Apply search filter
-      if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        filtered = filtered.filter(
-          (request) =>
-            request.name.toLowerCase().includes(lowerQuery) ||
-            request.email.toLowerCase().includes(lowerQuery),
-        );
-      }
-
-      setFilteredRequests(filtered);
-    }
-  }, [requests, searchQuery, selectedStatuses]);
-
-  // Update status counts
-  useEffect(() => {
+  const statusOptionsWithCounts = useMemo(() => {
     const counts: Record<RequestStatus, number> = {
       pending: 0,
       approved: 0,
       rejected: 0,
     };
 
-    requests.forEach((request) => {
+    stableRequests.forEach((request) => {
       if (request.status in counts) {
         counts[request.status as keyof typeof counts]++;
       }
     });
 
-    statusOptions.forEach((option) => {
-      const status = option.value as RequestStatus;
-      option.count = counts[status];
-    });
-  }, [requests]);
+    return baseStatusOptions.map((option) => ({
+      ...option,
+      count: counts[option.value as RequestStatus] || 0,
+    }));
+  }, [stableRequests]);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    let filtered = stableRequests.slice(); // Create a copy
+
+    // Apply status filter
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((request) =>
+        selectedStatuses.includes(request.status),
+      );
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (request) =>
+          request.name.toLowerCase().includes(lowerQuery) ||
+          request.email.toLowerCase().includes(lowerQuery),
+      );
+    }
+
+    setFilteredRequests(filtered);
+  }, [stableRequests, searchQuery, selectedStatuses, isLoading]);
 
   // Pagination calculations
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -144,6 +170,7 @@ export const AccountRequestsBoard = () => {
             <StatusFilter
               selectedStatuses={selectedStatuses}
               onChange={handleStatusFilterChange}
+              statusOptions={statusOptionsWithCounts}
             />
           </div>
           <div>

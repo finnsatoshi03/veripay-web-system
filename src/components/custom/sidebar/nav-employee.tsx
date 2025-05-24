@@ -39,7 +39,7 @@ export function NavEmployee({
                 key={item.title}
                 className={cn(
                   isActive(item.url) &&
-                    "bg-primary text-primary-foreground rounded-md",
+                    "bg-primary text-primary-foreground dark:bg-secondary dark:text-secondary-foreground rounded-md",
                 )}
               >
                 <SidebarMenuButton asChild tooltip={item.title}>

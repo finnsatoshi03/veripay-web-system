@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CreateLeaveRequestForm } from "@/features/employee/leave-overview/components/create-leave-request-form";
-import { leaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
+
+import { useLeaveOverview } from "@/features/employee/leave-overview/mutations/useLeaveOverview";
+import { Error } from "@/features/error";
 
 // types
 interface LeaveTypeProps {
@@ -48,27 +51,7 @@ export const LeaveTypeCard = ({
 
 // main component
 export const LeaveSummary = () => {
-  // data
-  const leaveTypes = [
-    {
-      days: 6,
-      totalDays: 15,
-      percentage: 40,
-      label: "Vacation",
-    },
-    {
-      days: 7,
-      totalDays: 10,
-      percentage: 70,
-      label: "Sick",
-    },
-    {
-      days: 3,
-      totalDays: 5,
-      percentage: 60,
-      label: "Emergency",
-    },
-  ];
+  const { data: leaveData, isLoading, error } = useLeaveOverview();
 
   // states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -76,11 +59,85 @@ export const LeaveSummary = () => {
     null,
   );
 
+  // Transform allowances data to match component format
+  const leaveTypes =
+    leaveData?.allowances?.map((allowance) => ({
+      days: allowance.remaining,
+      totalDays: allowance.total,
+      percentage: allowance.percentRemaining,
+      label: allowance.type.replace(" Leave", ""), // Remove "Leave" from the end for cleaner display
+    })) || [];
+
+  // Transform allowances to the format expected by CreateLeaveRequestForm
+  const allowanceObject = leaveData?.allowances?.reduce(
+    (acc, allowance) => {
+      const key = allowance.type
+        .toLowerCase()
+        .replace(" leave", "")
+        .replace(" ", "");
+      if (key === "vacation") acc.vacation = allowance.remaining;
+      else if (key === "sick") acc.sick = allowance.remaining;
+      else if (key === "emergency") acc.emergency = allowance.remaining;
+      else if (key === "bereavement") acc.bereavement = allowance.remaining;
+      return acc;
+    },
+    { vacation: 0, sick: 0, emergency: 0, bereavement: 0 },
+  ) || { vacation: 0, sick: 0, emergency: 0, bereavement: 0 };
+
   // handlers
   const handleRequestLeave = (leaveType: string) => {
     setSelectedLeaveType(leaveType);
     setIsFormOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-full space-y-2 rounded-lg border p-2">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-8 w-24" />
+        </div>
+        <div className="bg-border -mx-2 h-px px-2" />
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="space-y-1">
+                <div className="flex items-end gap-1">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="mb-1 h-4 w-24" />
+                </div>
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <Skeleton className="h-4 w-28" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <Error title="Error loading leave data" />;
+  }
+
+  if (leaveTypes.length === 0) {
+    return (
+      <div className="w-full space-y-2 rounded-lg border p-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Leave Summary</h2>
+          <Link to="/employee/leave-overview">
+            <Button variant="outline" size="sm">
+              View Details
+            </Button>
+          </Link>
+        </div>
+        <div className="bg-border -mx-2 h-px px-2" />
+        <div className="text-muted-foreground flex h-32 items-center justify-center text-sm">
+          No leave allowances available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-2 rounded-lg border p-2">
@@ -112,7 +169,7 @@ export const LeaveSummary = () => {
         <CreateLeaveRequestForm
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
-          allowance={leaveAllowance}
+          allowance={allowanceObject}
           preselectedLeaveType={selectedLeaveType}
           disableLeaveTypeSelection={true}
         />

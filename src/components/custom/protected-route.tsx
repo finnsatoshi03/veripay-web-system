@@ -3,6 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { useUserStore } from "@/store/userStore";
 import { ProfileCompletionDialog } from "@/features/profile/components/profile-completion-dialog";
+import { Loader } from "./loader";
 
 type ProtectedRouteProps = {
   allowedRoles?: string[];
@@ -42,19 +43,12 @@ export const ProtectedRoute = ({
     );
   };
 
-  // Fetch user data if authenticated - only once
   useEffect(() => {
-    if (isAuthenticated && user?.id && !userLoading && !hasAttemptedFetch) {
+    if (isAuthenticated && user && !userLoading && !hasAttemptedFetch) {
       setHasAttemptedFetch(true);
-      fetchUserData(Number(user.id));
+      fetchUserData(user.id, user.role, true);
     }
-  }, [
-    isAuthenticated,
-    user?.id,
-    userLoading,
-    fetchUserData,
-    hasAttemptedFetch,
-  ]);
+  }, [isAuthenticated, user, userLoading, hasAttemptedFetch]);
 
   // Update dialog visibility based on profile completeness
   useEffect(() => {
@@ -85,11 +79,7 @@ export const ProtectedRoute = ({
   };
 
   if (authLoading || (userLoading && hasAttemptedFetch)) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <Loader />;
   }
 
   // Not authenticated - redirect to login

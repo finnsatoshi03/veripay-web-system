@@ -1,23 +1,24 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { ProfileHeader } from "./components/profile-header";
-import { ProfileInfo } from "./components/profile-info";
+import { ProfileInfo } from "./components/profile-info-form";
+import { useUser } from "@/store/userStore";
 
 export default function EmployeeProfile() {
+  const { profile, employee, email, is_active } = useUser();
+
   const userData = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    is_active: true,
-    phone: "+1234567890",
-    address: "123 Main St, Anytown, USA",
-    city: "Anytown",
-    state: "CA",
-    zip: "12345",
-    gender: "Male",
-    department: "IT",
-    position: "Software Engineer",
-    created_at: "2024-03-02T10:23:21",
-    birth_date: "1990-01-01T10:23:21",
+    name: `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim(),
+    email: email ?? "",
+    is_active: is_active,
+    phone: profile?.contact_number ?? "",
+    address: profile?.address ?? "",
+    gender: profile?.gender ?? "",
+    department: employee?.department?.name ?? "",
+    position: employee?.position?.title ?? "",
+    created_at: employee?.created_at ?? "",
+    birth_date: profile?.birth_date ?? "",
+    profile_image: profile?.profile_image ?? "",
   };
 
   return (

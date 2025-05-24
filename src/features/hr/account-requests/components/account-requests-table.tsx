@@ -10,6 +10,7 @@ import {
 import { RequestActions } from "./request-actions";
 
 import type { AccountRequest } from "../lib/data";
+import { cn } from "@/lib/utils";
 
 interface AccountRequestsTableProps {
   requests: AccountRequest[];
@@ -42,7 +43,10 @@ export const AccountRequestsTable = ({
           {columns.map((column) => (
             <TableHead
               key={column.id}
-              className={column.id === "actions" ? "w-[100px]" : ""}
+              className={cn(
+                column.id === "actions" && "w-[100px]",
+                "dark:bg-zinc-800",
+              )}
             >
               {column.label}
             </TableHead>
@@ -58,7 +62,7 @@ export const AccountRequestsTable = ({
           </TableRow>
         ) : (
           requests.map((request) => (
-            <TableRow key={request.id} className="hover:bg-muted/50">
+            <TableRow key={request.id} className="hover:bg-border/50">
               {visibleColumns.includes("name") && (
                 <TableCell className="font-medium">{request.name}</TableCell>
               )}

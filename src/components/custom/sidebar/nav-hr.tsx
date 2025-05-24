@@ -73,10 +73,15 @@ export function NavHR({ sections }: { sections: NavHRSection[] }) {
                             key={child.title}
                             className={cn(
                               isActive(child.url) &&
-                                "bg-primary text-primary-foreground rounded-md",
+                                "bg-primary dark:bg-secondary text-primary-foreground rounded-md",
                             )}
                           >
-                            <SidebarMenuSubButton asChild>
+                            <SidebarMenuSubButton
+                              asChild
+                              className={cn(
+                                isActive(child.url) && "dark:text-black",
+                              )}
+                            >
                               <Link to={child.url}>
                                 <span>{child.title}</span>
                               </Link>
@@ -92,7 +97,7 @@ export function NavHR({ sections }: { sections: NavHRSection[] }) {
                   key={item.title}
                   className={cn(
                     isActive(item.url) &&
-                      "bg-primary text-primary-foreground rounded-md",
+                      "bg-primary dark:bg-secondary dark:text-secondary-foreground text-primary-foreground rounded-md",
                   )}
                 >
                   <SidebarMenuButton asChild tooltip={item.title}>

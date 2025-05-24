@@ -1,3 +1,4 @@
+import { Error } from "@/features/error";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -6,14 +7,46 @@ import { AttendanceStats } from "./components/attendance-stats";
 import { AttendanceSummary } from "./components/attendance-summary";
 
 import { today } from "../_lib/helpers";
+import { useAttendanceHistory } from "./mutations/useAttendanceHistory";
+import { Loader } from "@/components/custom/loader";
 
 export default function EmployeeAttendance() {
-  const summaryItems = [
-    { label: "Total Attendance", value: "5 days" },
-    { label: "Total Hours", value: "40 hours" },
-    { label: "Ave. Check-in", value: "08:00 AM" },
-    { label: "Ave. Check-out", value: "05:00 PM" },
-  ];
+  const { data: attendanceData, isLoading, error } = useAttendanceHistory();
+
+  const summaryItems = attendanceData?.summaryData
+    ? [
+        {
+          label: "Total Attendance",
+          value: attendanceData?.summaryData.totalAttendance,
+        },
+        { label: "Total Hours", value: attendanceData?.summaryData.totalHours },
+        {
+          label: "Ave. Check-in",
+          value: attendanceData?.summaryData.averageCheckIn,
+        },
+        {
+          label: "Ave. Check-out",
+          value: attendanceData?.summaryData.averageCheckOut,
+        },
+      ]
+    : [
+        { label: "Total Attendance", value: "0 days" },
+        { label: "Total Hours", value: "0 hours" },
+        { label: "Ave. Check-in", value: "N/A" },
+        { label: "Ave. Check-out", value: "N/A" },
+      ];
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return (
+      <Error
+        title={`Error loading attendance data: ${error instanceof Error ? error.message : "Unknown error"}`}
+      />
+    );
+  }
 
   return (
     <div className="flex h-full flex-col gap-4 !overflow-hidden">
@@ -24,14 +57,18 @@ export default function EmployeeAttendance() {
             <p className="text-muted-foreground text-sm">{today}</p>
           </div>
           <Separator />
-          <AttendanceStats />
+          <AttendanceStats
+            percentages={attendanceData?.summaryData.percentages}
+          />
         </div>
         <AttendanceSummary items={summaryItems} />
       </div>
 
       {/* Calendar View */}
       <ScrollArea className="min-h-0 flex-1 overflow-auto">
-        <CalendarView />
+        <CalendarView
+          attendanceData={attendanceData?.attendanceRecords || []}
+        />
       </ScrollArea>
     </div>
   );

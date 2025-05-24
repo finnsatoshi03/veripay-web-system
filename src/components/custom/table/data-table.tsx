@@ -36,7 +36,7 @@ export function DataTable<T>({
   pageSizeOptions = [10, 20, 30, 40, 50],
   initialVisibleColumns,
   onVisibleColumnsChange,
-  headerClassName = "sticky top-0 bg-zinc-200",
+  headerClassName = "sticky top-0 bg-zinc-200 dark:bg-zinc-800",
   primaryColumnId = "name",
 }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -117,7 +117,7 @@ export function DataTable<T>({
               currentItems.map((item) => (
                 <TableRow
                   key={String(item[keyField])}
-                  className="hover:bg-muted/50"
+                  className="hover:bg-border/50"
                 >
                   {renderRow(item, visibleColumns)}
                 </TableRow>

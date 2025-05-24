@@ -74,6 +74,11 @@ const employeeNavData = [
         url: "/employee/leave-overview",
         icon: Plane,
       },
+      {
+        title: "Announcements",
+        url: "/employee/announcements",
+        icon: Megaphone,
+      },
     ],
   },
 ];
@@ -115,10 +120,6 @@ const hrNavData: NavHRSection[] = [
             title: "Department Assignment",
             url: "/hr/department-assignment",
           },
-          {
-            title: "Role Management",
-            url: "/hr/role-management",
-          },
         ],
       },
     ],
@@ -151,7 +152,7 @@ const hrNavData: NavHRSection[] = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { fullName, email, role: userRole } = useUser();
+  const { fullName, email, role: userRole, profile } = useUser();
 
   const role = userRole as Role;
   const [activeRole, setActiveRole] = React.useState<Role>(role);
@@ -160,7 +161,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setActiveRole(role);
   }, [role]);
 
-  const isHRUser = true;
+  const isHRUser = role === "HR";
 
   const handleRoleChange = (role: Role) => {
     setActiveRole(role);
@@ -187,7 +188,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           user={{
             name: fullName || "User",
             email: email || "",
-            avatar: "",
+            avatar: profile?.profile_image || "",
           }}
         />
       </SidebarFooter>

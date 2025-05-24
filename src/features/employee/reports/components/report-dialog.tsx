@@ -111,10 +111,10 @@ export const ReportDialog = ({
                 <div className="flex items-center gap-2">
                   <Avatar className="size-6 rounded-md">
                     <AvatarImage
-                      src={report.assignedTo.image}
+                      src={report.assignedTo.profile_image}
                       alt={assignedToName}
                     />
-                    <AvatarFallback className="rounded-md">
+                    <AvatarFallback>
                       {formatInitials(assignedToName)}
                     </AvatarFallback>
                   </Avatar>
@@ -138,11 +138,19 @@ export const ReportDialog = ({
             </div>
             <div className="flex items-center gap-2">
               <Avatar className="size-6 rounded-md">
+                <AvatarImage
+                  src={report.submittedBy?.profile_image}
+                  alt={`${report.submittedBy?.first_name} ${report.submittedBy?.last_name}`}
+                />
                 <AvatarFallback className="bg-primary/10 text-primary rounded-md">
-                  {formatInitials(report.submittedBy || "You")}
+                  {formatInitials(report.submittedBy?.first_name || "You")}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm">{report.submittedBy || "You"}</span>
+              <span className="text-sm">
+                {report.submittedBy?.first_name && report.submittedBy?.last_name
+                  ? `${report.submittedBy?.first_name} ${report.submittedBy?.last_name}`
+                  : "You"}
+              </span>
             </div>
 
             {/* Importance */}

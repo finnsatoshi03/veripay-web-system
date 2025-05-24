@@ -60,7 +60,7 @@ export const ReportCard = ({
 
   return (
     <div
-      className="bg-card hover:bg-muted/90 mb-2 cursor-pointer space-y-2 rounded-md p-3 shadow-sm transition-colors"
+      className="bg-card hover:bg-border/90 mb-2 cursor-pointer space-y-2 rounded-md p-3 shadow-sm transition-colors"
       onClick={onClick}
       tabIndex={0}
       role="button"

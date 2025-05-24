@@ -56,7 +56,7 @@ export const CategoryPopover = ({
           {selected ? (
             <Badge
               variant="outline"
-              className="hover:bg-muted flex items-center gap-1 p-1 px-2"
+              className="hover:bg-border flex items-center gap-1 p-1 px-2"
             >
               {selectedCategory.icon}
               {selectedCategory.label}
@@ -64,7 +64,7 @@ export const CategoryPopover = ({
           ) : (
             <Badge
               variant="outline"
-              className="hover:bg-muted text-muted-foreground flex items-center gap-1 p-1 px-2"
+              className="hover:bg-border text-muted-foreground flex items-center gap-1 p-1 px-2"
             >
               <BanknoteIcon className="size-4" />
               Select category
@@ -73,14 +73,14 @@ export const CategoryPopover = ({
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-60 p-0" align="start">
-        <div className="bg-muted/50 p-2 text-sm font-medium">
+        <div className="bg-border/50 p-2 text-sm font-medium">
           Select category
         </div>
         <div className="p-0">
           {categories.map((category) => (
             <div
               key={category.value}
-              className={`hover:bg-muted flex cursor-pointer items-center gap-2 p-2 ${selected === category.value ? "bg-primary/5" : ""} `}
+              className={`hover:bg-border flex cursor-pointer items-center gap-2 p-2 ${selected === category.value ? "bg-primary/5" : ""} `}
               onClick={() => handleSelect(category.value)}
             >
               <div className="bg-background flex h-8 w-8 items-center justify-center rounded-md border">

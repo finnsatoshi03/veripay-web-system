@@ -188,7 +188,7 @@ export const LeaveCalendar = ({ leaveRequests }: LeaveCalendarProps) => {
                   key={i}
                   className={cn(
                     "relative min-h-[100px] rounded-md border p-1",
-                    !isCurrentMonth && "bg-muted/30 opacity-50",
+                    !isCurrentMonth && "bg-border/30 opacity-50",
                     isToday && "bg-accent border-accent-foreground",
                   )}
                 >

@@ -65,7 +65,7 @@ export const ImportancePopover = ({
         <div className="cursor-pointer">
           <Badge
             variant="outline"
-            className={`hover:bg-muted flex items-center gap-1 p-1 px-2 ${selectedImportance.color}`}
+            className={`hover:bg-border flex items-center gap-1 p-1 px-2 ${selectedImportance.color}`}
           >
             {selectedImportance.icon}
             {selectedImportance.label}
@@ -73,14 +73,14 @@ export const ImportancePopover = ({
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-60 p-0" align="start">
-        <div className="bg-muted/50 p-2 text-sm font-medium">
+        <div className="bg-border/50 p-2 text-sm font-medium">
           Select importance
         </div>
         <div className="p-0">
           {importanceOptions.map((option) => (
             <div
               key={option.value}
-              className={`hover:bg-muted flex cursor-pointer items-center gap-3 p-3 ${selected === option.value ? "bg-primary/5" : ""} `}
+              className={`hover:bg-border flex cursor-pointer items-center gap-3 p-3 ${selected === option.value ? "bg-primary/5" : ""} `}
               onClick={() => handleSelect(option.value)}
             >
               <Badge

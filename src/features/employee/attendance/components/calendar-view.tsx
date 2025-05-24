@@ -345,7 +345,7 @@ export const CalendarView = ({
                 key={i}
                 className={cn(
                   "h-24 rounded-md border p-1",
-                  !isSameMonth(day, monthStart) && "bg-muted opacity-30",
+                  !isSameMonth(day, monthStart) && "bg-border opacity-30",
                   isSameDay(day, new Date()) && "bg-accent",
                 )}
               >

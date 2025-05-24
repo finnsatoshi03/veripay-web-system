@@ -64,7 +64,7 @@ export const DraggableReportCard = ({
   return (
     <div
       ref={cardRef}
-      className="bg-card hover:bg-muted/90 mb-2 cursor-grab space-y-2 rounded-md p-3 shadow-sm transition-colors active:cursor-grabbing"
+      className="bg-card hover:bg-border/90 mb-2 cursor-grab space-y-2 rounded-md p-3 shadow-sm transition-colors active:cursor-grabbing"
       onClick={onClick}
       tabIndex={0}
       role="button"

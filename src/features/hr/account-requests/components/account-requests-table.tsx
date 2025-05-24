@@ -58,7 +58,7 @@ export const AccountRequestsTable = ({
           </TableRow>
         ) : (
           requests.map((request) => (
-            <TableRow key={request.id} className="hover:bg-muted/50">
+            <TableRow key={request.id} className="hover:bg-border/50">
               {visibleColumns.includes("name") && (
                 <TableCell className="font-medium">{request.name}</TableCell>
               )}

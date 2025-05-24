@@ -84,7 +84,7 @@ export const LeaveRequestSection = ({
             </Button>
           </div>
         </div>
-        <div className="bg-muted/50 h-64 animate-pulse rounded"></div>
+        <div className="bg-border/50 h-64 animate-pulse rounded"></div>
       </div>
     );
   }

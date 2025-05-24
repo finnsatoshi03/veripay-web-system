@@ -46,7 +46,7 @@ export function AttendanceCalendar({
 
   const getAttendanceStatusClass = (day: CalendarDay) => {
     if (!day.isCurrentMonth) return "opacity-0";
-    if (day.isFutureDate) return "bg-muted/30";
+    if (day.isFutureDate) return "bg-border/30";
 
     const { attendance } = day;
     if (!attendance) return "bg-slate-100/50 border-slate-200";
@@ -114,7 +114,7 @@ function DayCell({
     <div
       className={cn(
         "h-24 rounded-md border p-1",
-        day.isWeekend && !day.attendance && "bg-muted/10",
+        day.isWeekend && !day.attendance && "bg-border/10",
         day.isToday && "bg-accent",
       )}
     >

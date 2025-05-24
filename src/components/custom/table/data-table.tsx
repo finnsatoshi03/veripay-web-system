@@ -117,7 +117,7 @@ export function DataTable<T>({
               currentItems.map((item) => (
                 <TableRow
                   key={String(item[keyField])}
-                  className="hover:bg-muted/50"
+                  className="hover:bg-border/50"
                 >
                   {renderRow(item, visibleColumns)}
                 </TableRow>

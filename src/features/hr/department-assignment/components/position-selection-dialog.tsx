@@ -55,7 +55,7 @@ export const PositionSelectionDialog = ({
 
         <div className="space-y-6">
           {/* Employee Info */}
-          <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
+          <div className="bg-border/50 flex items-center gap-3 rounded-lg p-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src={employee.user_id.user_profiles.profile_image} />
               <AvatarFallback>

@@ -37,7 +37,7 @@ export const LeaveAllowanceSection = ({
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-muted/50 h-32 animate-pulse rounded"
+              className="bg-border/50 h-32 animate-pulse rounded"
             ></div>
           ))}
         </div>

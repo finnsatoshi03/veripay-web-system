@@ -53,7 +53,7 @@ export const ReviewerDisplay = ({
             <TooltipTrigger asChild>
               <Avatar
                 className={cn(
-                  "border-background relative -ml-1.5 size-9 rounded-lg border-2 first:ml-0",
+                  "border-background relative -ml-1.5 size-9 border-2 first:ml-0",
                 )}
                 style={{
                   zIndex: index,
@@ -70,7 +70,7 @@ export const ReviewerDisplay = ({
         ))}
         {reviewers.length > 4 && (
           <div
-            className="border-background relative -ml-1.5 flex size-9 items-center justify-center rounded-lg border-2 bg-zinc-700 text-xs font-medium text-white"
+            className="border-background relative -ml-1.5 flex size-9 items-center justify-center rounded-full border-2 bg-zinc-700 text-xs font-medium text-white"
             style={{ zIndex: 4 }}
           >
             +{reviewers.length - 4}

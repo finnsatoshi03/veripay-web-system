@@ -187,7 +187,7 @@ export const LeaveApprovalDialog = ({
                   <Label className="text-muted-foreground text-xs">
                     Reason
                   </Label>
-                  <p className="bg-muted mt-1 rounded-md p-2 text-sm">
+                  <p className="bg-border mt-1 rounded-md p-2 text-sm">
                     {leave.reason}
                   </p>
                 </div>

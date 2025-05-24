@@ -16,17 +16,13 @@ export interface Employee {
   };
   department_id: {
     id: number;
-    departments: {
-      name: string;
-    };
+    name: string;
   } | null;
   position_id: {
     id: number;
-    positions: {
-      title: string;
-      level: number;
-      base_salary: number;
-    };
+    title: string;
+    level: number;
+    base_salary: number;
   } | null;
   status: string;
   created_at: string;

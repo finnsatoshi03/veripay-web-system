@@ -61,7 +61,7 @@ export default class ErrorBoundary extends React.Component<
               An unexpected error has occurred
             </p>
             {this.state.error && (
-              <div className="bg-muted mt-4 max-w-md overflow-auto rounded-md p-4 text-left text-sm">
+              <div className="bg-border mt-4 max-w-md overflow-auto rounded-md p-4 text-left text-sm">
                 <p className="font-mono">{this.state.error.toString()}</p>
               </div>
             )}

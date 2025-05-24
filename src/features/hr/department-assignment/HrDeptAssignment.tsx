@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 
 import { DepartmentStats } from "./components/department-stats";
 import { DepartmentSummary } from "./components/department-summary";
-import { UnassignedEmployees } from "./components/unassigned-employees";
+import { AllEmployees } from "./components/all-employees";
 import { DepartmentsGrid } from "./components/departments-grid";
+import { UpdateAssignmentDialog } from "./components/update-assignment-dialog";
 
 import { today } from "@/features/employee/_lib/helpers";
 import { useEmployees } from "../_mutations/useEmployees";
@@ -14,6 +16,7 @@ import {
 import { useAssignDepartment } from "./mutations/useAssignDepartment";
 import { Error } from "@/features/error";
 import { Loader } from "@/components/custom/loader";
+import type { Employee } from "../_lib/types";
 
 export default function HrDeptAssignment() {
   const {
@@ -33,6 +36,11 @@ export default function HrDeptAssignment() {
   } = usePositions();
   const assignDepartmentMutation = useAssignDepartment();
 
+  // state
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [selectedEmployeeForUpdate, setSelectedEmployeeForUpdate] =
+    useState<Employee | null>(null);
+
   const isLoading = loadingEmployees || loadingDepartments || loadingPositions;
   const hasError = employeesError || departmentsError || positionsError;
 
@@ -46,6 +54,37 @@ export default function HrDeptAssignment() {
       departmentId,
       positionId,
     });
+  };
+
+  const handleUpdateEmployee = (
+    employeeId: number,
+    departmentId: number,
+    positionId: number,
+  ) => {
+    assignDepartmentMutation.mutate(
+      {
+        employeeId,
+        departmentId,
+        positionId,
+      },
+      {
+        onSuccess: () => {
+          setUpdateDialogOpen(false);
+          setSelectedEmployeeForUpdate(null);
+        },
+      },
+    );
+  };
+
+  // handlers
+  const handleEmployeeClick = (employee: Employee) => {
+    setSelectedEmployeeForUpdate(employee);
+    setUpdateDialogOpen(true);
+  };
+
+  const handleUpdateDialogClose = () => {
+    setUpdateDialogOpen(false);
+    setSelectedEmployeeForUpdate(null);
   };
 
   // Calculate stats
@@ -99,17 +138,31 @@ export default function HrDeptAssignment() {
 
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden lg:grid-cols-4">
         <div className="min-h-0 flex-1 lg:col-span-1">
-          <UnassignedEmployees employees={employees} />
+          <AllEmployees
+            employees={employees as unknown as Employee[]}
+            onEmployeeClick={handleEmployeeClick}
+          />
         </div>
         <div className="min-h-0 flex-1 overflow-auto lg:col-span-3">
           <DepartmentsGrid
             departments={departments}
-            employees={employees}
+            employees={employees as unknown as Employee[]}
             positions={positions}
             onAssignEmployee={handleAssignEmployee}
           />
         </div>
       </div>
+
+      {/* Update Assignment Dialog */}
+      <UpdateAssignmentDialog
+        open={updateDialogOpen}
+        onOpenChange={handleUpdateDialogClose}
+        employee={selectedEmployeeForUpdate}
+        departments={departments}
+        positions={positions}
+        onUpdate={handleUpdateEmployee}
+        isLoading={assignDepartmentMutation.isPending}
+      />
     </div>
   );
 }

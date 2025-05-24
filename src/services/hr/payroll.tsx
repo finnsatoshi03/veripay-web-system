@@ -1,6 +1,30 @@
 import supabase from "@/lib/supabase";
 import { format, parseISO, addDays } from 'date-fns';
 
+type Deduction = {
+  name: string;
+  amount_type: 'fixed' | 'percentage';
+  value: number;
+};
+
+type Payslip = {
+  id: number;
+  employee_id: number;
+  basic_pay: number;
+  [key: string]: any; // for any extra fields
+};
+
+type Payroll = {
+  id: number;
+  period_start: string;
+  period_end: string;
+  date_processed: string | null;
+  created_at: string;
+  payslips: Payslip[];
+  [key: string]: any; // for any extra fields
+};
+
+
 export const generatePayroll = async () => {
   try {
     const periodStart = "2025-05-01";
@@ -17,23 +41,27 @@ export const generatePayroll = async () => {
     console.log("success");
     
     return "success"
-  } catch (error) {
+  } catch (error:any) {
     console.log(error.message || "Something went wrong");
   }
 };
 
-// !! make it return instead of array in data just an object
-// !! optimize too many unnecessary shits
-// !! add types and interface 
-// !! working, can be use for payroll summary and for the table of payroll management
-export const getPayrollSummary = async () => {
+export const getPayrollSummary = async (): Promise<{
+  success: boolean;
+  data?: any;
+  lastPayrollDate?: string | null;
+  nextPayrollDate?: string;
+  late_submissions?: number;
+  error?: any;
+}> => {
   try {
     const { data: payrolls, error: payrollError } = await supabase
       .from('payrolls')
       .select(`
         *,
         payslips: payslips (*)
-      `);
+      `)
+      .order('created_at', { ascending: false });
 
     if (payrollError) {
       console.error('Error fetching payrolls:', payrollError);
@@ -51,9 +79,9 @@ export const getPayrollSummary = async () => {
       return { success: false, error: dedError };
     }
 
-    const payrollsWithDeductions = payrolls.map((payroll) => {
-      const payslipsWithDeds = payroll.payslips.map((payslip) => {
-        const deductions = mandatoryDeductions.map((ded) => {
+    const payrollsWithDeductions = payrolls.map((payroll: Payroll) => {
+      const payslipsWithDeds = payroll.payslips.map((payslip: Payslip) => {
+        const deductions = mandatoryDeductions.map((ded: Deduction) => {
           let amount = 0;
           if (ded.amount_type === 'fixed') {
             amount = ded.value;
@@ -92,24 +120,21 @@ export const getPayrollSummary = async () => {
 
       return {
         ...payroll,
-        period_formatted: formattedPeriod,
-        date_processed_formatted: formattedDateProcessed,
+        payroll_period: formattedPeriod,
+        date_processed: formattedDateProcessed,
+        created_at: format(parseISO(payroll.created_at), 'MMMM dd, yyyy'),
         payslips: payslipsWithDeds,
       };
     });
 
-    const processedPayrolls = payrolls.filter((p) => p.date_processed !== null);
-    const sortedByDate = processedPayrolls.sort(
-      (a, b) => new Date(b.date_processed) - new Date(a.date_processed)
+    const processedPayrolls = payrollsWithDeductions.filter(
+      (p) => p.date_processed !== null
     );
-    const lastPayrollDateRaw = sortedByDate.length ? sortedByDate[0].date_processed : null;
-    const lastPayrollDate = lastPayrollDateRaw
-      ? format(parseISO(lastPayrollDateRaw), 'MMMM dd, yyyy')
-      : null;
+    const lastPayroll = processedPayrolls[0];
+    const lastPayrollDate = lastPayroll?.date_processed || null;
 
     let nextPayrollDateRaw;
-    if (lastPayrollDateRaw) {
-      const lastPayroll = sortedByDate[0];
+    if (lastPayroll) {
       const lastPeriodEnd = parseISO(lastPayroll.period_end);
       nextPayrollDateRaw = addDays(lastPeriodEnd, 1).toISOString().split('T')[0];
     } else {
@@ -122,7 +147,7 @@ export const getPayrollSummary = async () => {
       data: payrollsWithDeductions,
       lastPayrollDate,
       nextPayrollDate,
-      late_submissions: 0,
+      late_submissions: 0, // you can replace with actual logic if needed
     };
   } catch (err) {
     console.error('Unexpected error:', err);

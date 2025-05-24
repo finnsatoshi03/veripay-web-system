@@ -68,13 +68,9 @@ export const useRealtimeNotifications = (userId: number) => {
 
       // Show toast for new notifications (optional)
       if (!newNotification.is_read) {
-        toast(`📧 ${newNotification.title}`, {
+        toast(`${newNotification.title}`, {
           duration: 4000,
-          style: {
-            background: "hsl(var(--background))",
-            color: "hsl(var(--foreground))",
-            border: "1px solid hsl(var(--border))",
-          },
+          icon: "📧",
         });
       }
     };

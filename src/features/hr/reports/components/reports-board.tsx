@@ -29,6 +29,8 @@ export const ReportsBoard = () => {
 
   const { data: reportsData, isLoading } = useAllReports();
 
+  console.log(reportsData);
+
   // Transform API data to match our KanbanBoard format
   const processReports = () => {
     if (!reportsData)
@@ -54,13 +56,17 @@ export const ReportsBoard = () => {
           importance: importanceMapped as ReportCardProps["importance"],
           status: report.status,
           submittedBy: report.submitted_by?.user_profiles?.first_name
-            ? `${report.submitted_by.user_profiles.first_name} ${report.submitted_by.user_profiles.last_name || ""}`
-            : "Unknown",
+            ? {
+                first_name: report.submitted_by.user_profiles.first_name,
+                last_name: report.submitted_by.user_profiles.last_name || "",
+                profile_image: report.submitted_by.user_profiles.profile_image,
+              }
+            : undefined,
           assignedTo: report.assigned_to?.user_profiles
             ? {
                 first_name: report.assigned_to.user_profiles.first_name,
                 last_name: report.assigned_to.user_profiles.last_name,
-                image: undefined, // Add if available in your data
+                profile_image: report.assigned_to.user_profiles.profile_image,
               }
             : undefined,
           rejectionReason: report.rejection_reason,

@@ -156,7 +156,7 @@ export const HrReportDialog = ({
                   <div className="flex items-center gap-2">
                     <Avatar className="size-6 rounded-md">
                       <AvatarImage
-                        src={report.assignedTo.image}
+                        src={report.assignedTo.profile_image}
                         alt={assignedToName}
                       />
                       <AvatarFallback className="rounded-md">
@@ -183,12 +183,23 @@ export const HrReportDialog = ({
               </div>
               <div className="flex items-center gap-2">
                 <Avatar className="size-6 rounded-md">
+                  <AvatarImage
+                    src={report.submittedBy?.profile_image}
+                    alt={`${report.submittedBy?.first_name} ${report.submittedBy?.last_name}`}
+                  />
                   <AvatarFallback className="bg-primary/10 text-primary rounded-md">
-                    {formatInitials(report.submittedBy || "Unknown")}
+                    {formatInitials(
+                      typeof report.submittedBy === "object" &&
+                        report.submittedBy
+                        ? `${report.submittedBy.first_name} ${report.submittedBy.last_name}`
+                        : report.submittedBy || "Unknown",
+                    )}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm">
-                  {report.submittedBy || "Unknown"}
+                  {typeof report.submittedBy === "object" && report.submittedBy
+                    ? `${report.submittedBy.first_name} ${report.submittedBy.last_name}`
+                    : report.submittedBy || "Unknown"}
                 </span>
               </div>
 

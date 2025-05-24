@@ -53,6 +53,7 @@ export interface Report {
     user_profiles: {
       first_name: string;
       last_name: string;
+      profile_image?: string;
     };
   } | null;
   submitted_by: {
@@ -60,6 +61,7 @@ export interface Report {
     user_profiles: {
       first_name: string;
       last_name: string;
+      profile_image?: string;
     };
   };
   submitted_at: string;

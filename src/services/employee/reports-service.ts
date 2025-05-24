@@ -90,7 +90,7 @@ export const getAllReports = async (): Promise<Report[]> => {
     const { data, error } = await supabase
       .from("reports")
       .select(
-        "*, submitted_by(user_profiles(first_name, last_name)), assigned_to(user_profiles(first_name, last_name))",
+        "*, submitted_by(user_profiles(first_name, last_name, profile_image)), assigned_to(user_profiles(first_name, last_name, profile_image))",
       )
       .order("created_at", { ascending: false });
 

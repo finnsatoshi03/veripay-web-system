@@ -26,13 +26,17 @@ const transformReportForDialog = (report: Report): ReportCardProps => {
     importance: report.flag_level === "Normal" ? "Medium" : report.flag_level,
     status: report.status,
     submittedBy: report.submitted_by
-      ? `${report.submitted_by.user_profiles.first_name} ${report.submitted_by.user_profiles.last_name}`
+      ? {
+          first_name: report.submitted_by.user_profiles.first_name,
+          last_name: report.submitted_by.user_profiles.last_name,
+          profile_image: report.submitted_by.user_profiles.profile_image,
+        }
       : undefined,
     assignedTo: report.assigned_to
       ? {
           first_name: report.assigned_to.user_profiles.first_name,
           last_name: report.assigned_to.user_profiles.last_name,
-          image: report.assigned_to.user_profiles.profile_image,
+          profile_image: report.assigned_to.user_profiles.profile_image,
         }
       : undefined,
   };

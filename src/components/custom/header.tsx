@@ -7,7 +7,7 @@ import { DateRangePicker } from "@/components/custom/date-range-picker";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Search } from "@/components/custom/search";
+import { SpotlightSearch } from "@/components/custom/spotlight-search";
 import { Badge } from "@/components/ui/badge";
 
 import { useUser } from "@/store/userStore";
@@ -54,7 +54,7 @@ export const Header = () => {
       )}
 
       <div className="flex items-center gap-4">
-        {isDashboard && <Search />}
+        {isDashboard && <SpotlightSearch />}
         <DateRangePicker />
         <div aria-label="Notifications" className="relative size-6">
           <Bell className="size-6" />

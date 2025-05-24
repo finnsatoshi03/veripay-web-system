@@ -29,11 +29,9 @@ export const Header = () => {
     <div className="flex items-center justify-between p-4">
       {isDashboard ? (
         <div className="flex items-center gap-2">
-          <Avatar className="size-10 rounded-lg">
+          <Avatar className="size-10">
             <AvatarImage src={userData.image} />
-            <AvatarFallback className="rounded-lg">
-              {formatInitials(userData.name)}
-            </AvatarFallback>
+            <AvatarFallback>{formatInitials(userData.name)}</AvatarFallback>
           </Avatar>
           <div>
             <h1 className="text-lg leading-none font-semibold">

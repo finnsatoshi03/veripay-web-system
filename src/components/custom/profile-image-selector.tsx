@@ -118,7 +118,7 @@ export const ProfileImageSelector = ({
 
               <TabsContent value="upload" className="space-y-4">
                 <div className="flex flex-col items-center gap-4">
-                  <div className="border-muted-foreground/25 rounded-lg border-2 border-dashed p-8 text-center">
+                  <div className="border-muted-foreground/25 rounded-full border-2 border-dashed p-8 text-center">
                     <Upload className="text-muted-foreground mx-auto h-12 w-12" />
                     <div className="mt-4">
                       <label

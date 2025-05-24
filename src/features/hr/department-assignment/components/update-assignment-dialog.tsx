@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Building2, Briefcase, ArrowRight } from "lucide-react";
 import type { Employee, Department, Position } from "../../_lib/types";
-import { formatPlaceValue } from "@/lib/helpers/formatters";
+import { formatInitials, formatPlaceValue } from "@/lib/helpers/formatters";
 
 interface UpdateAssignmentDialogProps {
   open: boolean;
@@ -76,10 +76,6 @@ export const UpdateAssignmentDialog = ({
 
   if (!employee) return null;
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
-
   // Filter positions based on selected department
   const availablePositions = selectedDepartmentId
     ? positions.filter(
@@ -98,6 +94,12 @@ export const UpdateAssignmentDialog = ({
     selectedDepartmentId !== (employee.department_id?.id.toString() || "") ||
     selectedPositionId !== (employee.position_id?.id.toString() || "");
 
+  const name =
+    employee.user_id.user_profiles.first_name &&
+    employee.user_id.user_profiles.last_name
+      ? `${employee.user_id.user_profiles.first_name} ${employee.user_id.user_profiles.last_name}`
+      : "Unknown";
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -108,10 +110,7 @@ export const UpdateAssignmentDialog = ({
           </DialogTitle>
           <DialogDescription>
             Update department and position assignment for{" "}
-            <span className="font-medium">
-              {employee.user_id.user_profiles.first_name}{" "}
-              {employee.user_id.user_profiles.last_name}
-            </span>
+            <span className="font-medium">{name}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -120,18 +119,10 @@ export const UpdateAssignmentDialog = ({
           <div className="bg-border/50 flex items-center gap-3 rounded-lg p-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src={employee.user_id.user_profiles.profile_image} />
-              <AvatarFallback>
-                {getInitials(
-                  employee.user_id.user_profiles.first_name,
-                  employee.user_id.user_profiles.last_name,
-                )}
-              </AvatarFallback>
+              <AvatarFallback>{formatInitials(name)}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <p className="font-medium">
-                {employee.user_id.user_profiles.first_name}{" "}
-                {employee.user_id.user_profiles.last_name}
-              </p>
+              <p className="font-medium">{name}</p>
               <p className="text-muted-foreground text-sm">
                 Current Role: {employee.role?.role?.name || "N/A"}
               </p>

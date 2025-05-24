@@ -11,12 +11,16 @@ import {
 import { PayrollStatusFilter, payrollStatusOptions } from "./payroll-status-filter";
 
 import type { PayrollPeriod, PayrollStatus } from "../lib/data";
-import { usePayrollPeriods } from "../mutations/payroll-service";
+// import { usePayrollPeriods } from "../mutations/payroll-service"; 
+import { mockPayrollPeriods } from "../lib/data"; // New import
 import { Error } from "@/features/error";
 
 export const PayrollManagementBoard = () => {
   // React Query hooks
-  const { data: payrolls = [], isLoading, error } = usePayrollPeriods();
+  // const { data: payrolls = [], isLoading, error } = usePayrollPeriods();
+  const payrolls = mockPayrollPeriods;
+  const isLoading = false;
+  const error = null;
 
   const [filteredPayrolls, setFilteredPayrolls] = useState<PayrollPeriod[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -124,7 +128,7 @@ export const PayrollManagementBoard = () => {
   if (error) {
     return (
       <Error
-        title={`Error loading payroll periods: ${error instanceof Error ? error.message : "Unknown error"}`}
+        // title={`Error loading payroll periods: ${error instanceof Error ? error.message : "Unknown error"}`}
       />
     );
   }

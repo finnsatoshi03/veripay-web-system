@@ -7,12 +7,16 @@ import { ActiveEmployeeTable, EMPLOYEE_TABLE_COLUMNS } from "./active-employee-t
 import { StatusFilter, statusOptions } from "./status-filter";
 
 import type { ActiveEmployee, EmployeeStatus } from "../lib/data";
-import { useActiveEmployees } from "../mutations/employee-service";
+// import { useActiveEmployees } from "../mutations/employee-service"; 
+import { mockActiveEmployees } from "../lib/data"; // New import
 import { Error } from "@/features/error";
 
 export default function ActiveEmployeeBoard() {
     // React Query hooks
-    const { data: employees = [], isLoading, error } = useActiveEmployees();
+    // const { data: employees = [], isLoading, error } = useActiveEmployees();
+    const employees = mockActiveEmployees;
+    const isLoading = false;
+    const error = null;
 
     const [filteredEmployees, setFilteredEmployees] = useState<ActiveEmployee[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -31,10 +35,8 @@ export default function ActiveEmployeeBoard() {
     // Initialize filtered employees when data is loaded
     useEffect(() => {
         if (employees) {
-            // Apply current filters to the data
             let filtered = [...employees];
 
-            // Apply search filter
             if (searchQuery) {
                 const lowerQuery = searchQuery.toLowerCase();
                 filtered = filtered.filter((employee) =>
@@ -43,7 +45,6 @@ export default function ActiveEmployeeBoard() {
                 );
             }
 
-            // Apply status filter
             if (selectedStatuses.length > 0) {
                 filtered = filtered.filter((employee) =>
                     selectedStatuses.includes(employee.status)
@@ -79,7 +80,7 @@ export default function ActiveEmployeeBoard() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredEmployees.slice(
         indexOfFirstItem,
-        indexOfLastItem,
+        indexOfLastItem
     );
 
     const handleStatusFilterChange = (statuses: EmployeeStatus[]) => {
@@ -105,7 +106,7 @@ export default function ActiveEmployeeBoard() {
         setVisibleColumns((prev) =>
             prev.includes(columnId)
                 ? prev.filter((id) => id !== columnId)
-                : [...prev, columnId],
+                : [...prev, columnId]
         );
     };
 
@@ -120,7 +121,7 @@ export default function ActiveEmployeeBoard() {
     if (error) {
         return (
             <Error
-                title={`Error loading active employees: ${error instanceof Error ? error.message : "Unknown error"}`}
+                // title={`Error loading active employees: ${error instanceof Error ? error.message : "Unknown error"}`}
             />
         );
     }
@@ -164,7 +165,6 @@ export default function ActiveEmployeeBoard() {
                 currentPage={currentPage}
                 onPageChange={handlePageChange}
                 onItemsPerPageChange={handleItemsPerPageChange}
-                // pageSizeOptions={[10, 20, 30, 40, 50]}
             />
         </div>
     );

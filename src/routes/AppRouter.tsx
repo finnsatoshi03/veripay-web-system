@@ -24,6 +24,7 @@ import EmployeeAttendance from "@/features/employee/attendance/EmployeeAttendanc
 import EmployeePayslips from "@/features/employee/payslips/EmployeePayslips";
 import EmployeeReports from "@/features/employee/reports/EmployeeReports";
 import EmployeeLeaveOverview from "@/features/employee/leave-overview/EmployeeLeaveOverview";
+import EmployeeAnnouncements from "@/features/employee/announcements/EmployeeAnnouncements";
 
 // Public Routes
 import LoginPage from "@/features/auth/LoginPage";
@@ -81,6 +82,10 @@ export default function AppRouter() {
           <Route
             path="/employee/leave-overview"
             element={<EmployeeLeaveOverview />}
+          />
+          <Route
+            path="/employee/announcements"
+            element={<EmployeeAnnouncements />}
           />
         </Route>
       </Route>

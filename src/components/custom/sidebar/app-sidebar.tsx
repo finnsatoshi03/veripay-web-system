@@ -74,6 +74,11 @@ const employeeNavData = [
         url: "/employee/leave-overview",
         icon: Plane,
       },
+      {
+        title: "Announcements",
+        url: "/employee/announcements",
+        icon: Megaphone,
+      },
     ],
   },
 ];

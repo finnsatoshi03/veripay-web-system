@@ -1,47 +1,51 @@
-import { Plus, Search, Megaphone } from "lucide-react";
+import { useState } from "react";
+import { Search, Megaphone } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { AnnouncementCard } from "./announcement-card";
-import type { AnnouncementWithDetails } from "@/services/hr/hr-announcement-service";
+
+import {
+  AnnouncementThreadCard,
+  type AnnouncementData,
+} from "./announcement-thread-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface AnnouncementsListProps {
-  activeTab: "all" | "global" | "by role";
-  onTabChange: (tab: "all" | "global" | "by role") => void;
+interface AnnouncementsThreadListProps {
+  announcements: AnnouncementData[];
+  isLoading: boolean;
+  error: unknown;
+  selectedAnnouncement: AnnouncementData | null;
+  onAnnouncementSelect: (announcement: AnnouncementData) => void;
   searchTerm: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  announcements: AnnouncementWithDetails[];
-  isLoading: boolean;
-  error: Error | null;
-  selectedAnnouncement: AnnouncementWithDetails | null;
-  onAnnouncementSelect: (announcement: AnnouncementWithDetails) => void;
-  onAnnouncementEdit: (announcement: AnnouncementWithDetails) => void;
-  onAnnouncementDelete: (id: number) => void;
-  onCreateNew: () => void;
 }
 
-export const AnnouncementsList = ({
-  activeTab,
-  onTabChange,
-  searchTerm,
-  onSearchChange,
+export const AnnouncementsThreadList = ({
   announcements,
   isLoading,
   error,
   selectedAnnouncement,
   onAnnouncementSelect,
-  onAnnouncementEdit,
-  onAnnouncementDelete,
-  onCreateNew,
-}: AnnouncementsListProps) => {
+  searchTerm,
+  onSearchChange,
+}: AnnouncementsThreadListProps) => {
+  const [filter, setFilter] = useState<"all" | "global" | "role">("all");
+
+  // Filter announcements based on scope
+  const filteredByScope = announcements.filter((announcement) => {
+    if (filter === "all") return true;
+    if (filter === "global") return announcement.scope === "global";
+    if (filter === "role") return announcement.scope === "by role";
+    return true;
+  });
+
   // Get counts for badges
   const globalCount = announcements.filter((a) => a.scope === "global").length;
   const roleCount = announcements.filter((a) => a.scope === "by role").length;
 
   // Handlers
-  const handleFilterChange = (newFilter: "all" | "global" | "by role") => {
-    onTabChange(newFilter);
+  const handleFilterChange = (newFilter: "all" | "global" | "role") => {
+    setFilter(newFilter);
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -56,15 +60,9 @@ export const AnnouncementsList = ({
     <div className="bg-background flex h-full w-80 flex-col border-r">
       {/* Header */}
       <div className="border-b p-4">
-        <div className="mb-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Megaphone className="text-primary size-5" />
-            <h2 className="text-lg font-semibold">Announcements</h2>
-          </div>
-          <Button onClick={onCreateNew} size="sm">
-            <Plus className="size-4" />
-            New
-          </Button>
+        <div className="mb-4 flex items-center gap-2">
+          <Megaphone className="text-primary size-5" />
+          <h2 className="text-lg font-semibold">Announcements</h2>
         </div>
 
         {/* Search */}
@@ -82,7 +80,7 @@ export const AnnouncementsList = ({
         {/* Filter Tabs */}
         <div className="flex items-center gap-2">
           <Button
-            variant={activeTab === "all" ? "default" : "ghost"}
+            variant={filter === "all" ? "default" : "ghost"}
             size="sm"
             onClick={() => handleFilterChange("all")}
             className="h-8 px-3"
@@ -94,7 +92,7 @@ export const AnnouncementsList = ({
           </Button>
 
           <Button
-            variant={activeTab === "global" ? "default" : "ghost"}
+            variant={filter === "global" ? "default" : "ghost"}
             size="sm"
             onClick={() => handleFilterChange("global")}
             className="h-8 px-3"
@@ -106,9 +104,9 @@ export const AnnouncementsList = ({
           </Button>
 
           <Button
-            variant={activeTab === "by role" ? "default" : "ghost"}
+            variant={filter === "role" ? "default" : "ghost"}
             size="sm"
-            onClick={() => handleFilterChange("by role")}
+            onClick={() => handleFilterChange("role")}
             className="h-8 px-3"
           >
             Role
@@ -154,7 +152,7 @@ export const AnnouncementsList = ({
               {error instanceof Error ? error.message : "Something went wrong"}
             </p>
           </div>
-        ) : announcements.length === 0 ? (
+        ) : filteredByScope.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center">
             <Megaphone className="text-muted-foreground mb-4 size-12" />
             <h3 className="mb-2 text-lg font-medium">
@@ -163,19 +161,18 @@ export const AnnouncementsList = ({
             <p className="text-muted-foreground text-sm">
               {searchTerm
                 ? "Try adjusting your search or filter criteria"
-                : "Create your first announcement to get started"}
+                : "There are no announcements to display"}
             </p>
           </div>
         ) : (
           <div className="space-y-3 p-4">
-            {announcements.map((announcement) => (
-              <AnnouncementCard
+            {filteredByScope.map((announcement) => (
+              <AnnouncementThreadCard
                 key={announcement.id}
                 announcement={announcement}
                 isSelected={selectedAnnouncement?.id === announcement.id}
                 onSelect={onAnnouncementSelect}
-                onEdit={onAnnouncementEdit}
-                onDelete={onAnnouncementDelete}
+                isPinned={announcement.scope === "global"} // Pin global announcements
               />
             ))}
           </div>

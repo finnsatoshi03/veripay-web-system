@@ -1,37 +1,21 @@
-import {
-  Plus,
-  Globe,
-  Users,
-  Megaphone,
-  Clock,
-  User,
-  Edit,
-  Trash2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Globe, Users, Megaphone, Clock, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatInitials } from "@/lib/helpers/formatters";
 import { formatDistanceToNow, format } from "date-fns";
-import type { AnnouncementWithDetails } from "@/services/hr/hr-announcement-service";
+import type { AnnouncementData } from "./announcement-thread-card";
 
-interface AnnouncementContentProps {
-  selectedAnnouncement: AnnouncementWithDetails | null;
-  onEdit: (announcement: AnnouncementWithDetails) => void;
-  onDelete: (id: number) => void;
-  onCreateNew: () => void;
+interface AnnouncementViewerProps {
+  selectedAnnouncement: AnnouncementData | null;
 }
 
-export const AnnouncementContent = ({
+export const AnnouncementViewer = ({
   selectedAnnouncement,
-  onEdit,
-  onDelete,
-  onCreateNew,
-}: AnnouncementContentProps) => {
+}: AnnouncementViewerProps) => {
   // Helper function to get author name
-  const getAuthorName = (announcement: AnnouncementWithDetails) => {
-    if (announcement.created_by_profile?.user_profiles) {
-      const profile = announcement.created_by_profile.user_profiles;
+  const getAuthorName = (announcement: AnnouncementData) => {
+    if (announcement.created_by?.user_profiles) {
+      const profile = announcement.created_by.user_profiles;
       return `${profile.first_name} ${profile.last_name}`;
     }
     return "Unknown Author";
@@ -75,8 +59,8 @@ export const AnnouncementContent = ({
           {/* Header */}
           <div className="bg-card border-b p-6">
             <div className="space-y-4">
-              {/* Scope Badge and Actions */}
-              <div className="flex items-center justify-between">
+              {/* Scope Badge */}
+              <div className="flex items-center gap-2">
                 <Badge
                   variant={
                     selectedAnnouncement.scope === "global"
@@ -97,24 +81,6 @@ export const AnnouncementContent = ({
                     </>
                   )}
                 </Badge>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(selectedAnnouncement)}
-                  >
-                    <Edit className="mr-2 size-4" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => onDelete(selectedAnnouncement.id)}
-                  >
-                    <Trash2 className="mr-2 size-4" />
-                    Delete
-                  </Button>
-                </div>
               </div>
 
               {/* Title */}
@@ -128,7 +94,7 @@ export const AnnouncementContent = ({
                   <Avatar className="size-10 rounded-lg">
                     <AvatarImage
                       src={
-                        selectedAnnouncement.created_by_profile?.user_profiles
+                        selectedAnnouncement.created_by?.user_profiles
                           ?.profile_image
                       }
                       alt={getAuthorName(selectedAnnouncement)}
@@ -200,8 +166,8 @@ export const AnnouncementContent = ({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span>HR Management</span>
-                <div className="bg-primary/60 size-1.5 rounded-full" />
+                <span>View only</span>
+                <div className="bg-muted-foreground/40 size-1.5 rounded-full" />
               </div>
             </div>
           </div>
@@ -211,17 +177,13 @@ export const AnnouncementContent = ({
           <div className="max-w-md text-center">
             <Megaphone className="text-muted-foreground mx-auto mb-6 size-16" />
             <h2 className="mb-3 text-xl font-semibold">
-              Select an announcement to manage
+              Select an announcement to read
             </h2>
-            <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-              Choose any announcement from the sidebar to view, edit, or delete
-              it. You can also create new announcements to keep everyone
-              informed.
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Choose any announcement from the sidebar to view its full content.
+              You'll be able to see all details including author information and
+              publication date.
             </p>
-            <Button onClick={onCreateNew}>
-              <Plus className="mr-2 size-4" />
-              Create New Announcement
-            </Button>
           </div>
         </div>
       )}

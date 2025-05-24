@@ -1,8 +1,8 @@
 import { supabase } from "../supabase";
 import { parseISO, isSameMonth } from "date-fns";
 
-export { getUpcomingBirthdays } from "../announcement-service";
-export { getAnnouncements } from "../announcement-service";
+export { getUpcomingBirthdays } from "./announcement-service";
+export { getAnnouncements } from "./announcement-service";
 
 export const getAttendanceOverview = async (
   employeeId: number,

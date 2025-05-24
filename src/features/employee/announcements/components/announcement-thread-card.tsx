@@ -1,43 +1,46 @@
 import { formatDistanceToNow } from "date-fns";
-import {
-  Globe,
-  Users,
-  Edit,
-  Trash2,
-  MoreVertical,
-  MessageSquare,
-  Pin,
-} from "lucide-react";
+import { Globe, Users, MessageSquare, Pin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import type { AnnouncementWithDetails } from "@/services/hr/hr-announcement-service";
-import { formatInitials } from "@/lib/helpers/formatters";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { formatInitials } from "@/lib/helpers/formatters";
 
-interface AnnouncementCardProps {
-  announcement: AnnouncementWithDetails;
-  isSelected?: boolean;
-  onSelect: (announcement: AnnouncementWithDetails) => void;
-  onEdit: (announcement: AnnouncementWithDetails) => void;
-  onDelete: (id: number) => void;
+// Type definition for announcement data structure
+export interface AnnouncementData {
+  id: number;
+  title: string;
+  body: string;
+  scope: "global" | "by role";
+  created_at: string;
+  roles?: {
+    name: string;
+  } | null;
+  created_by?: {
+    user_profiles?: {
+      first_name: string;
+      last_name: string;
+      profile_image?: string;
+    };
+  } | null;
 }
 
-export const AnnouncementCard = ({
+interface AnnouncementThreadCardProps {
+  announcement: AnnouncementData;
+  isSelected?: boolean;
+  onSelect: (announcement: AnnouncementData) => void;
+  isPinned?: boolean;
+}
+
+export const AnnouncementThreadCard = ({
   announcement,
   isSelected = false,
   onSelect,
-  onEdit,
-  onDelete,
-}: AnnouncementCardProps) => {
+  isPinned = false,
+}: AnnouncementThreadCardProps) => {
   // Helper function to get author name
   const getAuthorName = () => {
-    if (announcement.created_by_profile?.user_profiles) {
-      const profile = announcement.created_by_profile.user_profiles;
+    if (announcement.created_by?.user_profiles) {
+      const profile = announcement.created_by.user_profiles;
       return `${profile.first_name} ${profile.last_name}`;
     }
     return "Unknown Author";
@@ -58,14 +61,8 @@ export const AnnouncementCard = ({
   };
 
   // Handlers
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEdit(announcement);
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDelete(announcement.id);
+  const handleClick = () => {
+    onSelect(announcement);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -75,8 +72,6 @@ export const AnnouncementCard = ({
     }
   };
 
-  const isPinned = announcement.scope === "global";
-
   return (
     <div
       className={cn(
@@ -84,11 +79,11 @@ export const AnnouncementCard = ({
         isSelected && "ring-primary bg-accent/30 ring-2",
         isPinned && "border-primary/30 bg-primary/5",
       )}
-      onClick={() => onSelect(announcement)}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
-      aria-label={`Select announcement: ${announcement.title}`}
+      aria-label={`View announcement: ${announcement.title}`}
     >
       <div className="space-y-3">
         {/* Thread Header */}
@@ -97,9 +92,7 @@ export const AnnouncementCard = ({
             {/* Author Avatar */}
             <Avatar className="size-8 rounded-lg">
               <AvatarImage
-                src={
-                  announcement.created_by_profile?.user_profiles?.profile_image
-                }
+                src={announcement.created_by?.user_profiles?.profile_image}
                 alt={getAuthorName()}
               />
               <AvatarFallback className="rounded-lg text-xs font-medium">
@@ -142,34 +135,8 @@ export const AnnouncementCard = ({
             </div>
           </div>
 
-          {/* Actions Menu */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className="hover:bg-accent cursor-pointer rounded-md opacity-0 transition-opacity group-hover:opacity-100"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreVertical className="size-4" />
-                <span className="sr-only">Open announcement menu</span>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-fit p-1">
-              <button
-                onClick={handleEdit}
-                className="hover:bg-accent flex w-full cursor-pointer items-center gap-2 rounded-sm px-3 py-2 text-sm"
-              >
-                <Edit className="size-4" />
-                Edit
-              </button>
-              <button
-                onClick={handleDelete}
-                className="text-destructive hover:bg-accent flex w-full cursor-pointer items-center gap-2 rounded-sm px-3 py-2 text-sm"
-              >
-                <Trash2 className="size-4" />
-                Delete
-              </button>
-            </PopoverContent>
-          </Popover>
+          {/* Thread Icon */}
+          <MessageSquare className="text-muted-foreground size-4" />
         </div>
 
         {/* Title */}
@@ -186,15 +153,12 @@ export const AnnouncementCard = ({
         <div className="flex items-center justify-between pt-1">
           <div className="text-muted-foreground flex items-center gap-2 text-xs">
             <MessageSquare className="size-3" />
-            <span>Click to view and edit</span>
+            <span>Click to view full announcement</span>
           </div>
 
-          {/* Management indicator */}
+          {/* Read indicator */}
           <div className="opacity-0 transition-opacity group-hover:opacity-100">
-            <div className="flex items-center gap-1">
-              <Edit className="text-primary/60 size-3" />
-              <div className="bg-primary/20 size-2 rounded-full" />
-            </div>
+            <div className="bg-primary/20 size-2 rounded-full" />
           </div>
         </div>
       </div>

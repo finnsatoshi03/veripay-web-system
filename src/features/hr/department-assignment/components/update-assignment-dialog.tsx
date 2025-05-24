@@ -98,7 +98,7 @@ export const UpdateAssignmentDialog = ({
     employee.user_id.user_profiles.first_name &&
     employee.user_id.user_profiles.last_name
       ? `${employee.user_id.user_profiles.first_name} ${employee.user_id.user_profiles.last_name}`
-      : "Unknown";
+      : "Unknown Employee";
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

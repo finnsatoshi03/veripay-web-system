@@ -23,7 +23,7 @@ export const ProfileCompletionDialog = ({
 }: ProfileCompletionDialogProps) => {
   return (
     <AlertDialog open={open}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="max-h-[90vh] max-w-md overflow-y-auto">
         <AlertDialogHeader>
           <AlertDialogTitle>Complete Your Profile</AlertDialogTitle>
           <AlertDialogDescription>

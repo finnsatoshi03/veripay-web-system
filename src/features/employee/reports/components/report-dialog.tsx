@@ -65,7 +65,9 @@ export const ReportDialog = ({
   };
 
   const status = report.status || "In Progress";
-  const assignedToName = `${report.assignedTo?.first_name} ${report.assignedTo?.last_name}`;
+  const assignedToName = report.assignedTo
+    ? `${report.assignedTo.first_name} ${report.assignedTo.last_name}`.trim()
+    : "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,7 +109,7 @@ export const ReportDialog = ({
             {/* Assigned To */}
             <div className="text-muted-foreground text-sm">Assigned to</div>
             <div>
-              {report.assignedTo ? (
+              {report.assignedTo && assignedToName ? (
                 <div className="flex items-center gap-2">
                   <Avatar className="size-6 rounded-md">
                     <AvatarImage

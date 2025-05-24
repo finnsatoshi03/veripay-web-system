@@ -60,7 +60,9 @@ export const ReportCard = ({
     }
   };
 
-  const assignedToName = `${assignedTo?.first_name} ${assignedTo?.last_name}`;
+  const assignedToName = assignedTo
+    ? `${assignedTo.first_name} ${assignedTo.last_name}`.trim()
+    : "";
 
   return (
     <div
@@ -83,7 +85,7 @@ export const ReportCard = ({
         {description}
       </p>
 
-      {assignedTo && (
+      {assignedTo && assignedToName && (
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-xs">Assigned to</p>
           <Tooltip>

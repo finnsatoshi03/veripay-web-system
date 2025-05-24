@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarIcon, ChevronDown, Check } from "lucide-react";
+import { useCreateLeaveRequest } from "../mutations/useCreateLeaveRequest";
 
 // Define leave type as a union type
 type LeaveType = "Vacation" | "Sick" | "Emergency" | "Bereavement";
@@ -88,8 +89,8 @@ export const CreateLeaveRequestForm = ({
   preselectedLeaveType,
   disableLeaveTypeSelection = false,
 }: CreateLeaveRequestFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [leaveSpan, setLeaveSpan] = useState(0);
+  const createLeaveRequestMutation = useCreateLeaveRequest();
 
   // Map preselected type string to the expected format
   const mapLeaveType = (type: string): LeaveType => {
@@ -133,20 +134,12 @@ export const CreateLeaveRequestForm = ({
   }, [startDate, endDate]);
 
   const onSubmit = (values: FormValues) => {
-    setIsSubmitting(true);
-
-    try {
-      // For now, just log the values
-      console.log("Submitted values:", values);
-
-      // Close the dialog after successful submission
-      onOpenChange(false);
-      form.reset();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    createLeaveRequestMutation.mutate(values, {
+      onSuccess: () => {
+        onOpenChange(false);
+        form.reset();
+      },
+    });
   };
 
   const leaveTypes = [
@@ -154,7 +147,6 @@ export const CreateLeaveRequestForm = ({
     { value: "Sick", label: "Sick" },
     { value: "Emergency", label: "Emergency" },
     { value: "Bereavement", label: "Bereavement" },
-    { value: "Annual", label: "Annual" },
   ];
 
   return (
@@ -395,8 +387,13 @@ export const CreateLeaveRequestForm = ({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Submit Request"}
+                <Button
+                  type="submit"
+                  disabled={createLeaveRequestMutation.isPending}
+                >
+                  {createLeaveRequestMutation.isPending
+                    ? "Submitting..."
+                    : "Submit Request"}
                 </Button>
               </div>
             </form>

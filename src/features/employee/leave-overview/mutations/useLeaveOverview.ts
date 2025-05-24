@@ -93,6 +93,7 @@ const transformToCardProps = (
   request: LeaveRequest,
   leaveTypeName?: string,
   employeeName?: string,
+  profileImage?: string,
 ): LeaveRequestCardProps => {
   // Extract reviewer information if available
   const reviewedBy = request.reviewed_by?.user_profiles
@@ -112,6 +113,7 @@ const transformToCardProps = (
     status: request.status || "pending",
     requestedBy: {
       name: employeeName || "Employee",
+      image: profileImage,
     },
     reviewedBy,
     dateRequested: request.requested_at,
@@ -123,6 +125,7 @@ const processLeaveRequests = (
   leaveRequests: LeaveRequest[],
   leaveTypes: LeaveType[],
   employeeName?: string,
+  profileImage?: string,
 ): LeaveAllowanceData["leaveRequests"] => {
   // Create a map for quick leave type lookup
   const leaveTypeMap = new Map(leaveTypes.map((lt) => [lt.id, lt.name]));
@@ -133,6 +136,7 @@ const processLeaveRequests = (
         request,
         leaveTypeMap.get(request.leave_type_id),
         employeeName,
+        profileImage,
       ),
   );
 
@@ -144,7 +148,7 @@ const processLeaveRequests = (
 };
 
 export const useLeaveOverview = () => {
-  const { employee, fullName } = useUser();
+  const { employee, fullName, profile } = useUser();
   const employeeId = employee?.id;
 
   return useQuery({
@@ -166,6 +170,7 @@ export const useLeaveOverview = () => {
         leaveRequests,
         leaveTypes,
         fullName,
+        profile?.profile_image || "",
       );
 
       return {

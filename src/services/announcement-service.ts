@@ -1,4 +1,4 @@
-import { supabase } from "../supabase";
+import { supabase } from "./supabase";
 
 export const getUpcomingBirthdays = async (page = 0, pageSize = 10) => {
   try {

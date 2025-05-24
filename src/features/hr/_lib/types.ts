@@ -104,3 +104,25 @@ export interface LeaveRequest {
   start_date: string;
   end_date: string;
 }
+
+export interface Announcement {
+  id: number;
+  title: string;
+  body: string;
+  target_role?: {
+    id: number;
+    user_roles: {
+      name: string;
+    };
+  };
+  created_by: {
+    id: number;
+    user_profiles: {
+      first_name: string;
+      last_name: string;
+      profile_image?: string;
+    };
+  };
+  created_at: string;
+  scope: "global" | "by role";
+}

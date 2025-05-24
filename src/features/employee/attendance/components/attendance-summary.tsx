@@ -18,7 +18,9 @@ export const AttendanceSummary = ({ items }: AttendanceSummaryProps) => {
             {item.label}
           </p>
           <p className="text-2xl font-semibold">
-            {item.label === "Ave. Check-in" || item.label === "Ave. Check-out"
+            {(item.label === "Ave. Check-in" ||
+              item.label === "Ave. Check-out") &&
+            item.value !== "N/A"
               ? formatTime(item.value)
               : item.value}
           </p>

@@ -54,13 +54,17 @@ export const ReportsBoard = () => {
           importance: importanceMapped as ReportCardProps["importance"],
           status: report.status,
           submittedBy: report.submitted_by?.user_profiles?.first_name
-            ? `${report.submitted_by.user_profiles.first_name} ${report.submitted_by.user_profiles.last_name || ""}`
-            : "Unknown",
+            ? {
+                first_name: report.submitted_by.user_profiles.first_name,
+                last_name: report.submitted_by.user_profiles.last_name || "",
+                profile_image: report.submitted_by.user_profiles.profile_image,
+              }
+            : undefined,
           assignedTo: report.assigned_to?.user_profiles
             ? {
                 first_name: report.assigned_to.user_profiles.first_name,
                 last_name: report.assigned_to.user_profiles.last_name,
-                image: undefined, // Add if available in your data
+                profile_image: report.assigned_to.user_profiles.profile_image,
               }
             : undefined,
           rejectionReason: report.rejection_reason,
@@ -101,14 +105,14 @@ export const ReportsBoard = () => {
       id: "toReview",
       title: "To Assigned",
       icon: <Clipboard className="size-4" />,
-      items: toReviewItems,
+      items: inProgressItems,
       allowDrop: false,
     },
     {
       id: "inProgress",
       title: "Assigned",
       icon: <Clock className="size-4" />,
-      items: inProgressItems,
+      items: toReviewItems,
       allowDrop: true,
     },
     {
@@ -134,7 +138,7 @@ export const ReportsBoard = () => {
   ) => {
     // Only allow drop from "To Assigned" to "Assigned"
     if (fromColumn === "toReview" && toColumn === "inProgress") {
-      const draggedReport = toReviewItems.find((item) => item.id === itemId);
+      const draggedReport = inProgressItems.find((item) => item.id === itemId);
       if (draggedReport) {
         setAssignmentDialog({
           reportId: parseInt(itemId),

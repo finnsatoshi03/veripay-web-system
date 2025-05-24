@@ -1,9 +1,18 @@
 import supabase from "@/lib/supabase";
-import type { Report } from "@/features/hr/_lib/types";
 
-export const createReport = async (
-  report: Omit<Report, "id" | "created_at">,
-) => {
+type Report = {
+  id: number;
+  category: "Attendance" | "Payroll";
+  status: "In Progress" | "To Review" | "Resolved" | "Rejected";
+  assigned_to: number | null;
+  submitted_by: number;
+  submitted_at: string;
+  description: string;
+  flag_level: "Low" | "Normal" | "High";
+  created_at: string;
+};
+
+export const createReport = async (report: Omit<Report, "id" | "created_at">) => {
   try {
     const { data, error } = await supabase
       .from("reports")
@@ -19,10 +28,7 @@ export const createReport = async (
   }
 };
 
-export const editReport = async (
-  id: number,
-  updates: Partial<Omit<Report, "id" | "created_at">>,
-) => {
+export const editReport = async (id: number, updates: Partial<Omit<Report, "id" | "created_at">>) => {
   try {
     const { data, error } = await supabase
       .from("reports")
@@ -39,6 +45,7 @@ export const editReport = async (
   }
 };
 
+
 export const deleteReport = async (id: number) => {
   try {
     const { error } = await supabase.from("reports").delete().eq("id", id);
@@ -50,24 +57,6 @@ export const deleteReport = async (id: number) => {
   }
 };
 
-export const getReportByUser = async (userId: number) => {
-  try {
-    const { data, error } = await supabase
-      .from("reports")
-      .select(
-        "*, submitted_by(user_profiles(first_name, last_name, profile_image)), assigned_to(user_profiles(first_name, last_name, profile_image))",
-      )
-      .eq("submitted_by", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) throw new Error(error.message);
-
-    return data;
-  } catch (error) {
-    console.error("Get Report By User Error:", error);
-    return [];
-  }
-};
 
 export const getReportById = async (id: number) => {
   try {
@@ -85,17 +74,17 @@ export const getReportById = async (id: number) => {
   }
 };
 
-export const getAllReports = async (): Promise<Report[]> => {
+
+export const getAllReports = async (start?: string, end?: string) => {
   try {
     const { data, error } = await supabase
       .from("reports")
-      .select(
-        "*, submitted_by(user_profiles(first_name, last_name, profile_image)), assigned_to(user_profiles(first_name, last_name, profile_image))",
-      )
-      .order("created_at", { ascending: false });
+      .select("*")
+      .order("created_at", { ascending: false })
+      .gte("created_at", start)
+      .lte("created_at", end); 
 
     if (error) throw new Error(error.message);
-
     return data;
   } catch (error) {
     console.error("Get All Reports Error:", error);

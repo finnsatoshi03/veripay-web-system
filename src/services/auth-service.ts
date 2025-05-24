@@ -1,6 +1,21 @@
 import type { NewUser } from "@/types/api";
-import { clearAuthToken, setAuthToken, supabase } from "./supabase";
+import { clearAuthToken, setAuthToken } from "./supabase";
 import { useUserStore } from "@/store/userStore";
+import { createClient, FunctionsHttpError } from "@supabase/supabase-js";
+
+// Create a separate Supabase client for anonymous requests (no auth headers)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+const anonymousSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
+
+// Import the main supabase client for authenticated requests
+import { supabase } from "./supabase";
 
 // ============================
 // Authentication Methods
@@ -165,16 +180,20 @@ export const setupAuthListener = () => {
 
 export const createRegistrationRequest = async (employee: NewUser) => {
   try {
-    const { data, error } = await supabase
-      .from("registration_requests")
-      .insert({
-        first_name: employee.firstName,
-        last_name: employee.lastName,
-        email: employee.email,
-      });
+    const { data, error } = await anonymousSupabase.functions.invoke(
+      "create-registration-request",
+      {
+        body: {
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          email: employee.email,
+        },
+      },
+    );
 
-    if (error) {
-      throw error;
+    if (error && error instanceof FunctionsHttpError) {
+      const errorMessage = await error.context.json();
+      throw new Error(errorMessage.error);
     }
 
     return data;

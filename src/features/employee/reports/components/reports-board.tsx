@@ -31,7 +31,10 @@ export const ReportsBoard = ({ searchQuery = "" }: ReportsBoardProps) => {
         item.title.toLowerCase().includes(query) ||
         item.description.toLowerCase().includes(query) ||
         item.category.toLowerCase().includes(query) ||
-        (item.submittedBy && item.submittedBy.toLowerCase().includes(query))
+        (item.submittedBy &&
+          `${item.submittedBy.first_name} ${item.submittedBy.last_name}`
+            .toLowerCase()
+            .includes(query))
       );
     });
   };
@@ -60,10 +63,18 @@ export const ReportsBoard = ({ searchQuery = "" }: ReportsBoardProps) => {
           date: format(new Date(report.submitted_at), "MMM d, yyyy"),
           importance: importanceMapped as ReportCardProps["importance"],
           status: report.status,
-          submittedBy: report.submitted_by?.user_profiles?.first_name
-            ? `${report.submitted_by.user_profiles.first_name} ${report.submitted_by.user_profiles.last_name || ""}`
-            : "Unknown",
-          assignedTo: report.assigned_to?.user_profiles,
+          submittedBy: {
+            first_name: report.submitted_by?.user_profiles?.first_name || "",
+            last_name: report.submitted_by?.user_profiles?.last_name || "",
+            profile_image:
+              report.submitted_by?.user_profiles?.profile_image || "",
+          },
+          assignedTo: {
+            first_name: report.assigned_to?.user_profiles?.first_name || "",
+            last_name: report.assigned_to?.user_profiles?.last_name || "",
+            profile_image:
+              report.assigned_to?.user_profiles?.profile_image || "",
+          },
         };
 
         // Add to appropriate column based on status

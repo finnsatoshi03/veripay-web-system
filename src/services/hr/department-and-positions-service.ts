@@ -16,12 +16,6 @@ interface Position {
 
 interface Employee {
   id: number;
-  role: {
-    id: number;
-    role: {
-      name: string;
-    };
-  };
   user_id: {
     id: number;
     user_profiles: {
@@ -29,20 +23,14 @@ interface Employee {
       last_name: string;
       profile_image?: string;
     };
+    user_roles: { role_id: { name: string } };
   };
-  department_id: {
-    id: number;
-    departments: {
-      name: string;
-    };
-  };
+  department_id: { id: number; name: string };
   position_id: {
     id: number;
-    positions: {
-      title: string;
-      level: number;
-      base_salary: number;
-    };
+    title: string;
+    level: number;
+    base_salary: number;
   };
   status: string;
   created_at: string;
@@ -75,7 +63,7 @@ export const getEmployees = async (): Promise<Employee[] | undefined> => {
     const { data, error } = await supabase
       .from("employees")
       .select(
-        "*, role:roles(name), user_id:users(id, user_profiles(first_name, last_name, profile_image)), department_id:departments(id, name), position_id:positions(id, title, level, base_salary)",
+        "*, user_id:users(id, user_profiles(first_name, last_name, profile_image), user_roles(role_id:roles(name))), department_id:departments(id, name), position_id:positions(id, title, level, base_salary)",
       );
     if (error) throw error;
 

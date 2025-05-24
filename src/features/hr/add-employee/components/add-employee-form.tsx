@@ -25,6 +25,7 @@ import {
   useDepartments,
   usePositions,
 } from "@/features/hr/_mutations/useDeptAndPositions";
+import { useCreateEmployee } from "../mutations/useCreateEmployee";
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -51,7 +52,7 @@ const formSchema = z.object({
   address: z.string().min(10, {
     message: "Address must be at least 10 characters.",
   }),
-  gender: z.enum(["Male", "Female"], {
+  gender: z.enum(["Male", "Female", "Other"], {
     required_error: "Please select a gender.",
   }),
   birthdate: z.string().min(1, {
@@ -73,6 +74,8 @@ export const AddEmployeeForm = () => {
   const { data: departments, isLoading: isDepartmentsLoading } =
     useDepartments();
   const { data: positions, isLoading: isPositionsLoading } = usePositions();
+
+  const createEmployeeMutation = useCreateEmployee();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -100,10 +103,18 @@ export const AddEmployeeForm = () => {
   }, [positions, selectedDepartmentId]);
 
   const handleSubmit = (values: FormValues) => {
-    console.log("Submitted form data:", {
-      ...values,
-      photo: selectedPhoto,
-    });
+    createEmployeeMutation.mutate(
+      {
+        ...values,
+        photo: selectedPhoto || undefined,
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          setSelectedPhoto(null);
+        },
+      },
+    );
   };
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -289,6 +300,7 @@ export const AddEmployeeForm = () => {
                     <SelectContent>
                       <SelectItem value="Male">Male</SelectItem>
                       <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -410,8 +422,14 @@ export const AddEmployeeForm = () => {
         </div>
 
         <div className="flex justify-end space-x-4">
-          <Button type="submit" variant="default">
-            Add Employee
+          <Button
+            type="submit"
+            variant="default"
+            disabled={createEmployeeMutation.isPending}
+          >
+            {createEmployeeMutation.isPending
+              ? "Adding Employee..."
+              : "Add Employee"}
           </Button>
         </div>
       </form>

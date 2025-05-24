@@ -20,11 +20,15 @@ export interface ReportCardProps {
   date: string;
   importance: "Low" | "Medium" | "High" | "Normal";
   status?: string;
-  submittedBy?: string;
+  submittedBy?: {
+    first_name: string;
+    last_name: string;
+    profile_image?: string;
+  };
   assignedTo?: {
     first_name: string;
     last_name: string;
-    image?: string;
+    profile_image?: string;
   };
   rejectionReason?: string;
   icon?: React.ReactNode;
@@ -56,7 +60,9 @@ export const ReportCard = ({
     }
   };
 
-  const assignedToName = `${assignedTo?.first_name} ${assignedTo?.last_name}`;
+  const assignedToName = assignedTo
+    ? `${assignedTo.first_name} ${assignedTo.last_name}`.trim()
+    : "";
 
   return (
     <div
@@ -79,14 +85,17 @@ export const ReportCard = ({
         {description}
       </p>
 
-      {assignedTo && (
+      {assignedTo && assignedToName && (
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-xs">Assigned to</p>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Avatar className="size-6 rounded-md">
-                <AvatarImage src={assignedTo.image} alt={assignedToName} />
-                <AvatarFallback className="rounded-md">
+              <Avatar className="size-6">
+                <AvatarImage
+                  src={assignedTo.profile_image}
+                  alt={assignedToName}
+                />
+                <AvatarFallback>
                   {formatInitials(assignedToName)}
                 </AvatarFallback>
               </Avatar>

@@ -58,7 +58,7 @@ export const DraggableReportCard = ({
   };
 
   const assignedToName = assignedTo
-    ? `${assignedTo.first_name} ${assignedTo.last_name}`
+    ? `${assignedTo.first_name} ${assignedTo.last_name}`.trim()
     : "";
 
   return (
@@ -89,7 +89,10 @@ export const DraggableReportCard = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Avatar className="size-6 rounded-md">
-                <AvatarImage src={assignedTo.image} alt={assignedToName} />
+                <AvatarImage
+                  src={assignedTo.profile_image}
+                  alt={assignedToName}
+                />
                 <AvatarFallback className="rounded-md">
                   {formatInitials(assignedToName)}
                 </AvatarFallback>

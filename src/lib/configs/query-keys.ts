@@ -21,6 +21,10 @@ export const queryKeys = {
     departments: "departments",
     positions: "positions",
   },
+  NOTIFICATIONS: {
+    userNotifications: "userNotifications",
+    notificationStats: "notificationStats",
+  },
   REPORTS: "reports",
   ATTENDANCE_HISTORY: "attendanceHistory",
   ANNOUNCEMENTS: "announcements",

@@ -54,7 +54,7 @@ export const AssignmentDialog = ({
       {
         reportId,
         assignedToId: parseInt(selectedHrId),
-        status: "In Progress",
+        status: "To Review",
       },
       {
         onSuccess: () => {

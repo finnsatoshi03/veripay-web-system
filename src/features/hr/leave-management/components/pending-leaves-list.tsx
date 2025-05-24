@@ -4,16 +4,47 @@ import { Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { LeaveRequest } from "@/features/hr/_lib/types";
 
 type PendingLeavesListProps = {
   leaveRequests: LeaveRequest[];
   onLeaveClick: (leave: LeaveRequest) => void;
+  isLoading?: boolean;
+};
+
+const PendingLeavesListSkeleton = () => {
+  return (
+    <div className="space-y-6">
+      {[1, 2].map((group) => (
+        <div key={group} className="space-y-3">
+          <Skeleton className="h-4 w-24" />
+          <div className="space-y-2">
+            {[1, 2, 3].map((item) => (
+              <Card key={item} className="bg-transparent p-0">
+                <CardContent className="h-fit p-2">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-5 w-24" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 export const PendingLeavesList = ({
   leaveRequests,
   onLeaveClick,
+  isLoading = false,
 }: PendingLeavesListProps) => {
   const pendingLeaves = leaveRequests.filter(
     (leave) => leave.status === "pending",
@@ -46,6 +77,10 @@ export const PendingLeavesList = ({
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
+
+  if (isLoading) {
+    return <PendingLeavesListSkeleton />;
+  }
 
   if (pendingLeaves.length === 0) {
     return (

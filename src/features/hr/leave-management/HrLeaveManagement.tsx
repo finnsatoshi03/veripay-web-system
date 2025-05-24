@@ -89,16 +89,11 @@ export default function HrLeaveManagement() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            {isLoading ? (
-              <div className="text-muted-foreground py-8 text-center">
-                Loading leave requests...
-              </div>
-            ) : (
-              <PendingLeavesList
-                leaveRequests={filteredLeaveRequests}
-                onLeaveClick={handleLeaveClick}
-              />
-            )}
+            <PendingLeavesList
+              leaveRequests={filteredLeaveRequests}
+              onLeaveClick={handleLeaveClick}
+              isLoading={isLoading}
+            />
           </div>
         </ScrollArea>
       </div>

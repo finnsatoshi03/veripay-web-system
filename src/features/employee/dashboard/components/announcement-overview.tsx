@@ -103,7 +103,8 @@ export const AnnouncementOverview = () => {
                   title: announcement.title,
                   author: authorName(announcement),
                   author_name: authorName(announcement),
-                  author_avatar: "",
+                  author_avatar:
+                    announcement.created_by?.user_profiles.profile_image,
                   content: announcement.body,
                 };
                 return (

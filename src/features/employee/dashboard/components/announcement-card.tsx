@@ -1,4 +1,4 @@
-import { Calendar1 } from "lucide-react";
+import { Calendar1, Globe, Users } from "lucide-react";
 
 import { formatInitials } from "@/lib/helpers/formatters";
 
@@ -24,25 +24,65 @@ export const AnnouncementCard = ({
   author_name,
   content,
 }: AnnouncementCardProps) => {
+  const stripHtmlTags = (html: string) => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+  };
+
+  const getPreviewText = () => {
+    if (!content) return "No content";
+
+    // Strip HTML tags for clean preview text
+    const plainText = stripHtmlTags(content);
+    return plainText.trim() || "No content";
+  };
+
+  const isGlobal = target.toLowerCase() === "all employees";
+
   return (
     <div className="bg-input/80 space-y-2 rounded-md p-2">
-      <div className="flex items-center gap-2">
-        <Badge>{target}</Badge>
-        <div className="text-muted-foreground flex items-center gap-1 text-xs font-semibold">
-          <Calendar1 className="size-4" /> {date}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant={isGlobal ? "default" : "secondary"}>
+            {isGlobal ? (
+              <>
+                <Globe className="mr-1 h-3 w-3" />
+                Global
+              </>
+            ) : (
+              <>
+                <Users className="mr-1 h-3 w-3" />
+                {target}
+              </>
+            )}
+          </Badge>
+          <div className="text-muted-foreground flex items-center gap-1 text-xs">
+            <Calendar1 className="h-3 w-3" />
+            {date}
+          </div>
         </div>
       </div>
-      <h3 className="text-4xl font-semibold">{title}</h3>
-      <div className="flex items-center gap-2">
-        <Avatar className="size-6 rounded-md">
+
+      {/* Title */}
+      <h3 className="line-clamp-2 leading-tight font-semibold">{title}</h3>
+
+      {/* Preview of body */}
+      <p className="text-muted-foreground line-clamp-2 text-sm">
+        {getPreviewText()}
+      </p>
+
+      {/* Author */}
+      <div className="flex items-center gap-2 text-xs">
+        <Avatar className="size-5 rounded-md">
           <AvatarImage src={author_avatar} />
-          <AvatarFallback className="rounded-md">
+          <AvatarFallback className="rounded-md text-xs">
             {formatInitials(author)}
           </AvatarFallback>
         </Avatar>
-        <p className="text-muted-foreground text-sm">{author_name}</p>
+        <span className="text-muted-foreground">By {author_name}</span>
       </div>
-      <p className="text-muted-foreground text-sm">{content}</p>
     </div>
   );
 };

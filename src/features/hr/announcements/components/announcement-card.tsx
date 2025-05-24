@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { AnnouncementWithDetails } from "@/services/hr/hr-announcement-service";
-
+import { formatInitials } from "@/lib/helpers/formatters";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface AnnouncementCardProps {
   announcement: AnnouncementWithDetails;
   isSelected?: boolean;
@@ -67,8 +68,8 @@ export const AnnouncementCard = ({
   return (
     <div
       className={cn(
-        "border-border hover:bg-muted/50 group cursor-pointer rounded-lg border p-4 transition-colors",
-        isSelected && "bg-accent border-accent-foreground",
+        "bg-input/80 hover:bg-input group cursor-pointer rounded-md p-2 transition-colors",
+        isSelected && "bg-background border-2 border-blue-500",
       )}
       onClick={() => onSelect(announcement)}
       onKeyDown={handleKeyDown}
@@ -76,7 +77,7 @@ export const AnnouncementCard = ({
       role="button"
       aria-label={`Select announcement: ${announcement.title}`}
     >
-      <div className="space-y-3">
+      <div className="space-y-2">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -148,8 +149,18 @@ export const AnnouncementCard = ({
         </p>
 
         {/* Author */}
-        <div className="text-muted-foreground flex items-center justify-between text-xs">
-          <span>By {getAuthorName()}</span>
+        <div className="flex items-center gap-2 text-xs">
+          <Avatar className="size-5 rounded-md">
+            <AvatarImage
+              src={
+                announcement.created_by_profile?.user_profiles?.profile_image
+              }
+            />
+            <AvatarFallback className="rounded-md text-xs">
+              {formatInitials(getAuthorName())}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-muted-foreground">By {getAuthorName()}</span>
         </div>
       </div>
     </div>

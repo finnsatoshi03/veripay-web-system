@@ -11,6 +11,7 @@ export type Announcement = {
     user_profiles: {
       first_name: string;
       last_name: string;
+      profile_image: string;
     };
   };
   created_at: string;

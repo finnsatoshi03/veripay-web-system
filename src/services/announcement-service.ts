@@ -63,7 +63,7 @@ export const getAnnouncements = async (
     const { data, error } = await supabase
       .from("announcements")
       .select(
-        "*, roles(name), created_by(user_profiles(first_name, last_name))",
+        "*, roles(name), created_by(user_profiles(first_name, last_name, profile_image))",
       )
       .order("created_at", { ascending: false });
 

@@ -26,6 +26,7 @@ export type AnnouncementWithDetails = {
     user_profiles: {
       first_name: string;
       last_name: string;
+      profile_image: string;
     };
   } | null;
 };
@@ -45,7 +46,7 @@ export const getAllAnnouncementsForHr = async (page = 0, pageSize = 20) => {
         created_at,
         scope,
         roles:target_role(id, name),
-        created_by_profile:created_by(user_profiles(first_name, last_name))
+        created_by_profile:created_by(user_profiles(first_name, last_name, profile_image))
       `,
       )
       .order("created_at", { ascending: false });
@@ -86,7 +87,7 @@ export const getAnnouncementsByScope = async (
         created_at,
         scope,
         roles:target_role(id, name),
-        created_by_profile:created_by(user_profiles(first_name, last_name))
+        created_by_profile:created_by(user_profiles(first_name, last_name, profile_image))
       `);
 
     if (scope !== "all") {
@@ -140,7 +141,7 @@ export const createHrAnnouncement = async (announcement: HrAnnouncement) => {
         created_at,
         scope,
         roles:target_role(id, name),
-        created_by_profile:created_by(user_profiles(first_name, last_name))
+        created_by_profile:created_by(user_profiles(first_name, last_name, profile_image))
       `,
       )
       .single();
@@ -186,7 +187,7 @@ export const updateHrAnnouncement = async (
         created_at,
         scope,
         roles:target_role(id, name),
-        created_by_profile:created_by(user_profiles(first_name, last_name))
+        created_by_profile:created_by(user_profiles(first_name, last_name, profile_image))
       `,
       )
       .single();

@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Building2, TrendingUp } from "lucide-react";
 import type { Employee, Department, Position } from "../../_lib/types";
-import { formatPlaceValue } from "@/lib/helpers/formatters";
+import { formatPlaceValue, formatRole } from "@/lib/helpers/formatters";
 
 interface PositionSelectionDialogProps {
   open: boolean;
@@ -71,7 +71,9 @@ export const PositionSelectionDialog = ({
                 {employee.user_id.user_profiles.last_name}
               </p>
               <p className="text-muted-foreground text-sm">
-                Current Role: {employee.role?.role?.name || "N/A"}
+                Current Role:{" "}
+                {formatRole(employee.user_id.user_roles?.[0].role_id.name) ||
+                  "N/A"}
               </p>
             </div>
           </div>

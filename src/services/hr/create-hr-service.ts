@@ -58,7 +58,7 @@ export const createHrEmployee = async (values: HrData) => {
       // Get public URL
       const {
         data: { publicUrl },
-      } = supabase.storage.from("profile-pictures").getPublicUrl(fileName);
+      } = supabase.storage.from("profiles").getPublicUrl(fileName);
 
       profilePicUrl = publicUrl;
     }

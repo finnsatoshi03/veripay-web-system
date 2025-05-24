@@ -103,10 +103,18 @@ export const AddEmployeeForm = () => {
   }, [positions, selectedDepartmentId]);
 
   const handleSubmit = (values: FormValues) => {
-    createEmployeeMutation.mutate({
-      ...values,
-      photo: selectedPhoto || undefined,
-    });
+    createEmployeeMutation.mutate(
+      {
+        ...values,
+        photo: selectedPhoto || undefined,
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          setSelectedPhoto(null);
+        },
+      },
+    );
   };
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -414,8 +422,14 @@ export const AddEmployeeForm = () => {
         </div>
 
         <div className="flex justify-end space-x-4">
-          <Button type="submit" variant="default">
-            Add Employee
+          <Button
+            type="submit"
+            variant="default"
+            disabled={createEmployeeMutation.isPending}
+          >
+            {createEmployeeMutation.isPending
+              ? "Adding Employee..."
+              : "Add Employee"}
           </Button>
         </div>
       </form>

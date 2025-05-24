@@ -20,7 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Building2, Briefcase, ArrowRight } from "lucide-react";
 import type { Employee, Department, Position } from "../../_lib/types";
-import { formatInitials, formatPlaceValue } from "@/lib/helpers/formatters";
+import {
+  formatInitials,
+  formatPlaceValue,
+  formatRole,
+} from "@/lib/helpers/formatters";
 
 interface UpdateAssignmentDialogProps {
   open: boolean;
@@ -124,7 +128,9 @@ export const UpdateAssignmentDialog = ({
             <div className="flex-1">
               <p className="font-medium">{name}</p>
               <p className="text-muted-foreground text-sm">
-                Current Role: {employee.role?.role?.name || "N/A"}
+                Current Role:{" "}
+                {formatRole(employee.user_id.user_roles?.[0].role_id.name) ||
+                  "N/A"}
               </p>
             </div>
           </div>

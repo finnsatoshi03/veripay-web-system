@@ -22,39 +22,30 @@ export const useRealtimeNotifications = (userId: number) => {
   useEffect(() => {
     if (!userId) return;
 
-    console.log("Setting up real-time subscription for user:", userId);
-
     // Subscribe to notifications table changes for this user
-    const channel = supabase
-      .channel("notifications-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*", // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log("Real-time notification change:", payload);
-
-          // Handle different types of changes
-          switch (payload.eventType) {
-            case "INSERT":
-              handleNotificationInsert(payload.new as Notification);
-              break;
-            case "UPDATE":
-              handleNotificationUpdate(payload.new as Notification);
-              break;
-            case "DELETE":
-              handleNotificationDelete(payload.old as Notification);
-              break;
-          }
-        },
-      )
-      .subscribe((status) => {
-        console.log("Subscription status:", status);
-      });
+    const channel = supabase.channel("notifications-changes").on(
+      "postgres_changes",
+      {
+        event: "*", // Listen to all events (INSERT, UPDATE, DELETE)
+        schema: "public",
+        table: "notifications",
+        filter: `user_id=eq.${userId}`,
+      },
+      (payload) => {
+        // Handle different types of changes
+        switch (payload.eventType) {
+          case "INSERT":
+            handleNotificationInsert(payload.new as Notification);
+            break;
+          case "UPDATE":
+            handleNotificationUpdate(payload.new as Notification);
+            break;
+          case "DELETE":
+            handleNotificationDelete(payload.old as Notification);
+            break;
+        }
+      },
+    );
 
     // Handlers for real-time events
     const handleNotificationInsert = (newNotification: Notification) => {
@@ -117,7 +108,6 @@ export const useRealtimeNotifications = (userId: number) => {
 
     // Cleanup subscription on unmount
     return () => {
-      console.log("Cleaning up real-time subscription");
       supabase.removeChannel(channel);
     };
   }, [userId, queryClient]);

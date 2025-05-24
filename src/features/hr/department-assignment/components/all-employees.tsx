@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Users, Edit3 } from "lucide-react";
 import type { Employee } from "../../_lib/types";
-import { formatInitials } from "@/lib/helpers/formatters";
+import { formatInitials, formatRole } from "@/lib/helpers/formatters";
 
 interface AllEmployeesProps {
   employees: Employee[];
@@ -71,7 +71,7 @@ export const AllEmployees = ({
             {isAssigned && <Edit3 className="text-muted-foreground size-3" />}
           </div>
           <p className="text-muted-foreground text-xs">
-            {employee.role?.role?.name || "N/A"}
+            {formatRole(employee.user_id.user_roles?.[0].role_id.name) || "N/A"}
           </p>
           <div className="mt-1 flex flex-wrap gap-1">
             {!employee.department_id && (
@@ -111,7 +111,7 @@ export const AllEmployees = ({
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="h-full">
+      <CardContent className="h-full min-h-0">
         <ScrollArea className="h-full min-h-0">
           <div className="space-y-4">
             {/* Unassigned Employees Section */}

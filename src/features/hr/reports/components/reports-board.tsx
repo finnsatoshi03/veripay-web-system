@@ -29,8 +29,6 @@ export const ReportsBoard = () => {
 
   const { data: reportsData, isLoading } = useAllReports();
 
-  console.log(reportsData);
-
   // Transform API data to match our KanbanBoard format
   const processReports = () => {
     if (!reportsData)

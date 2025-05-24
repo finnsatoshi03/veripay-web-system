@@ -4,6 +4,9 @@ import {
   Clock,
   Clipboard,
   AlertCircle,
+  User,
+  Tag,
+  FileText,
 } from "lucide-react";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -52,15 +55,29 @@ export const ReportDialog = ({
   const getStatusStyles = (status: string) => {
     switch (status) {
       case "In Progress":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 border-blue-200";
       case "To Review":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
       case "Resolved":
-        return "bg-green-100 text-green-700";
+        return "bg-green-100 text-green-700 border-green-200";
       case "Rejected":
-        return "bg-red-100 text-red-700";
+        return "bg-red-100 text-red-700 border-red-200";
       default:
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 border-blue-200";
+    }
+  };
+
+  const getImportanceBadgeStyles = (importance: string) => {
+    switch (importance) {
+      case "High":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "Medium":
+      case "Normal":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "Low":
+        return "bg-green-100 text-green-700 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
@@ -69,112 +86,149 @@ export const ReportDialog = ({
     ? `${report.assignedTo.first_name} ${report.assignedTo.last_name}`.trim()
     : "";
 
+  const submittedByName = report.submittedBy
+    ? `${report.submittedBy.first_name} ${report.submittedBy.last_name}`.trim()
+    : "You";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px]">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[600px]">
         <div className="space-y-6">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm">
-            <span>Reports</span>
-            <span>/</span>
-            <span className="text-muted-foreground text-sm">{reportId}</span>
+          {/* Header */}
+          <div className="space-y-4">
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+              <span>Reports</span>
+              <span>/</span>
+              <span className="text-foreground font-medium">{reportId}</span>
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="pr-8 text-2xl leading-tight font-bold">
+                {report.title}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={`flex items-center gap-1.5 ${getStatusStyles(status)}`}
+                >
+                  {getStatusIcon(status)}
+                  {status}
+                </Badge>
+
+                <Badge variant="outline" className="flex items-center gap-1.5">
+                  <Tag className="size-3" />
+                  {report.category}
+                </Badge>
+
+                <Badge
+                  variant="outline"
+                  className={`flex items-center gap-1.5 ${getImportanceBadgeStyles(report.importance)}`}
+                >
+                  {report.importance}
+                </Badge>
+              </div>
+            </div>
           </div>
 
-          {/* Title */}
-          <h2 className="text-3xl font-bold">{report.title}</h2>
           <Separator />
 
-          {/* Grid layout for details - Notion style with labels on left */}
-          <div className="grid grid-cols-[200px_1fr] gap-y-6">
-            {/* Category */}
-            <div className="text-muted-foreground text-sm">Category</div>
-            <div>
-              <Badge variant="outline" className="flex items-center gap-1">
-                {report.icon}
-                {report.category}
-              </Badge>
-            </div>
-
-            {/* Status */}
-            <div className="text-muted-foreground text-sm">Status</div>
-            <div>
-              <Badge
-                className={`flex items-center gap-1 ${getStatusStyles(status)}`}
-              >
-                {getStatusIcon(status)}
-                {status}
-              </Badge>
-            </div>
-
-            {/* Assigned To */}
-            <div className="text-muted-foreground text-sm">Assigned to</div>
-            <div>
-              {report.assignedTo && assignedToName ? (
-                <div className="flex items-center gap-2">
-                  <Avatar className="size-6 rounded-md">
-                    <AvatarImage
-                      src={report.assignedTo.profile_image}
-                      alt={assignedToName}
-                    />
-                    <AvatarFallback>
-                      {formatInitials(assignedToName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">{assignedToName}</span>
-                </div>
-              ) : (
-                <span className="text-sm">Not assigned</span>
-              )}
-            </div>
-
-            {/* Submitted At */}
-            <div className="text-muted-foreground text-sm">Submitted at</div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="size-4 text-sm" />
-              {formatNotionDate(report.date)}
-            </div>
-
-            {/* Submitted By */}
-            <div className="text-muted-foreground text-muted-foreground text-sm">
-              Submitted by
-            </div>
-            <div className="flex items-center gap-2">
-              <Avatar className="size-6 rounded-md">
-                <AvatarImage
-                  src={report.submittedBy?.profile_image}
-                  alt={`${report.submittedBy?.first_name} ${report.submittedBy?.last_name}`}
-                />
-                <AvatarFallback className="bg-primary/10 text-primary rounded-md">
-                  {formatInitials(report.submittedBy?.first_name || "You")}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">
-                {report.submittedBy?.first_name && report.submittedBy?.last_name
-                  ? `${report.submittedBy?.first_name} ${report.submittedBy?.last_name}`
-                  : "You"}
-              </span>
-            </div>
-
-            {/* Importance */}
-            <div className="text-muted-foreground text-sm">Importance</div>
-            <div>
-              <Badge
-                className={` ${
-                  report.importance === "High"
-                    ? "bg-red-100 text-red-700"
-                    : report.importance === "Medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                } `}
-              >
-                {report.importance}
-              </Badge>
-            </div>
-
+          {/* Content */}
+          <div className="space-y-6">
             {/* Description */}
-            <div className="text-muted-foreground text-sm">Description</div>
-            <div className="text-sm whitespace-pre-wrap">
-              {report.description}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <FileText className="text-muted-foreground size-4" />
+                <h3 className="font-semibold">Description</h3>
+              </div>
+              <div className="pl-6">
+                <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
+                  {report.description}
+                </p>
+              </div>
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* People & Timeline */}
+            <div className="space-y-6">
+              <h3 className="flex items-center gap-2 font-semibold">
+                <User className="text-muted-foreground size-4" />
+                People & Timeline
+              </h3>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {/* Submitted by */}
+                <div className="space-y-3">
+                  <h4 className="text-muted-foreground text-sm font-medium">
+                    Submitted by
+                  </h4>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-9 flex-shrink-0">
+                      <AvatarImage
+                        src={report.submittedBy?.profile_image}
+                        alt={submittedByName}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                        {formatInitials(submittedByName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">{submittedByName}</p>
+                      <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                        <Calendar className="size-3" />
+                        {formatNotionDate(report.date)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Assigned to */}
+                <div className="space-y-3">
+                  <h4 className="text-muted-foreground text-sm font-medium">
+                    Assigned to
+                  </h4>
+                  {report.assignedTo && assignedToName ? (
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-9 flex-shrink-0">
+                        <AvatarImage
+                          src={report.assignedTo.profile_image}
+                          alt={assignedToName}
+                        />
+                        <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                          {formatInitials(assignedToName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium">{assignedToName}</p>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <div className="size-2 rounded-full bg-green-500"></div>
+                          <span className="font-medium text-green-600">
+                            Assigned
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="bg-muted flex size-9 flex-shrink-0 items-center justify-center rounded-full">
+                        <User className="text-muted-foreground size-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-muted-foreground text-sm font-medium">
+                          Not assigned
+                        </p>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <div className="size-2 rounded-full bg-amber-500"></div>
+                          <span className="font-medium text-amber-600">
+                            Pending
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

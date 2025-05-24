@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ProfileImageSelector } from "@/components/custom/profile-image-selector";
 import type { UserProfile } from "@/store/userStore";
 import { useUpdateProfile } from "@/features/profile/mutations/profile-service";
 
@@ -29,6 +31,7 @@ const formSchema = z.object({
   address: z.string().min(1, { message: "Address is required." }),
   birth_date: z.string().min(1, { message: "Birth date is required." }),
   gender: z.string().min(1, { message: "Gender is required." }),
+  profile_image: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -44,6 +47,10 @@ export const CompleteProfileForm = ({
   userId,
   onSuccess,
 }: CompleteProfileFormProps) => {
+  const [profileImage, setProfileImage] = useState<string>(
+    profile?.profile_image || "",
+  );
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,6 +60,7 @@ export const CompleteProfileForm = ({
       address: profile?.address || "",
       birth_date: profile?.birth_date || "",
       gender: profile?.gender || "",
+      profile_image: profile?.profile_image || "",
     },
   });
 
@@ -62,7 +70,10 @@ export const CompleteProfileForm = ({
     updateProfileMutation.mutate(
       {
         userId,
-        profileData: values,
+        profileData: {
+          ...values,
+          profile_image: profileImage,
+        },
       },
       {
         onSuccess: () => {
@@ -72,9 +83,30 @@ export const CompleteProfileForm = ({
     );
   };
 
+  const handleImageChange = (imageUrl: string) => {
+    setProfileImage(imageUrl);
+    form.setValue("profile_image", imageUrl);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Profile Image Section */}
+        <div className="flex flex-col items-center space-y-4">
+          <div className="text-center">
+            <h3 className="text-lg font-medium">Profile Picture</h3>
+            <p className="text-muted-foreground text-sm">
+              Upload a photo or choose from our collection
+            </p>
+          </div>
+          <ProfileImageSelector
+            currentImage={profileImage}
+            fallbackText={`${form.watch("first_name")?.[0] || ""}${form.watch("last_name")?.[0] || ""}`}
+            size="lg"
+            onImageChange={handleImageChange}
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}

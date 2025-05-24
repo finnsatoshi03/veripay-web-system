@@ -26,6 +26,7 @@ interface UserProfile {
   address?: string;
   birth_date?: string;
   gender?: string;
+  profile_image?: string;
 }
 
 type EditableUser = Partial<Pick<User, "is_active">>;
@@ -109,7 +110,7 @@ export const getProfile = async (id: string) => {
             )
           ),
           user_profiles (
-            first_name, last_name, contact_number, address, birth_date, gender
+            first_name, last_name, contact_number, address, birth_date, gender, profile_image
           )
         `,
       )

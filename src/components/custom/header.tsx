@@ -14,7 +14,7 @@ import { useUser } from "@/store/userStore";
 
 export const Header = () => {
   const { pathname } = useLocation();
-  const { fullName, email } = useUser();
+  const { fullName, email, profile } = useUser();
   const navigate = useNavigate();
 
   const isDashboard = pathname.includes("dashboard");
@@ -22,7 +22,7 @@ export const Header = () => {
   const userData = {
     name: fullName || "User",
     email: email || "",
-    image: "",
+    image: profile?.profile_image || "",
   };
 
   return (

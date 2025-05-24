@@ -12,6 +12,7 @@ export interface UserProfile {
   address: string | null;
   birth_date: string | null;
   gender: string | null;
+  profile_image: string | null;
 }
 
 export interface Department {
@@ -116,6 +117,7 @@ export const useUserStore = create<UserState & UserActions>()(
                 address: profileData.address,
                 birth_date: profileData.birth_date,
                 gender: profileData.gender,
+                profile_image: profileData.profile_image,
               };
             }
           }

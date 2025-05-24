@@ -147,7 +147,7 @@ const hrNavData: NavHRSection[] = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { fullName, email, role: userRole } = useUser();
+  const { fullName, email, role: userRole, profile } = useUser();
 
   const role = userRole as Role;
   const [activeRole, setActiveRole] = React.useState<Role>(role);
@@ -183,7 +183,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           user={{
             name: fullName || "User",
             email: email || "",
-            avatar: "",
+            avatar: profile?.profile_image || "",
           }}
         />
       </SidebarFooter>

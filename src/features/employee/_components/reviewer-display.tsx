@@ -32,7 +32,7 @@ export const ReviewerDisplay = ({
     useHrData && hrEmployees
       ? hrEmployees.map((employee) => ({
           name: `${employee.user_id.user_profiles.first_name} ${employee.user_id.user_profiles.last_name}`,
-          image: employee.image_url,
+          image: employee.user_id.user_profiles.profile_image,
         }))
       : propReviewers || [];
 

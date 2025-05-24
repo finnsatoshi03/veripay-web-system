@@ -18,6 +18,7 @@ export default function EmployeeProfile() {
     position: employee?.position?.title ?? "",
     created_at: employee?.created_at ?? "",
     birth_date: profile?.birth_date ?? "",
+    profile_image: profile?.profile_image ?? "",
   };
 
   return (

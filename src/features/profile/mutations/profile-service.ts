@@ -12,6 +12,7 @@ type ProfileData = {
   address: string;
   birth_date: string;
   gender: string;
+  profile_image?: string;
 };
 
 type UpdateProfileParams = {

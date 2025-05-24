@@ -13,6 +13,7 @@ export type EditProfileParams = {
     address?: string;
     birth_date?: string;
     gender?: string;
+    profile_image?: string;
   };
   user?: {
     email?: string;

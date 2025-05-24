@@ -1,3 +1,4 @@
+import type { Announcement } from "@/features/hr/_lib/types";
 import { supabase } from "./supabase";
 
 export const getUpcomingBirthdays = async (page = 0, pageSize = 10) => {
@@ -89,6 +90,54 @@ export const getAnnouncements = async (
     };
   } catch (error) {
     console.error("getAnnouncements error:", error);
+    return { data: [], error };
+  }
+};
+
+export const createAnnouncement = async (announcement: Announcement) => {
+  try {
+    const { data, error } = await supabase
+      .from("announcements")
+      .insert(announcement)
+      .select();
+
+    if (error) throw new Error(error.message);
+
+    return data;
+  } catch (error) {
+    console.error("createAnnouncement error:", error);
+    return { data: [], error };
+  }
+};
+
+export const updateAnnouncement = async (announcement: Announcement) => {
+  try {
+    const { data, error } = await supabase
+      .from("announcements")
+      .update(announcement)
+      .select();
+
+    if (error) throw new Error(error.message);
+
+    return data;
+  } catch (error) {
+    console.error("updateAnnouncement error:", error);
+    return { data: [], error };
+  }
+};
+
+export const deleteAnnouncement = async (id: number) => {
+  try {
+    const { data, error } = await supabase
+      .from("announcements")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw new Error(error.message);
+
+    return data;
+  } catch (error) {
+    console.error("deleteAnnouncement error:", error);
     return { data: [], error };
   }
 };

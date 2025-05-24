@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 interface AssignReportParams {
   reportId: number;
   assignedToId: number;
-  status: "In Progress";
+  status: "To Review";
 }
 
 const assignReport = async ({

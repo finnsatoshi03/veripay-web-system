@@ -4,7 +4,8 @@ export type NotificationType =
   | "report_status"
   | "leave_status"
   | "new_report"
-  | "new_leave";
+  | "new_leave"
+  | "report_assigned";
 
 export type NotificationReferenceType = "report" | "leave_request";
 
@@ -28,6 +29,7 @@ export type NotificationStats = {
     leave_status: number;
     new_report: number;
     new_leave: number;
+    report_assigned: number;
   };
 };
 
@@ -87,6 +89,8 @@ export const getNotificationStats = async (
         .length,
       new_report: notifications.filter((n) => n.type === "new_report").length,
       new_leave: notifications.filter((n) => n.type === "new_leave").length,
+      report_assigned: notifications.filter((n) => n.type === "report_assigned")
+        .length,
     };
 
     return { total, unread, byType };

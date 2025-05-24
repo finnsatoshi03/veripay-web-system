@@ -101,14 +101,14 @@ export const ReportsBoard = () => {
       id: "toReview",
       title: "To Assigned",
       icon: <Clipboard className="size-4" />,
-      items: toReviewItems,
+      items: inProgressItems,
       allowDrop: false,
     },
     {
       id: "inProgress",
       title: "Assigned",
       icon: <Clock className="size-4" />,
-      items: inProgressItems,
+      items: toReviewItems,
       allowDrop: true,
     },
     {
@@ -134,7 +134,7 @@ export const ReportsBoard = () => {
   ) => {
     // Only allow drop from "To Assigned" to "Assigned"
     if (fromColumn === "toReview" && toColumn === "inProgress") {
-      const draggedReport = toReviewItems.find((item) => item.id === itemId);
+      const draggedReport = inProgressItems.find((item) => item.id === itemId);
       if (draggedReport) {
         setAssignmentDialog({
           reportId: parseInt(itemId),

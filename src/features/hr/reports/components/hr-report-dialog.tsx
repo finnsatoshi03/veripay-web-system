@@ -107,9 +107,9 @@ export const HrReportDialog = ({
     });
   };
 
-  const status = report.status || "In Progress";
+  const status = report.status || "To Review";
   const assignedToName = `${report.assignedTo?.first_name} ${report.assignedTo?.last_name}`;
-  const canTakeAction = status === "In Progress";
+  const canTakeAction = status === "To Review";
 
   return (
     <>

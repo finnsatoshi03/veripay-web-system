@@ -11,7 +11,11 @@ export {
   useMarkAllNotificationsAsRead,
   useDeleteNotification,
   useDeleteNotifications,
+  useRealtimeNotifications,
 } from "./mutations/useNotifications";
+
+// Custom Hooks
+export { useNotificationSound } from "./hooks/useNotificationSound";
 
 // Types (re-exported from service)
 export type {

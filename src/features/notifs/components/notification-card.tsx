@@ -6,6 +6,7 @@ import {
   Check,
   MoreVertical,
   Trash2,
+  UserCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,6 +22,7 @@ const notificationIcons = {
   leave_status: Calendar,
   new_report: FileText,
   new_leave: Calendar,
+  report_assigned: UserCheck,
 } as const;
 
 const notificationColors = {
@@ -28,6 +30,7 @@ const notificationColors = {
   leave_status: "text-green-600",
   new_report: "text-orange-600",
   new_leave: "text-purple-600",
+  report_assigned: "text-indigo-600",
 } as const;
 
 const notificationLabels = {
@@ -35,6 +38,7 @@ const notificationLabels = {
   leave_status: "Leave Update",
   new_report: "New Report",
   new_leave: "New Leave Request",
+  report_assigned: "Report Assignment",
 } as const;
 
 interface NotificationCardProps {

@@ -41,14 +41,14 @@ const tabFilters = [
     type: "leave_status" as NotificationType,
   },
   {
-    value: "new_report",
-    label: "New Reports",
-    type: "new_report" as NotificationType,
+    value: "new_items",
+    label: "New Items",
+    type: undefined,
   },
   {
-    value: "new_leave",
-    label: "New Leave",
-    type: "new_leave" as NotificationType,
+    value: "report_assigned",
+    label: "Assignments",
+    type: "report_assigned" as NotificationType,
   },
 ] as const;
 
@@ -108,9 +108,23 @@ export const NotificationsPopover = ({
     console.log("Notification clicked:", notification);
   };
 
-  const filteredNotifications = showUnreadOnly
-    ? notifications.filter((n) => !n.is_read)
-    : notifications;
+  // Special filtering for "New Items" tab
+  const getFilteredNotifications = () => {
+    if (activeTab === "new_items") {
+      // Filter for both new_report and new_leave types
+      return allNotifications.filter(
+        (n) =>
+          (n.type === "new_report" || n.type === "new_leave") &&
+          (showUnreadOnly ? !n.is_read : true),
+      );
+    }
+
+    return showUnreadOnly
+      ? notifications.filter((n) => !n.is_read)
+      : notifications;
+  };
+
+  const filteredNotifications = getFilteredNotifications();
 
   // Fix: Use allNotifications for accurate badge counts
   const getTabBadgeCount = (tabValue: string) => {
@@ -127,13 +141,14 @@ export const NotificationsPopover = ({
         return allNotifications.filter(
           (n) => n.type === "leave_status" && !n.is_read,
         ).length;
-      case "new_report":
+      case "new_items":
         return allNotifications.filter(
-          (n) => n.type === "new_report" && !n.is_read,
+          (n) =>
+            (n.type === "new_report" || n.type === "new_leave") && !n.is_read,
         ).length;
-      case "new_leave":
+      case "report_assigned":
         return allNotifications.filter(
-          (n) => n.type === "new_leave" && !n.is_read,
+          (n) => n.type === "report_assigned" && !n.is_read,
         ).length;
       default:
         return 0;
@@ -145,11 +160,11 @@ export const NotificationsPopover = ({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         align="end"
-        sideOffset={15}
-        className="w-96 p-0"
+        sideOffset={8}
+        className="w-[450px] p-0"
         side="bottom"
       >
-        <div className="flex max-h-[600px] flex-col">
+        <div className="flex h-[500px] flex-col">
           {/* Header */}
           <div className="border-b p-4">
             <div className="flex items-center justify-between">
@@ -166,7 +181,7 @@ export const NotificationsPopover = ({
                 {/* Filter Toggle */}
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" title="Filter options">
                       <Filter className="size-4" />
                     </Button>
                   </PopoverTrigger>
@@ -208,7 +223,7 @@ export const NotificationsPopover = ({
             className="flex flex-1 flex-col"
           >
             <div className="border-b px-2">
-              <TabsList className="h-auto w-full bg-transparent p-0">
+              <TabsList className="h-auto w-full bg-transparent pb-2">
                 {tabFilters.map((tab) => {
                   const badgeCount = getTabBadgeCount(tab.value);
                   return (
@@ -216,13 +231,13 @@ export const NotificationsPopover = ({
                       key={tab.value}
                       value={tab.value}
                       className={cn(
-                        "flex-1 rounded-none border-t-0 border-r-0 border-b-2 border-l-0 border-transparent bg-transparent px-2 py-2 !shadow-none",
+                        "flex-1 rounded-none border-t-0 border-r-0 border-b-2 border-l-0 border-transparent bg-transparent px-3 py-2 !shadow-none",
                         "data-[state=active]:border-primary data-[state=active]:bg-transparent",
-                        "hover:bg-accent/50",
+                        "hover:bg-accent/50 transition-colors",
                       )}
                     >
                       <div className="flex items-center gap-1">
-                        <span className="text-xs">{tab.label}</span>
+                        <span className="text-xs font-medium">{tab.label}</span>
                         {badgeCount > 0 && (
                           <Badge variant="destructive" className="h-4 text-xs">
                             {badgeCount > 99 ? "99+" : badgeCount}
@@ -236,7 +251,7 @@ export const NotificationsPopover = ({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-hidden">
+            <div className="min-h-0 flex-1 overflow-hidden">
               {tabFilters.map((tab) => (
                 <TabsContent
                   key={tab.value}

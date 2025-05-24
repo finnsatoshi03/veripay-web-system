@@ -17,18 +17,18 @@ export const PayslipsSummary = ({ items }: PayslipsSummaryProps) => {
       <div className="grid grid-cols-2 gap-x-12 gap-y-6">
         {topRowItems.map((item, index) => (
           <div key={index} className="text-left">
-            <p className="text-muted-foreground text-sm font-medium mb-1">
+            <p className="text-muted-foreground text-sm font-medium">
               {item.label}
             </p>
-            <p className="text-2xl font-meduim">{item.value}</p>
+            <p className="text-2xl font-medium">{item.value}</p>
           </div>
         ))}
       </div>
-      
+
       {/* Bottom row - Net Pay (centered) */}
       {bottomRowItem && (
-        <div className="mt-6 text-center">
-          <p className="text-2xl font-medium mb-1">{bottomRowItem.value}</p>
+        <div className="mt-2 text-center">
+          <p className="text-2xl font-medium">{bottomRowItem.value}</p>
           <p className="text-muted-foreground text-sm font-medium">
             {bottomRowItem.label}
           </p>

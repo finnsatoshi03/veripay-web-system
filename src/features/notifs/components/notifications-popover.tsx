@@ -220,7 +220,7 @@ export const NotificationsPopover = ({
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="flex flex-1 flex-col"
+            className="flex h-full min-h-0 flex-1 flex-col"
           >
             <div className="border-b px-2">
               <TabsList className="h-auto w-full bg-transparent pb-2">
@@ -251,7 +251,7 @@ export const NotificationsPopover = ({
             </div>
 
             {/* Content */}
-            <div className="min-h-0 flex-1 overflow-hidden">
+            <div className="h-full min-h-0 flex-1 overflow-hidden">
               {tabFilters.map((tab) => (
                 <TabsContent
                   key={tab.value}

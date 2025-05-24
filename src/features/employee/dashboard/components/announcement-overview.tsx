@@ -17,6 +17,7 @@ import {
   AnnouncementCard,
   type AnnouncementCardProps,
 } from "./announcement-card";
+import { MoreAnnouncementsCard } from "./more-announcements-card";
 import { Error } from "@/features/error";
 
 // main component
@@ -70,6 +71,11 @@ export const AnnouncementOverview = () => {
     return <Error title="Failed to load announcements and birthdays" />;
   }
 
+  // Limit announcements to 2 items
+  const announcements = announcementsData?.data || [];
+  const displayedAnnouncements = announcements.slice(0, 2);
+  const remainingCount = Math.max(0, announcements.length - 2);
+
   return (
     <div className="w-full space-y-2 rounded-lg border p-2">
       <div className="flex items-center justify-between">
@@ -91,9 +97,9 @@ export const AnnouncementOverview = () => {
         <TabsContent value="announcements">
           {isLoadingAnnouncements ? (
             renderLoading()
-          ) : announcementsData?.data && announcementsData.data.length > 0 ? (
+          ) : announcements.length > 0 ? (
             <div className="space-y-2">
-              {announcementsData.data.map((announcement) => {
+              {displayedAnnouncements.map((announcement) => {
                 const announcementProps: AnnouncementCardProps = {
                   target: announcement.roles?.name || "All Employees",
                   date: new Date(announcement.created_at).toLocaleDateString(
@@ -101,7 +107,6 @@ export const AnnouncementOverview = () => {
                     { month: "long", day: "numeric" },
                   ),
                   title: announcement.title,
-                  author: authorName(announcement),
                   author_name: authorName(announcement),
                   author_avatar:
                     announcement.created_by?.user_profiles.profile_image,
@@ -114,6 +119,11 @@ export const AnnouncementOverview = () => {
                   />
                 );
               })}
+
+              {/* Show more announcements indicator if there are more than 2 */}
+              {remainingCount > 0 && (
+                <MoreAnnouncementsCard count={remainingCount} />
+              )}
             </div>
           ) : (
             <div className="flex h-40 items-center justify-center">

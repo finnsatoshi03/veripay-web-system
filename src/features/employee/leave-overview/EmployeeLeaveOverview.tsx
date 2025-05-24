@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 
 import { LeaveAllowanceSection } from "./components/leave-allowance-section";
@@ -13,6 +14,12 @@ import { Loader } from "@/components/custom/loader";
 
 export default function EmployeeLeaveOverview() {
   const { data: leaveData, isLoading, error } = useLeaveOverview();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // handlers
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -53,6 +60,8 @@ export default function EmployeeLeaveOverview() {
           leaveRequests={leaveData?.leaveRequests}
           allowances={leaveData?.allowances || []}
           isLoading={isLoading}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
         />
       </div>
     </div>

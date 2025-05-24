@@ -15,6 +15,12 @@ import { hrReviewers } from "../_lib/mock/mock-hrReviewers";
 
 export default function EmployeeReports() {
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // handlers
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <div className="flex h-full flex-col gap-4 !overflow-hidden">
@@ -33,7 +39,12 @@ export default function EmployeeReports() {
       </div>
 
       <div className="flex items-center justify-between">
-        <Search size="sm" />
+        <Search
+          size="sm"
+          placeholder="Search reports by title, description, category..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
         <Button size="sm" onClick={() => setIsCreateFormOpen(true)}>
           <Plus className="size-4" />
           Create new report
@@ -41,7 +52,7 @@ export default function EmployeeReports() {
       </div>
 
       <div className="flex h-full min-h-0 flex-1 flex-col">
-        <ReportsBoard />
+        <ReportsBoard searchQuery={searchQuery} />
       </div>
 
       {/* Create Report Form Dialog */}

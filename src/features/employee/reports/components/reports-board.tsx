@@ -13,9 +13,28 @@ import { format } from "date-fns";
 
 type ReportItem = KanbanItemProps & Omit<ReportCardProps, "id">;
 
-export const ReportsBoard = () => {
+interface ReportsBoardProps {
+  searchQuery?: string;
+}
+
+export const ReportsBoard = ({ searchQuery = "" }: ReportsBoardProps) => {
   const { id: userId } = useUserStore();
   const { data: reportsData, isLoading } = useReportsByUser(userId || 0);
+
+  // Filter reports based on search query
+  const filterReports = (items: ReportItem[]): ReportItem[] => {
+    if (!searchQuery.trim()) return items;
+
+    const query = searchQuery.toLowerCase().trim();
+    return items.filter((item) => {
+      return (
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query) ||
+        (item.submittedBy && item.submittedBy.toLowerCase().includes(query))
+      );
+    });
+  };
 
   // Transform API data to match our KanbanBoard format
   const processReports = () => {
@@ -82,25 +101,25 @@ export const ReportsBoard = () => {
       id: "in-progress",
       title: "In Progress",
       icon: <Clock className="size-4" />,
-      items: inProgressItems,
+      items: filterReports(inProgressItems),
     },
     {
       id: "to-review",
       title: "To Review",
       icon: <Clipboard className="size-4" />,
-      items: toReviewItems,
+      items: filterReports(toReviewItems),
     },
     {
       id: "resolved",
       title: "Resolved",
       icon: <Calendar className="size-4" />,
-      items: resolvedItems,
+      items: filterReports(resolvedItems),
     },
     {
       id: "rejected",
       title: "Rejected",
       icon: <AlertCircle className="size-4" />,
-      items: rejectedItems,
+      items: filterReports(rejectedItems),
     },
   ];
 

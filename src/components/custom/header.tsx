@@ -4,6 +4,7 @@ import { ArrowLeft, Bell } from "lucide-react";
 import { formatInitials } from "@/lib/helpers/formatters";
 
 import { DateRangePicker } from "@/components/custom/date-range-picker";
+import { ThemeToggle } from "@/components/custom/theme-toggle";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -53,9 +54,10 @@ export const Header = () => {
         </Button>
       )}
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         {isDashboard && <SpotlightSearch />}
         <DateRangePicker />
+        <ThemeToggle />
         <div aria-label="Notifications" className="relative size-6">
           <Bell className="size-6" />
           <Badge

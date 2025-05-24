@@ -12,13 +12,18 @@ import { SpotlightSearch } from "@/components/custom/spotlight-search";
 import { Badge } from "@/components/ui/badge";
 
 import { useUser } from "@/store/userStore";
+import { NotificationsPopover } from "@/features/notifs/components/notifications-popover";
+import { useNotificationStats } from "@/features/notifs/mutations/useNotifications";
 
 export const Header = () => {
   const { pathname } = useLocation();
-  const { fullName, email, profile } = useUser();
+  const { fullName, email, profile, id: userId } = useUser();
   const navigate = useNavigate();
 
   const isDashboard = pathname.includes("dashboard");
+
+  // Get notification stats for badge
+  const { data: notificationStats } = useNotificationStats(userId || 0);
 
   const userData = {
     name: fullName || "User",
@@ -58,15 +63,31 @@ export const Header = () => {
         {isDashboard && <SpotlightSearch />}
         <DateRangePicker />
         <ThemeToggle />
-        <div aria-label="Notifications" className="relative size-6">
-          <Bell className="size-6" />
-          <Badge
-            className="absolute -top-1.5 -right-1.5 h-fit w-fit p-px"
-            variant="destructive"
-          >
-            9+
-          </Badge>
-        </div>
+
+        {/* Notifications */}
+        {userId && (
+          <NotificationsPopover
+            userId={userId}
+            trigger={
+              <button
+                aria-label="Notifications"
+                className="relative cursor-pointer"
+              >
+                <Bell className="size-6" />
+                {notificationStats && notificationStats.unread > 0 && (
+                  <Badge
+                    className="absolute -top-1 -right-0.5 flex size-5 h-fit w-fit items-center justify-center rounded-full bg-red-600 px-0.5 py-0 text-xs text-white"
+                    // variant="destructive"
+                  >
+                    {notificationStats.unread > 9
+                      ? "9+"
+                      : notificationStats.unread}
+                  </Badge>
+                )}
+              </button>
+            }
+          />
+        )}
       </div>
     </div>
   );

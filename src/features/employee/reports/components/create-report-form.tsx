@@ -75,7 +75,7 @@ export const CreateReportForm = ({
         category: values.category,
         description: values.description,
         flag_level: values.importance,
-        status: "To Review", // Default status for new reports
+        status: "In Progress", // Default status for new reports
         submitted_by: userId,
         submitted_at: currentDate,
         assigned_to: null,

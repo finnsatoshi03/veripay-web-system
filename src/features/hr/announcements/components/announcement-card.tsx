@@ -32,6 +32,21 @@ export const AnnouncementCard = ({
     return "Unknown Author";
   };
 
+  // helper to strip HTML tags for preview text
+  const stripHtmlTags = (html: string) => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+  };
+
+  const getPreviewText = () => {
+    if (!announcement.body) return "No content";
+
+    // Strip HTML tags for clean preview text
+    const plainText = stripHtmlTags(announcement.body);
+    return plainText.trim() || "No content";
+  };
+
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     onEdit(announcement);
@@ -129,7 +144,7 @@ export const AnnouncementCard = ({
 
         {/* Preview of body */}
         <p className="text-muted-foreground line-clamp-2 text-sm">
-          {announcement.body || "No content"}
+          {getPreviewText()}
         </p>
 
         {/* Author */}

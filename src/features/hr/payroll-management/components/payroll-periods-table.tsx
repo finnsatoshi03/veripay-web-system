@@ -28,7 +28,15 @@ export const PAYROLL_TABLE_COLUMNS = [
 
 export const PayrollPeriodsTable = ({
   payrolls,
-  visibleColumns = ["period", "status", "employeeCount", "totalGross", "totalDeductions", "totalNet", "actions"],
+  visibleColumns = [
+    "period",
+    "status",
+    "employeeCount",
+    "totalGross",
+    "totalDeductions",
+    "totalNet",
+    "actions",
+  ],
 }: PayrollPeriodsTableProps) => {
   // Filter columns by visibility
   const columns = PAYROLL_TABLE_COLUMNS.filter((col) =>
@@ -41,39 +49,44 @@ export const PayrollPeriodsTable = ({
     switch (status) {
       case "processed":
         return (
-          <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
-            <CheckCircle2 className="size-3 mr-1" />
+          <Badge
+            variant="secondary"
+            className="border-green-200 bg-green-100 text-green-700"
+          >
+            <CheckCircle2 className="mr-1 size-3" />
             Processed
           </Badge>
         );
       case "processing":
         return (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
-            <Loader2 className="size-3 mr-1 animate-spin" />
+          <Badge
+            variant="secondary"
+            className="border-blue-200 bg-blue-100 text-blue-700"
+          >
+            <Loader2 className="mr-1 size-3 animate-spin" />
             Processing
           </Badge>
         );
       case "scheduled":
         return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-yellow-200">
-            <Clock className="size-3 mr-1" />
+          <Badge
+            variant="secondary"
+            className="border-yellow-200 bg-yellow-100 text-yellow-700"
+          >
+            <Clock className="mr-1 size-3" />
             Scheduled
           </Badge>
         );
       default:
-        return (
-          <Badge variant="outline">
-            {status}
-          </Badge>
-        );
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   const formatCurrency = (amount: number) => {
     if (amount === 0) return "--";
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -85,7 +98,7 @@ export const PayrollPeriodsTable = ({
 
   return (
     <Table>
-      <TableHeader className="sticky top-0 bg-zinc-200">
+      <TableHeader className="sticky top-0 bg-zinc-200 dark:bg-zinc-800">
         <TableRow>
           {columns.map((column) => (
             <TableHead
@@ -108,14 +121,10 @@ export const PayrollPeriodsTable = ({
           payrolls.map((payroll) => (
             <TableRow key={payroll.id} className="hover:bg-muted/50">
               {visibleColumns.includes("period") && (
-                <TableCell className="font-medium">
-                  {payroll.period}
-                </TableCell>
+                <TableCell className="font-medium">{payroll.period}</TableCell>
               )}
               {visibleColumns.includes("status") && (
-                <TableCell>
-                  {getStatusBadge(payroll.status)}
-                </TableCell>
+                <TableCell>{getStatusBadge(payroll.status)}</TableCell>
               )}
               {visibleColumns.includes("employeeCount") && (
                 <TableCell className="">

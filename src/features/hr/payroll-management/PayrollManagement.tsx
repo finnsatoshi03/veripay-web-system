@@ -1,6 +1,5 @@
 import { PayrollManagementBoard } from "./components/payroll-management-board";
 import { PayrollSummary } from "./components/payroll-summary";
-// import PayrollHeader from "./components/PayrollHeader";
 import { today } from "@/features/employee/_lib/helpers";
 import { getCurrentPayrollPeriod, getNextCutOff } from "./lib/helper/helper";
 
@@ -12,7 +11,6 @@ export default function PayrollManagement() {
 
   return (
     <div className="flex h-full flex-col gap-4 !overflow-hidden">
-      {/* <PayrollHeader /> */}
       <div className="flex items-center justify-between">
         <div className="space-y-4">
           <div>
@@ -20,7 +18,6 @@ export default function PayrollManagement() {
             <p className="text-muted-foreground text-sm">{today}</p>
           </div>
         </div>
-        {/* <ActiveSummary items={summaryItems} /> */}
         <PayrollSummary items={summaryItems} />
       </div>
 

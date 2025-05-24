@@ -5,12 +5,12 @@ import { AttendanceStats } from "@/features/employee/attendance/components/atten
 import { ActiveSummary } from "./components/active-summary";
 
 export default function HrActiveEmployee() {
-    const summaryItems = [
+  const summaryItems = [
     { label: "Total Active", value: "139 emp." },
     { label: "Not Yet Logged In", value: "7 emp." },
     { label: "On Leave", value: "2 emp." },
   ];
-  
+
   return (
     <div className="flex h-full flex-col gap-4 !overflow-hidden">
       <div className="flex items-center justify-between">
@@ -20,12 +20,12 @@ export default function HrActiveEmployee() {
             <p className="text-muted-foreground text-sm">{today}</p>
           </div>
           <Separator />
+
+          {/* replace this with active employees stats */}
           <AttendanceStats />
         </div>
         <ActiveSummary items={summaryItems} />
-
       </div>
-
 
       <div className="relative h-full min-h-0 flex-1 overflow-auto">
         {/* <AccountRequestsBoard /> */}

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { EmployeeActions } from "../components/EmployeeActions";
+import { EmployeeActions } from "./employee-actions";
 import type { ActiveEmployee } from "../lib/data";
 
 interface ActiveEmployeeTableProps {
@@ -26,9 +26,16 @@ export const EMPLOYEE_TABLE_COLUMNS = [
   { id: "actions", label: "Actions" },
 ];
 
-export const ActiveEmployeeTable = ({ 
-  employees, 
-  visibleColumns = ["name", "department", "timeIn", "timeOut", "status", "actions"]
+export const ActiveEmployeeTable = ({
+  employees,
+  visibleColumns = [
+    "name",
+    "department",
+    "timeIn",
+    "timeOut",
+    "status",
+    "actions",
+  ],
 }: ActiveEmployeeTableProps) => {
   // Filter columns by visibility
   const columns = EMPLOYEE_TABLE_COLUMNS.filter((col) =>
@@ -55,7 +62,7 @@ export const ActiveEmployeeTable = ({
       case "IT":
         return <Code2 size={14} />;
       case "Human Resources":
-        return <Handshake size={14} />;  
+        return <Handshake size={14} />;
       case "Finance":
         return <Wallet size={14} />;
       default:
@@ -65,20 +72,20 @@ export const ActiveEmployeeTable = ({
 
   const getEmployeeInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
   return (
     <Table>
-      <TableHeader className="sticky top-0 bg-zinc-200">
+      <TableHeader className="sticky top-0 z-20 bg-zinc-200 dark:bg-zinc-800">
         <TableRow>
           {columns.map((column) => (
-            <TableHead 
-              key={column.id} 
+            <TableHead
+              key={column.id}
               className={`font-medium ${column.id === "actions" ? "w-[100px]" : ""}`}
             >
               {column.label}
@@ -100,11 +107,8 @@ export const ActiveEmployeeTable = ({
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage 
-                        src={employee.avatar} 
-                        alt={employee.name}
-                      />
-                      <AvatarFallback className="bg-yellow-400 text-white text-sm font-bold">
+                      <AvatarImage src={employee.avatar} alt={employee.name} />
+                      <AvatarFallback className="bg-yellow-400 text-sm font-bold text-white">
                         {getEmployeeInitials(employee.name)}
                       </AvatarFallback>
                     </Avatar>
@@ -114,7 +118,7 @@ export const ActiveEmployeeTable = ({
               )}
               {visibleColumns.includes("department") && (
                 <TableCell>
-                  <Badge 
+                  <Badge
                     variant="outline"
                     className={getDepartmentBadgeClasses(employee.department)}
                   >
@@ -141,15 +145,15 @@ export const ActiveEmployeeTable = ({
               )}
               {visibleColumns.includes("status") && (
                 <TableCell>
-                  <Badge 
+                  <Badge
                     variant="secondary"
-                    className="bg-blue-100 text-blue-700 border-blue-200"
+                    className="border-blue-200 bg-blue-100 text-blue-700"
                   >
                     <div className="h-2 w-2 rounded-full bg-blue-600"></div>
                     {employee.status}
                   </Badge>
                 </TableCell>
-              )}    
+              )}
               {visibleColumns.includes("actions") && (
                 <TableCell>
                   <EmployeeActions employee={employee} />

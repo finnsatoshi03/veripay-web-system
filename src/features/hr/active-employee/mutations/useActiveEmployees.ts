@@ -4,17 +4,26 @@ import {
   type ActiveEmployeesResponse,
 } from "@/services/employee-service";
 import { queryKeys } from "@/lib/configs/query-keys";
+import { useSingleDateStore } from "@/store/singleDateStore";
 
-const getTodayDate = (): string => {
-  return new Date().toISOString().split("T")[0];
+const formatDateForAPI = (date: Date): string => {
+  // Use local date to avoid timezone issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 export const useActiveEmployees = () => {
-  const today = getTodayDate();
+  const { selectedDate } = useSingleDateStore();
+
+  // Use selected date from store, fallback to today if none selected
+  const queryDate = selectedDate || new Date();
+  const formattedDate = formatDateForAPI(queryDate);
 
   return useQuery<ActiveEmployeesResponse | null, Error>({
-    queryKey: [queryKeys.HR.activeEmployees, today],
-    queryFn: () => getActiveEmployees(today),
+    queryKey: [queryKeys.HR.activeEmployees, formattedDate],
+    queryFn: () => getActiveEmployees(formattedDate),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: true,

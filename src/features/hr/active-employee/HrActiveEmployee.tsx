@@ -3,7 +3,6 @@ import { ActiveEmployeeStats } from "./components/active-employee-stats";
 import { ActiveSummary } from "./components/active-summary";
 
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 
 import { useActiveEmployees } from "./mutations/useActiveEmployees";
 
@@ -32,27 +31,6 @@ export default function HrActiveEmployee() {
     absent: data?.summary.percentages.absent || 0,
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full flex-col gap-4 !overflow-hidden">
-        <div className="flex items-center justify-between">
-          <div className="space-y-4">
-            <div>
-              <Skeleton className="h-9 w-64" />
-              <Skeleton className="mt-2 h-4 w-32" />
-            </div>
-            <Separator />
-            <Skeleton className="h-20 w-full" />
-          </div>
-          <Skeleton className="h-32 w-64" />
-        </div>
-        <div className="relative h-full min-h-0 flex-1 overflow-auto">
-          <Skeleton className="h-full w-full" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-full flex-col gap-4 !overflow-hidden">
       <div className="flex justify-between">
@@ -62,13 +40,16 @@ export default function HrActiveEmployee() {
             <p className="text-muted-foreground text-sm">{today}</p>
           </div>
           <Separator />
-          <ActiveEmployeeStats percentages={activeEmployeePercentages} />
+          <ActiveEmployeeStats
+            percentages={activeEmployeePercentages}
+            isLoading={isLoading}
+          />
         </div>
-        <ActiveSummary items={summaryItems} />
+        <ActiveSummary items={summaryItems} isLoading={isLoading} />
       </div>
 
       <div className="relative h-full min-h-0 flex-1 overflow-auto">
-        <ActiveEmployeeBoard />
+        <ActiveEmployeeBoard isLoading={isLoading} />
       </div>
     </div>
   );

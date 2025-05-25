@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { Search } from "@/components/custom/search";
 import { ColumnToggle } from "@/components/custom/table/column-toggle";
 import { Pagination } from "@/components/custom/table/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   ACCOUNT_TABLE_COLUMNS,
@@ -143,8 +144,93 @@ export const AccountRequestsBoard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        Loading account requests...
+      <div className="flex h-full flex-col space-y-4">
+        <div>
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex flex-1 items-center gap-4">
+              <Search
+                size="sm"
+                placeholder="Search by name or email"
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+              <StatusFilter
+                selectedStatuses={selectedStatuses}
+                onChange={handleStatusFilterChange}
+                statusOptions={statusOptionsWithCounts}
+              />
+            </div>
+            <div>
+              <ColumnToggle
+                columns={ACCOUNT_TABLE_COLUMNS}
+                visibleColumns={visibleColumns}
+                onColumnToggle={handleColumnToggle}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto rounded-md border">
+          <div className="w-full">
+            <div className="sticky top-0 bg-zinc-200 dark:bg-zinc-800">
+              <div className="flex border-b">
+                {ACCOUNT_TABLE_COLUMNS.filter((col) =>
+                  visibleColumns.includes(col.id),
+                ).map((column) => (
+                  <div
+                    key={column.id}
+                    className={`px-2 py-2.5 text-left text-sm font-medium ${
+                      column.id === "actions" ? "w-[100px]" : "flex-1"
+                    }`}
+                  >
+                    {column.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="divide-y">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="hover:bg-border/50 flex items-center">
+                  {visibleColumns.includes("name") && (
+                    <div className="flex-1 px-2 py-1">
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("email") && (
+                    <div className="flex-1 px-2 py-1">
+                      <Skeleton className="h-4 w-40" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("requestDate") && (
+                    <div className="flex-1 px-2 py-1">
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <div className="flex-1 px-2 py-1">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <div className="w-[100px] px-2 py-1">
+                      <Skeleton className="h-8 w-8 rounded" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-32" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+          </div>
+        </div>
       </div>
     );
   }

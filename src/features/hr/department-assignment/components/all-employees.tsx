@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Edit3 } from "lucide-react";
 import type { Employee } from "../../_lib/types";
 import { formatInitials, formatRole } from "@/lib/helpers/formatters";
@@ -9,11 +10,13 @@ import { formatInitials, formatRole } from "@/lib/helpers/formatters";
 interface AllEmployeesProps {
   employees: Employee[];
   onEmployeeClick?: (employee: Employee) => void;
+  isLoading?: boolean;
 }
 
 export const AllEmployees = ({
   employees,
   onEmployeeClick,
+  isLoading,
 }: AllEmployeesProps) => {
   const unassignedEmployees = employees.filter(
     (employee) => !employee.department_id || !employee.position_id,
@@ -99,6 +102,50 @@ export const AllEmployees = ({
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="size-5" />
+            All Employees
+            <Skeleton className="ml-auto h-5 w-8 rounded-full" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="h-full min-h-0">
+          <ScrollArea className="h-full min-h-0">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="flex gap-3 rounded-lg border p-3"
+                    >
+                      <Skeleton className="size-10 rounded-full" />
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="size-3" />
+                        </div>
+                        <Skeleton className="h-3 w-16" />
+                        <div className="flex flex-wrap gap-1">
+                          <Skeleton className="h-4 w-16 rounded-full" />
+                          <Skeleton className="h-4 w-12 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-full">

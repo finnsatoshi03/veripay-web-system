@@ -10,7 +10,6 @@ import { Error } from "@/features/error";
 import { hrReviewers } from "../_lib/mock/mock-hrReviewers";
 import { today } from "../_lib/helpers";
 import { useLeaveOverview } from "./mutations/useLeaveOverview";
-import { Loader } from "@/components/custom/loader";
 
 export default function EmployeeLeaveOverview() {
   const { data: leaveData, isLoading, error } = useLeaveOverview();
@@ -20,10 +19,6 @@ export default function EmployeeLeaveOverview() {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
   };
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   if (error) {
     return (

@@ -15,9 +15,18 @@ import { useActiveEmployees } from "../mutations/useActiveEmployees";
 import { Error } from "@/features/error";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ActiveEmployeeBoard() {
+interface ActiveEmployeeBoardProps {
+  isLoading?: boolean;
+}
+
+export default function ActiveEmployeeBoard({
+  isLoading: externalLoading,
+}: ActiveEmployeeBoardProps) {
   // React Query hook
-  const { data, isLoading, error } = useActiveEmployees();
+  const { data, isLoading: queryLoading, error } = useActiveEmployees();
+
+  // Use external loading prop if provided, otherwise use query loading
+  const isLoading = externalLoading ?? queryLoading;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState<EmployeeStatus[]>(
@@ -127,27 +136,108 @@ export default function ActiveEmployeeBoard() {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col space-y-4">
-        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-          <div className="flex flex-1 items-center gap-4">
-            <Skeleton className="h-9 w-64" />
-            <Skeleton className="h-9 w-32" />
+        <div>
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex flex-1 items-center gap-4">
+              <Search
+                size="sm"
+                placeholder="Search active employee"
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+              <StatusFilter
+                selectedStatuses={selectedStatuses}
+                onChange={handleStatusFilterChange}
+              />
+            </div>
+            <div>
+              <ColumnToggle
+                columns={EMPLOYEE_TABLE_COLUMNS}
+                visibleColumns={visibleColumns}
+                onColumnToggle={handleColumnToggle}
+                primaryColumnId="name"
+              />
+            </div>
           </div>
-          <Skeleton className="h-9 w-32" />
         </div>
+
         <div className="flex-1 overflow-auto rounded-md border">
-          <div className="p-8">
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-16" />
+          <div className="w-full">
+            <div className="sticky top-0 z-20 bg-zinc-200 dark:bg-zinc-800">
+              <div className="flex border-b">
+                {EMPLOYEE_TABLE_COLUMNS.filter((col) =>
+                  visibleColumns.includes(col.id),
+                ).map((column) => (
+                  <div
+                    key={column.id}
+                    className={`px-4 py-3 text-left text-sm font-medium ${
+                      column.id === "actions"
+                        ? "w-[100px]"
+                        : column.id === "name"
+                          ? "min-w-[350px]"
+                          : "flex-1"
+                    }`}
+                  >
+                    {column.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="divide-y">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="hover:bg-muted/50 flex items-center">
+                  {visibleColumns.includes("name") && (
+                    <div className="min-w-[350px] flex-1 px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                    </div>
+                  )}
+                  {visibleColumns.includes("department") && (
+                    <div className="flex-1 px-4 py-2">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("timeIn") && (
+                    <div className="flex-1 px-4 py-2">
+                      <div className="flex items-center gap-1">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                  )}
+                  {visibleColumns.includes("timeOut") && (
+                    <div className="flex-1 px-4 py-2">
+                      <div className="flex items-center gap-1">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <div className="flex-1 px-4 py-2">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <div className="w-[100px] px-4 py-2">
+                      <Skeleton className="h-8 w-8 rounded" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-32" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
           </div>
         </div>
       </div>

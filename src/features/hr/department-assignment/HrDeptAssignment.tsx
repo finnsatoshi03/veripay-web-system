@@ -15,7 +15,6 @@ import {
 } from "../_mutations/useDeptAndPositions";
 import { useAssignDepartment } from "./mutations/useAssignDepartment";
 import { Error } from "@/features/error";
-import { Loader } from "@/components/custom/loader";
 import type { Employee } from "../_lib/types";
 
 export default function HrDeptAssignment() {
@@ -118,10 +117,6 @@ export default function HrDeptAssignment() {
     );
   }
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
   return (
     <div className="flex h-full flex-col gap-4 !overflow-hidden">
       <div className="flex justify-between">
@@ -131,9 +126,15 @@ export default function HrDeptAssignment() {
             <p className="text-muted-foreground text-sm">{today}</p>
           </div>
           <Separator />
-          <DepartmentStats percentages={departmentStats} />
+          <DepartmentStats
+            percentages={departmentStats}
+            isLoading={isLoading}
+          />
         </div>
-        <DepartmentSummary items={departmentSummaryItems} />
+        <DepartmentSummary
+          items={departmentSummaryItems}
+          isLoading={isLoading}
+        />
       </div>
 
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden lg:grid-cols-4">
@@ -141,6 +142,7 @@ export default function HrDeptAssignment() {
           <AllEmployees
             employees={employees as unknown as Employee[]}
             onEmployeeClick={handleEmployeeClick}
+            isLoading={isLoading}
           />
         </div>
         <div className="min-h-0 flex-1 overflow-auto lg:col-span-3">
@@ -149,6 +151,7 @@ export default function HrDeptAssignment() {
             employees={employees as unknown as Employee[]}
             positions={positions}
             onAssignEmployee={handleAssignEmployee}
+            isLoading={isLoading}
           />
         </div>
       </div>

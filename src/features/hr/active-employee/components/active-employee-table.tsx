@@ -48,7 +48,7 @@ export const ActiveEmployeeTable = ({
     switch (department) {
       case "IT":
         return "bg-blue-100 text-blue-700 border-blue-200";
-      case "Human Resources":
+      case "Human Resources (HR)":
         return "bg-pink-100 text-pink-700 border-pink-200";
       case "Finance":
         return "bg-green-100 text-green-700 border-green-200";

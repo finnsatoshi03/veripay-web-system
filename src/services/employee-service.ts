@@ -9,6 +9,13 @@ export interface AttendanceRecord {
   status: string;
 }
 
+export interface LeaveRequest {
+  employee_id: number;
+  start_date: string;
+  end_date: string;
+  status: string;
+}
+
 export interface Employee {
   id: number;
   email: string;
@@ -23,6 +30,7 @@ export interface Employee {
     departments: { name: string } | null;
     positions: { title: string; level: string; base_salary: number } | null;
     attendance_records?: AttendanceRecord[];
+    leave_requests?: LeaveRequest[];
   };
   user_profiles: {
     first_name: string;
@@ -79,7 +87,27 @@ const normalizeArray = <T>(data: T | T[]): T[] => {
   return Array.isArray(data) ? data : [data];
 };
 
-const calculateSummaryStats = (employees: Employee[]): SummaryStats => {
+const isEmployeeOnLeave = (
+  leaveRequests: LeaveRequest[],
+  today: string,
+): boolean => {
+  if (!leaveRequests || leaveRequests.length === 0) return false;
+
+  return leaveRequests.some((request) => {
+    if (request.status !== "approved") return false;
+
+    const startDate = new Date(request.start_date);
+    const endDate = new Date(request.end_date);
+    const todayDate = new Date(today);
+
+    return todayDate >= startDate && todayDate <= endDate;
+  });
+};
+
+const calculateSummaryStats = (
+  employees: Employee[],
+  today: string,
+): SummaryStats => {
   const total = employees.length;
   let onLeave = 0;
   let loggedIn = 0;
@@ -88,17 +116,21 @@ const calculateSummaryStats = (employees: Employee[]): SummaryStats => {
 
   employees.forEach((employee) => {
     const todayAttendance = employee.employees.attendance_records?.[0];
+    const employeeOnLeave = isEmployeeOnLeave(
+      employee.employees.leave_requests || [],
+      today,
+    );
 
-    if (todayAttendance) {
-      if (todayAttendance.status === "on_leave") {
-        onLeave++;
-      } else if (todayAttendance.time_in) {
+    if (employeeOnLeave) {
+      onLeave++;
+    } else if (todayAttendance) {
+      if (todayAttendance.time_in) {
         loggedIn++;
       } else {
         notLoggedIn++;
       }
     } else {
-      // No attendance record means absent
+      // No attendance record and not on leave means absent
       absent++;
     }
   });
@@ -121,6 +153,7 @@ const calculateSummaryStats = (employees: Employee[]): SummaryStats => {
 const transformEmployeeData = (
   rawEmployees: RawSupabaseUser[],
   attendanceMap: Map<number, AttendanceRecord[]>,
+  leaveRequestsMap: Map<number, LeaveRequest[]>,
 ): Employee[] => {
   return rawEmployees.map((user) => {
     const employeesData = normalizeArray(user.employees);
@@ -149,6 +182,7 @@ const transformEmployeeData = (
           ? positionsData[0]
           : positionsData || null,
         attendance_records: attendanceMap.get(employeeData?.id) || [],
+        leave_requests: leaveRequestsMap.get(employeeData?.id) || [],
       },
       user_profiles:
         userProfileData &&
@@ -206,7 +240,7 @@ export const getActiveEmployees = async (
       return employeesData.filter((emp) => emp?.id).map((emp) => emp.id);
     });
 
-    // Fetch attendance records
+    // Fetch attendance records for today
     const { data: attendanceRecords, error: attError } = await supabase
       .from("attendance_records")
       .select("employee_id, date, time_in, time_out, status")
@@ -214,6 +248,17 @@ export const getActiveEmployees = async (
       .eq("date", today);
 
     if (attError) throw attError;
+
+    // Fetch approved leave requests that cover today's date
+    const { data: leaveRequests, error: leaveError } = await supabase
+      .from("leave_requests")
+      .select("employee_id, start_date, end_date, status")
+      .in("employee_id", employeeIds)
+      .eq("status", "approved")
+      .lte("start_date", today)
+      .gte("end_date", today);
+
+    if (leaveError) throw leaveError;
 
     // Create attendance map
     const attendanceMap = new Map<number, AttendanceRecord[]>();
@@ -224,12 +269,22 @@ export const getActiveEmployees = async (
       attendanceMap.get(record.employee_id)?.push(record);
     });
 
+    // Create leave requests map
+    const leaveRequestsMap = new Map<number, LeaveRequest[]>();
+    leaveRequests?.forEach((request) => {
+      if (!leaveRequestsMap.has(request.employee_id)) {
+        leaveRequestsMap.set(request.employee_id, []);
+      }
+      leaveRequestsMap.get(request.employee_id)?.push(request);
+    });
+
     // Transform data
     const transformedEmployees = transformEmployeeData(
       employees,
       attendanceMap,
+      leaveRequestsMap,
     );
-    const summary = calculateSummaryStats(transformedEmployees);
+    const summary = calculateSummaryStats(transformedEmployees, today);
 
     return {
       employees: transformedEmployees,

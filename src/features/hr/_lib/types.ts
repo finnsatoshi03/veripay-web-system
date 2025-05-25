@@ -74,9 +74,7 @@ export interface LeaveRequest {
       };
     };
     position_id: {
-      positions: {
-        title: string;
-      };
+      title: string;
     };
   };
   leave_type_id: {

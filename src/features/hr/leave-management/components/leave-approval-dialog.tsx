@@ -132,8 +132,7 @@ export const LeaveApprovalDialog = ({
                   {userProfile.first_name} {userProfile.last_name}
                 </p>
                 <p className="text-muted-foreground text-sm">
-                  {leave.employee_id.position_id?.positions?.title ||
-                    "No position"}
+                  {leave.employee_id.position_id?.title || "No position"}
                 </p>
               </div>
             </div>

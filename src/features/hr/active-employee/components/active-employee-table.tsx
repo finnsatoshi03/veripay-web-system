@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmployeeActions } from "./employee-actions";
-import type { ActiveEmployee } from "../lib/data";
+import type { ActiveEmployee } from "../lib/helpers";
 
 interface ActiveEmployeeTableProps {
   employees: ActiveEmployee[];
@@ -67,6 +67,21 @@ export const ActiveEmployeeTable = ({
         return <Wallet size={14} />;
       default:
         return null;
+    }
+  };
+
+  const getStatusBadgeClasses = (status: string) => {
+    switch (status) {
+      case "On time":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "Late":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "On leave":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "Absent":
+        return "bg-red-100 text-red-700 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
@@ -146,10 +161,10 @@ export const ActiveEmployeeTable = ({
               {visibleColumns.includes("status") && (
                 <TableCell>
                   <Badge
-                    variant="secondary"
-                    className="border-blue-200 bg-blue-100 text-blue-700"
+                    variant="outline"
+                    className={getStatusBadgeClasses(employee.status)}
                   >
-                    <div className="h-2 w-2 rounded-full bg-blue-600"></div>
+                    <div className="mr-1 h-2 w-2 rounded-full bg-current"></div>
                     {employee.status}
                   </Badge>
                 </TableCell>

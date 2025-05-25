@@ -9,7 +9,7 @@ type ActiveSummaryProps = {
 
 export const ActiveSummary = ({ items }: ActiveSummaryProps) => {
   return (
-    <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+    <div className="grid grid-cols-3">
       {items.map((item, index) => (
         <div key={index}>
           <p className="text-muted-foreground text-sm font-medium">

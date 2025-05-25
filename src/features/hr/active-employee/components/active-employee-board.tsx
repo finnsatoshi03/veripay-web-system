@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search } from "@/components/custom/search";
 import { ColumnToggle } from "@/components/custom/table/column-toggle";
 import { Pagination } from "@/components/custom/table/pagination";
@@ -9,21 +9,16 @@ import {
 } from "./active-employee-table";
 import { StatusFilter, statusOptions } from "./status-filter";
 
-import type { ActiveEmployee, EmployeeStatus } from "../lib/data";
-// import { useActiveEmployees } from "../mutations/employee-service";
-import { mockActiveEmployees } from "../lib/data"; // New import
+import type { EmployeeStatus } from "../lib/helpers";
+import { transformToActiveEmployee } from "../lib/helpers";
+import { useActiveEmployees } from "../mutations/useActiveEmployees";
 import { Error } from "@/features/error";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ActiveEmployeeBoard() {
-  // React Query hooks
-  // const { data: employees = [], isLoading, error } = useActiveEmployees();
-  const employees = mockActiveEmployees;
-  const isLoading = false;
-  const error = null;
+  // React Query hook
+  const { data, isLoading, error } = useActiveEmployees();
 
-  const [filteredEmployees, setFilteredEmployees] = useState<ActiveEmployee[]>(
-    [],
-  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState<EmployeeStatus[]>(
     [],
@@ -39,36 +34,42 @@ export default function ActiveEmployeeBoard() {
     "actions",
   ]);
 
-  // Initialize filtered employees when data is loaded
-  useEffect(() => {
-    if (employees) {
-      let filtered = [...employees];
+  // Transform service employees to UI employees with memoization
+  const employees = useMemo(() => {
+    if (!data?.employees) return [];
+    return data.employees.map(transformToActiveEmployee);
+  }, [data?.employees]);
 
-      if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        filtered = filtered.filter(
-          (employee) =>
-            employee.name.toLowerCase().includes(lowerQuery) ||
-            employee.department.toLowerCase().includes(lowerQuery),
-        );
-      }
+  // Filter employees with memoization for performance
+  const filteredEmployees = useMemo(() => {
+    let filtered = [...employees];
 
-      if (selectedStatuses.length > 0) {
-        filtered = filtered.filter((employee) =>
-          selectedStatuses.includes(employee.status),
-        );
-      }
-
-      setFilteredEmployees(filtered);
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (employee) =>
+          employee.name.toLowerCase().includes(lowerQuery) ||
+          employee.department.toLowerCase().includes(lowerQuery) ||
+          employee.employeeCode.toLowerCase().includes(lowerQuery),
+      );
     }
+
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((employee) =>
+        selectedStatuses.includes(employee.status),
+      );
+    }
+
+    return filtered;
   }, [employees, searchQuery, selectedStatuses]);
 
-  // Update status counts
-  useEffect(() => {
+  // Update status counts with memoization
+  const statusCounts = useMemo(() => {
     const counts: Record<EmployeeStatus, number> = {
       "On time": 0,
       Late: 0,
       "On leave": 0,
+      Absent: 0,
     };
 
     employees.forEach((employee) => {
@@ -77,20 +78,25 @@ export default function ActiveEmployeeBoard() {
       }
     });
 
-    statusOptions.forEach((option) => {
-      const status = option.value as EmployeeStatus;
-      option.count = counts[status] || 0;
-    });
+    return counts;
   }, [employees]);
 
-  // Pagination calculations
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredEmployees.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
+  // Update status options with counts
+  useEffect(() => {
+    statusOptions.forEach((option) => {
+      const status = option.value as EmployeeStatus;
+      option.count = statusCounts[status] || 0;
+    });
+  }, [statusCounts]);
 
+  // Pagination calculations with memoization
+  const paginatedEmployees = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredEmployees, currentPage, itemsPerPage]);
+
+  // handlers
   const handleStatusFilterChange = (statuses: EmployeeStatus[]) => {
     setSelectedStatuses(statuses);
     setCurrentPage(1);
@@ -120,8 +126,30 @@ export default function ActiveEmployeeBoard() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        Loading active employees...
+      <div className="flex h-full flex-col space-y-4">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div className="flex flex-1 items-center gap-4">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+          <Skeleton className="h-9 w-32" />
+        </div>
+        <div className="flex-1 overflow-auto rounded-md border">
+          <div className="p-8">
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -129,7 +157,10 @@ export default function ActiveEmployeeBoard() {
   if (error) {
     return (
       <Error
-      // title={`Error loading active employees: ${error instanceof Error ? error.message : "Unknown error"}`}
+        title="Error loading active employees"
+        message={
+          error instanceof Error ? error.message : "Unknown error occurred"
+        }
       />
     );
   }
@@ -162,7 +193,7 @@ export default function ActiveEmployeeBoard() {
 
       <div className="flex-1 overflow-auto rounded-md border">
         <ActiveEmployeeTable
-          employees={currentItems}
+          employees={paginatedEmployees}
           visibleColumns={visibleColumns}
         />
       </div>

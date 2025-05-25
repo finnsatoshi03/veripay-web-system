@@ -1,6 +1,6 @@
 import { Loader2, Eye, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ActiveEmployee } from "../lib/data";
+import type { ActiveEmployee } from "../lib/helpers";
 // import { useProcessEmployeeAction } from "../mutations/employee-service";
 
 interface EmployeeActionsProps {
@@ -15,7 +15,7 @@ export const EmployeeActions = ({ employee }: EmployeeActionsProps) => {
   //   isPending &&
   //   variables?.employeeId === employee.id &&
   //   variables?.action === "attach";
-    
+
   // const isLoadingView =
   //   isPending &&
   //   variables?.employeeId === employee.id &&
@@ -31,9 +31,11 @@ export const EmployeeActions = ({ employee }: EmployeeActionsProps) => {
     //   employeeId: employee.id,
     //   action,
     // });
-    
+
     // Temporary placeholder while employee-service is commented out
-    console.log(`Action ${action} for employee ${employee.id} - service commented out`);
+    console.log(
+      `Action ${action} for employee ${employee.id} - service commented out`,
+    );
   };
 
   return (

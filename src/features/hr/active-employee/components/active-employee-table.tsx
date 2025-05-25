@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Clock, Code2, Wallet, Handshake } from "lucide-react";
 import {
   Table,
@@ -10,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmployeeActions } from "./employee-actions";
+import { EmployeeDetailsDialog } from "./employee-details-dialog";
 import type { ActiveEmployee } from "../lib/helpers";
 
 interface ActiveEmployeeTableProps {
@@ -37,6 +39,10 @@ export const ActiveEmployeeTable = ({
     "actions",
   ],
 }: ActiveEmployeeTableProps) => {
+  const [selectedEmployee, setSelectedEmployee] =
+    useState<ActiveEmployee | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   // Filter columns by visibility
   const columns = EMPLOYEE_TABLE_COLUMNS.filter((col) =>
     visibleColumns.includes(col.id),
@@ -94,90 +100,119 @@ export const ActiveEmployeeTable = ({
       .slice(0, 2);
   };
 
+  const handleRowClick = (
+    employee: ActiveEmployee,
+    event: React.MouseEvent,
+  ) => {
+    // Don't trigger row click if clicking on the actions column
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-actions-column]")) {
+      return;
+    }
+
+    setSelectedEmployee(employee);
+    setDialogOpen(true);
+  };
+
   return (
-    <Table>
-      <TableHeader className="sticky top-0 z-20 bg-zinc-200 dark:bg-zinc-800">
-        <TableRow>
-          {columns.map((column) => (
-            <TableHead
-              key={column.id}
-              className={`font-medium ${column.id === "actions" ? "w-[100px]" : ""}`}
-            >
-              {column.label}
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {employees.length === 0 ? (
+    <>
+      <Table>
+        <TableHeader className="sticky top-0 z-20 bg-zinc-200 dark:bg-zinc-800">
           <TableRow>
-            <TableCell colSpan={getColSpan()} className="h-24 text-center">
-              No active employees found.
-            </TableCell>
+            {columns.map((column) => (
+              <TableHead
+                key={column.id}
+                className={`font-medium ${column.id === "actions" ? "w-[100px]" : ""}`}
+              >
+                {column.label}
+              </TableHead>
+            ))}
           </TableRow>
-        ) : (
-          employees.map((employee) => (
-            <TableRow key={employee.id} className="hover:bg-muted/50">
-              {visibleColumns.includes("name") && (
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={employee.avatar} alt={employee.name} />
-                      <AvatarFallback className="bg-yellow-400 text-sm font-bold text-white">
-                        {getEmployeeInitials(employee.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {employee.name}
-                  </div>
-                </TableCell>
-              )}
-              {visibleColumns.includes("department") && (
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={getDepartmentBadgeClasses(employee.department)}
-                  >
-                    {getDepartmentIcon(employee.department)}
-                    {employee.department}
-                  </Badge>
-                </TableCell>
-              )}
-              {visibleColumns.includes("timeIn") && (
-                <TableCell className="text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {employee.timeIn}
-                  </div>
-                </TableCell>
-              )}
-              {visibleColumns.includes("timeOut") && (
-                <TableCell className="text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {employee.timeOut}
-                  </div>
-                </TableCell>
-              )}
-              {visibleColumns.includes("status") && (
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={getStatusBadgeClasses(employee.status)}
-                  >
-                    <div className="mr-1 h-2 w-2 rounded-full bg-current"></div>
-                    {employee.status}
-                  </Badge>
-                </TableCell>
-              )}
-              {visibleColumns.includes("actions") && (
-                <TableCell>
-                  <EmployeeActions employee={employee} />
-                </TableCell>
-              )}
+        </TableHeader>
+        <TableBody>
+          {employees.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={getColSpan()} className="h-24 text-center">
+                No active employees found.
+              </TableCell>
             </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+          ) : (
+            employees.map((employee) => (
+              <TableRow
+                key={employee.id}
+                className="hover:bg-muted/50 cursor-pointer"
+                onClick={(e) => handleRowClick(employee, e)}
+              >
+                {visibleColumns.includes("name") && (
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={employee.avatar}
+                          alt={employee.name}
+                        />
+                        <AvatarFallback className="bg-yellow-400 text-sm font-bold text-white">
+                          {getEmployeeInitials(employee.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {employee.name}
+                    </div>
+                  </TableCell>
+                )}
+                {visibleColumns.includes("department") && (
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={getDepartmentBadgeClasses(employee.department)}
+                    >
+                      {getDepartmentIcon(employee.department)}
+                      {employee.department}
+                    </Badge>
+                  </TableCell>
+                )}
+                {visibleColumns.includes("timeIn") && (
+                  <TableCell className="text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {employee.timeIn}
+                    </div>
+                  </TableCell>
+                )}
+                {visibleColumns.includes("timeOut") && (
+                  <TableCell className="text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {employee.timeOut}
+                    </div>
+                  </TableCell>
+                )}
+                {visibleColumns.includes("status") && (
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={getStatusBadgeClasses(employee.status)}
+                    >
+                      <div className="mr-1 h-2 w-2 rounded-full bg-current"></div>
+                      {employee.status}
+                    </Badge>
+                  </TableCell>
+                )}
+                {visibleColumns.includes("actions") && (
+                  <TableCell data-actions-column>
+                    <EmployeeActions employee={employee} />
+                  </TableCell>
+                )}
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      <EmployeeDetailsDialog
+        employee={selectedEmployee}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
+    </>
   );
 };

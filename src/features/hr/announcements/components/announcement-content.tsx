@@ -149,7 +149,12 @@ export const AnnouncementContent = ({
                       <span>
                         Published{" "}
                         {formatDistanceToNow(
-                          new Date(selectedAnnouncement.created_at),
+                          new Date(
+                            new Date(
+                              selectedAnnouncement.created_at,
+                            ).getTime() +
+                              8 * 60 * 60 * 1000,
+                          ),
                           {
                             addSuffix: true,
                           },

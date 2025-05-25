@@ -108,9 +108,15 @@ export const AnnouncementThreadCard = ({
               </div>
               <div className="text-muted-foreground flex items-center gap-2 text-xs">
                 <span>
-                  {formatDistanceToNow(new Date(announcement.created_at), {
-                    addSuffix: true,
-                  })}
+                  {formatDistanceToNow(
+                    new Date(
+                      new Date(announcement.created_at).getTime() +
+                        8 * 60 * 60 * 1000,
+                    ),
+                    {
+                      addSuffix: true,
+                    },
+                  )}
                 </span>
                 <span>•</span>
                 <Badge

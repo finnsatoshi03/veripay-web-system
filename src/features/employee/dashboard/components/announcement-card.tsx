@@ -46,7 +46,10 @@ export const AnnouncementCard = ({
   const formatDate = (dateString: string) => {
     try {
       const parsedDate = new Date(dateString);
-      return formatDistanceToNow(parsedDate, { addSuffix: true });
+      return formatDistanceToNow(
+        new Date(parsedDate.getTime() + 8 * 60 * 60 * 1000),
+        { addSuffix: true },
+      );
     } catch {
       return dateString;
     }

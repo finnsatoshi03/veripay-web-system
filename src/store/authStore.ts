@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { supabase } from "@/services/supabase";
+import { supabase, clearAllTokens } from "@/services/supabase";
+import { checkSession } from "@/services/auth-service";
 import toast from "react-hot-toast";
 
 type AuthUser = {
@@ -50,10 +51,12 @@ export const useAuthStore = create<AuthState>()(
       checkSession: async () => {
         try {
           set({ isLoading: true });
-          const { data } = await supabase.auth.getSession();
 
-          if (data.session) {
-            const userData = data.session.user;
+          // Use the improved session check from auth service
+          const session = await checkSession();
+
+          if (session?.user) {
+            const userData = session.user;
             const userRole = userData.user_metadata?.role || "USER";
 
             set({
@@ -70,6 +73,8 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error("Error checking session:", error);
           set({ user: null, isAuthenticated: false });
+          // Clear tokens on session check failure
+          clearAllTokens();
         } finally {
           set({ isLoading: false });
         }
@@ -85,6 +90,9 @@ export const useAuthStore = create<AuthState>()(
             toast.error(`Supabase sign out error: ${error.message}`);
             return { success: false, error: error.message };
           }
+
+          // Clear all tokens
+          clearAllTokens();
 
           set({
             user: null,
@@ -117,12 +125,18 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
-// Setup auth listener
+// Setup auth listener with improved token handling
 export const setupAuthListener = () => {
   const { setUser, setSigningOut } = useAuthStore.getState();
 
   const { data: authListener } = supabase.auth.onAuthStateChange(
     (event, session) => {
+      console.log(
+        "Auth store - Auth state change:",
+        event,
+        session?.user?.email,
+      );
+
       if (event === "SIGNED_IN" && session) {
         const userData = session.user;
         const userRole = userData.user_metadata?.role || "USER";
@@ -136,6 +150,11 @@ export const setupAuthListener = () => {
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         setSigningOut(false); // Ensure signing out state is cleared
+        clearAllTokens(); // Ensure tokens are cleared
+      } else if (event === "TOKEN_REFRESHED") {
+        console.log("Auth store - Token refreshed successfully");
+        // Token refresh is handled automatically by the supabase client
+        // No need to update user state here as it remains the same
       }
     },
   );

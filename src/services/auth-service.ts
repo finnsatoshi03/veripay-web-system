@@ -1,5 +1,5 @@
 import type { NewUser } from "@/types/api";
-import { clearAuthToken, setAuthToken } from "./supabase";
+import { clearAllTokens, setAuthToken, setRefreshToken } from "./supabase";
 import { useUserStore } from "@/store/userStore";
 import { createClient, FunctionsHttpError } from "@supabase/supabase-js";
 
@@ -30,12 +30,16 @@ export const signInWithPassword = async (email: string, password: string) => {
 
     if (error) throw error;
 
-    if (data.user) {
-      const { user } = data;
-      const { access_token } = data.session || {};
+    if (data.user && data.session) {
+      const { user, session } = data;
+      const { access_token, refresh_token } = session;
 
+      // Store both access and refresh tokens
       if (access_token) {
         setAuthToken(access_token);
+      }
+      if (refresh_token) {
+        setRefreshToken(refresh_token);
       }
 
       // Get the role from user metadata
@@ -104,7 +108,8 @@ export const signOut = async () => {
       throw error;
     }
 
-    clearAuthToken();
+    // Clear all stored tokens
+    clearAllTokens();
 
     // Clear user state
     const userStore = useUserStore.getState();
@@ -123,8 +128,14 @@ export const signOut = async () => {
 export const setupAuthListener = () => {
   const { data: authListener } = supabase.auth.onAuthStateChange(
     async (event, session) => {
+      console.log("Auth state change:", event, session?.user?.email);
+
       if (event === "SIGNED_IN" && session) {
-        setAuthToken(session.access_token); // Save token
+        // Store both tokens
+        setAuthToken(session.access_token);
+        if (session.refresh_token) {
+          setRefreshToken(session.refresh_token);
+        }
 
         // When signed in via OAuth, we need to fetch user data
         try {
@@ -161,17 +172,72 @@ export const setupAuthListener = () => {
         });
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
-        clearAuthToken();
+        clearAllTokens();
 
         // Clear user data
         const userStore = useUserStore.getState();
         userStore.clearUser();
+      } else if (event === "TOKEN_REFRESHED" && session) {
+        console.log("Token refreshed successfully");
+        // Update stored tokens after refresh
+        setAuthToken(session.access_token);
+        if (session.refresh_token) {
+          setRefreshToken(session.refresh_token);
+        }
       }
     },
   );
 
   // Return unsubscribe function for cleanup
   return () => authListener.subscription.unsubscribe();
+};
+
+// ============================
+// Session Management
+// ============================
+
+// Check if user has a valid session
+export const checkSession = async () => {
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Error checking session:", error);
+      return null;
+    }
+
+    return session;
+  } catch (error) {
+    console.error("Error checking session:", error);
+    return null;
+  }
+};
+
+// Manually refresh the session
+export const refreshSession = async () => {
+  try {
+    const { data, error } = await supabase.auth.refreshSession();
+
+    if (error) {
+      console.error("Error refreshing session:", error);
+      throw error;
+    }
+
+    if (data.session) {
+      setAuthToken(data.session.access_token);
+      if (data.session.refresh_token) {
+        setRefreshToken(data.session.refresh_token);
+      }
+    }
+
+    return data.session;
+  } catch (error) {
+    console.error("Error refreshing session:", error);
+    throw error;
+  }
 };
 
 // ============================

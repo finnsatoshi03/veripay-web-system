@@ -14,7 +14,7 @@ export default function PublicLayout() {
 
   useEffect(() => {
     setTheme("light");
-  }, [setTheme]);
+  }, []);
 
   const currentPageInfo =
     displayInfoPerPage[pathname as keyof typeof displayInfoPerPage];

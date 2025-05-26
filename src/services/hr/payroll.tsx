@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import supabase from "@/lib/supabase";
-import { format, parseISO, addDays } from 'date-fns';
+// import { format, parseISO, addDays } from 'date-fns';
 
 export const generatePayroll = async () => {
   try {
     const periodStart = "2025-05-01";
     const periodEnd = "2025-05-30";
-    const createdBy = 27; 
+    const createdBy = 27;
 
     const { error } = await supabase.rpc("generate_payroll", {
       p_period_start: periodStart,
@@ -15,123 +16,122 @@ export const generatePayroll = async () => {
 
     if (error) throw error;
     console.log("success");
-    
-    return "success"
-  } catch (error) {
+
+    return "success";
+  } catch (error: any) {
     console.log(error.message || "Something went wrong");
   }
 };
 
 // !! make it return instead of array in data just an object
 // !! optimize too many unnecessary shits
-// !! add types and interface 
+// !! add types and interface
 // !! working, can be use for payroll summary and for the table of payroll management
-export const getPayrollSummary = async () => {
-  try {
-    const { data: payrolls, error: payrollError } = await supabase
-      .from('payrolls')
-      .select(`
-        *,
-        payslips: payslips (*)
-      `);
+// export const getPayrollSummary = async () => {
+//   try {
+//     const { data: payrolls, error: payrollError } = await supabase
+//       .from('payrolls')
+//       .select(`
+//         *,
+//         payslips: payslips (*)
+//       `);
 
-    if (payrollError) {
-      console.error('Error fetching payrolls:', payrollError);
-      return { success: false, error: payrollError };
-    }
+//     if (payrollError) {
+//       console.error('Error fetching payrolls:', payrollError);
+//       return { success: false, error: payrollError };
+//     }
 
-    const { data: mandatoryDeductions, error: dedError } = await supabase
-      .from('deductions')
-      .select('name, amount_type, value')
-      .eq('is_active', true)
-      .eq('type', 'mandatory');
+//     const { data: mandatoryDeductions, error: dedError } = await supabase
+//       .from('deductions')
+//       .select('name, amount_type, value')
+//       .eq('is_active', true)
+//       .eq('type', 'mandatory');
 
-    if (dedError) {
-      console.error('Error fetching mandatory deductions:', dedError);
-      return { success: false, error: dedError };
-    }
+//     if (dedError) {
+//       console.error('Error fetching mandatory deductions:', dedError);
+//       return { success: false, error: dedError };
+//     }
 
-    const payrollsWithDeductions = payrolls.map((payroll) => {
-      const payslipsWithDeds = payroll.payslips.map((payslip) => {
-        const deductions = mandatoryDeductions.map((ded) => {
-          let amount = 0;
-          if (ded.amount_type === 'fixed') {
-            amount = ded.value;
-          } else if (ded.amount_type === 'percentage') {
-            amount = (ded.value / 100) * payslip.basic_pay;
-          }
-          return {
-            name: ded.name,
-            amount,
-            displayValue:
-              ded.amount_type === 'percentage'
-                ? `${ded.value}%`
-                : `${ded.value}`,
-          };
-        });
+//     const payrollsWithDeductions = payrolls.map((payroll) => {
+//       const payslipsWithDeds = payroll.payslips.map((payslip) => {
+//         const deductions = mandatoryDeductions.map((ded) => {
+//           let amount = 0;
+//           if (ded.amount_type === 'fixed') {
+//             amount = ded.value;
+//           } else if (ded.amount_type === 'percentage') {
+//             amount = (ded.value / 100) * payslip.basic_pay;
+//           }
+//           return {
+//             name: ded.name,
+//             amount,
+//             displayValue:
+//               ded.amount_type === 'percentage'
+//                 ? `${ded.value}%`
+//                 : `${ded.value}`,
+//           };
+//         });
 
-        const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0);
+//         const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0);
 
-        return {
-          ...payslip,
-          mandatory_deductions: deductions,
-          total_mandatory_deductions: totalDeductions,
-        };
-      });
+//         return {
+//           ...payslip,
+//           mandatory_deductions: deductions,
+//           total_mandatory_deductions: totalDeductions,
+//         };
+//       });
 
-      const periodStart = parseISO(payroll.period_start);
-      const periodEnd = parseISO(payroll.period_end);
-      const formattedPeriod = `${format(periodStart, 'MMMM dd')} - ${format(
-        periodEnd,
-        'dd, yyyy'
-      )}`;
+//       const periodStart = parseISO(payroll.period_start);
+//       const periodEnd = parseISO(payroll.period_end);
+//       const formattedPeriod = `${format(periodStart, 'MMMM dd')} - ${format(
+//         periodEnd,
+//         'dd, yyyy'
+//       )}`;
 
-      const formattedDateProcessed = payroll.date_processed
-        ? format(parseISO(payroll.date_processed), 'MMMM dd, yyyy')
-        : null;
+//       const formattedDateProcessed = payroll.date_processed
+//         ? format(parseISO(payroll.date_processed), 'MMMM dd, yyyy')
+//         : null;
 
-      return {
-        ...payroll,
-        period_formatted: formattedPeriod,
-        date_processed_formatted: formattedDateProcessed,
-        payslips: payslipsWithDeds,
-      };
-    });
+//       return {
+//         ...payroll,
+//         period_formatted: formattedPeriod,
+//         date_processed_formatted: formattedDateProcessed,
+//         payslips: payslipsWithDeds,
+//       };
+//     });
 
-    const processedPayrolls = payrolls.filter((p) => p.date_processed !== null);
-    const sortedByDate = processedPayrolls.sort(
-      (a, b) => new Date(b.date_processed) - new Date(a.date_processed)
-    );
-    const lastPayrollDateRaw = sortedByDate.length ? sortedByDate[0].date_processed : null;
-    const lastPayrollDate = lastPayrollDateRaw
-      ? format(parseISO(lastPayrollDateRaw), 'MMMM dd, yyyy')
-      : null;
+//     const processedPayrolls = payrolls.filter((p) => p.date_processed !== null);
+//     const sortedByDate = processedPayrolls.sort(
+//       (a, b) => new Date(b.date_processed) - new Date(a.date_processed)
+//     );
+//     const lastPayrollDateRaw = sortedByDate.length ? sortedByDate[0].date_processed : null;
+//     const lastPayrollDate = lastPayrollDateRaw
+//       ? format(parseISO(lastPayrollDateRaw), 'MMMM dd, yyyy')
+//       : null;
 
-    let nextPayrollDateRaw;
-    if (lastPayrollDateRaw) {
-      const lastPayroll = sortedByDate[0];
-      const lastPeriodEnd = parseISO(lastPayroll.period_end);
-      nextPayrollDateRaw = addDays(lastPeriodEnd, 1).toISOString().split('T')[0];
-    } else {
-      nextPayrollDateRaw = new Date().toISOString().split('T')[0];
-    }
-    const nextPayrollDate = format(parseISO(nextPayrollDateRaw), 'MMMM dd, yyyy');
+//     let nextPayrollDateRaw;
+//     if (lastPayrollDateRaw) {
+//       const lastPayroll = sortedByDate[0];
+//       const lastPeriodEnd = parseISO(lastPayroll.period_end);
+//       nextPayrollDateRaw = addDays(lastPeriodEnd, 1).toISOString().split('T')[0];
+//     } else {
+//       nextPayrollDateRaw = new Date().toISOString().split('T')[0];
+//     }
+//     const nextPayrollDate = format(parseISO(nextPayrollDateRaw), 'MMMM dd, yyyy');
 
-    return {
-      success: true,
-      data: payrollsWithDeductions,
-      lastPayrollDate,
-      nextPayrollDate,
-      late_submissions: 0,
-    };
-  } catch (err) {
-    console.error('Unexpected error:', err);
-    return { success: false, error: err };
-  }
-};
+//     return {
+//       success: true,
+//       data: payrollsWithDeductions,
+//       lastPayrollDate,
+//       nextPayrollDate,
+//       late_submissions: 0,
+//     };
+//   } catch (err) {
+//     console.error('Unexpected error:', err);
+//     return { success: false, error: err };
+//   }
+// };
 
-
-// rpc 
+// rpc
 
 // CREATE OR REPLACE FUNCTION generate_payroll(p_period_start date, p_period_end date, p_created_by INT)
 // RETURNS VOID AS $$
@@ -233,4 +233,3 @@ export const getPayrollSummary = async () => {
 
 // END;
 // $$ LANGUAGE plpgsql;
-

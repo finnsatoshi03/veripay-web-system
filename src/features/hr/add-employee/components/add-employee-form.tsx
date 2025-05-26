@@ -52,7 +52,7 @@ const formSchema = z.object({
   address: z.string().min(10, {
     message: "Address must be at least 10 characters.",
   }),
-  gender: z.enum(["Male", "Female", "Other"], {
+  gender: z.enum(["Male", "Female"], {
     required_error: "Please select a gender.",
   }),
   birthdate: z.string().min(1, {
@@ -300,7 +300,6 @@ export const AddEmployeeForm = () => {
                     <SelectContent>
                       <SelectItem value="Male">Male</SelectItem>
                       <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -42,7 +42,7 @@ export interface User_profile {
   contact_number?: string;
   address?: string;
   birth_date?: string;
-  gender?: "male" | "female" | "other";
+  gender?: "male" | "female";
   profile_image_url?: string;
   identity_id: string;
   email: string;

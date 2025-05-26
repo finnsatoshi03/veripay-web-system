@@ -279,131 +279,30 @@ export const createRegistrationRequest = async (employee: NewUser) => {
   }
 };
 
-// Use custom password reset edge function
+// Use Supabase's built-in password reset functionality
 export const sendPasswordResetEmail = async (email: string): Promise<void> => {
   try {
-    const { data, error } = await supabase.functions.invoke(
-      "send-password-reset",
-      {
-        body: { email },
-      },
-    );
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
 
     if (error) throw error;
-
-    if (!data?.success) {
-      throw new Error("Failed to send password reset email");
-    }
   } catch (error) {
     console.error("Error sending password reset email:", error);
     throw error;
   }
 };
 
-// Reset password with token
-export const resetPasswordWithToken = async (
-  accessToken: string,
-  refreshToken: string,
-  newPassword: string,
-): Promise<void> => {
+// Reset password for authenticated user
+export const resetPassword = async (newPassword: string): Promise<void> => {
   try {
-    // Set the session with the tokens from the URL
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-
-    if (sessionError) throw sessionError;
-
-    // Update the password
-    const { error: updateError } = await supabase.auth.updateUser({
+    const { error } = await supabase.auth.updateUser({
       password: newPassword,
     });
 
-    if (updateError) throw updateError;
+    if (error) throw error;
   } catch (error) {
     console.error("Error resetting password:", error);
-    throw error;
-  }
-};
-
-// Verify email with token hash
-export const verifyEmail = async (token: string): Promise<void> => {
-  try {
-    const { error } = await supabase.auth.verifyOtp({
-      token_hash: token,
-      type: "email",
-    });
-
-    if (error) {
-      // Handle already confirmed emails gracefully
-      if (
-        error.message.includes("already confirmed") ||
-        error.message.includes("already verified")
-      ) {
-        console.log("Email already verified");
-        return; // Don't throw error for already verified emails
-      }
-      throw error;
-    }
-
-    console.log("Email verified successfully");
-  } catch (error) {
-    console.error("Error verifying email:", error);
-    throw error;
-  }
-};
-
-// Verify email with access and refresh tokens (from email link)
-export const verifyEmailWithTokens = async (
-  accessToken: string,
-  refreshToken: string,
-): Promise<void> => {
-  try {
-    // Set the session with the tokens from the URL
-    const { data, error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-
-    if (sessionError) throw sessionError;
-
-    // Check if email is confirmed
-    if (data.user?.email_confirmed_at) {
-      console.log("Email verified successfully through token session");
-    } else {
-      throw new Error("Email verification failed");
-    }
-  } catch (error) {
-    console.error("Error verifying email with tokens:", error);
-    throw error;
-  }
-};
-
-// Enhanced registration request with email verification
-export const createRegistrationRequestWithVerification = async (
-  employee: NewUser,
-) => {
-  try {
-    const { data, error } = await anonymousSupabase.functions.invoke(
-      "create-registration-request-with-verification",
-      {
-        body: {
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          email: employee.email,
-        },
-      },
-    );
-
-    if (error && error instanceof FunctionsHttpError) {
-      const errorMessage = await error.context.json();
-      throw new Error(errorMessage.error);
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error creating registration request:", error);
     throw error;
   }
 };

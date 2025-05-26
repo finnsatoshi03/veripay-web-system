@@ -29,6 +29,7 @@ type LeaveSpan = {
   week: number; // week row
   colStart: number; // column start (0-6)
   colSpan: number; // how many columns it spans
+  level: number; // vertical level for stacking
 };
 
 export const LeaveCalendar = ({ leaveRequests }: LeaveCalendarProps) => {
@@ -98,6 +99,7 @@ export const LeaveCalendar = ({ leaveRequests }: LeaveCalendarProps) => {
             week,
             colStart,
             colSpan,
+            level: 0, // Will be calculated later
           });
 
           if (i < leaveDays.length) {
@@ -108,6 +110,64 @@ export const LeaveCalendar = ({ leaveRequests }: LeaveCalendarProps) => {
           currentSpanEnd = currentDay;
         }
       }
+    });
+
+    // Calculate levels for proper stacking
+    return calculateSpanLevels(spans);
+  };
+
+  const calculateSpanLevels = (spans: LeaveSpan[]): LeaveSpan[] => {
+    // Group spans by week
+    const spansByWeek = spans.reduce(
+      (acc, span) => {
+        if (!acc[span.week]) acc[span.week] = [];
+        acc[span.week].push(span);
+        return acc;
+      },
+      {} as Record<number, LeaveSpan[]>,
+    );
+
+    // Calculate levels for each week
+    Object.values(spansByWeek).forEach((weekSpans) => {
+      // Sort spans by start column, then by span length (longer spans first)
+      weekSpans.sort((a, b) => {
+        if (a.colStart !== b.colStart) return a.colStart - b.colStart;
+        return b.colSpan - a.colSpan;
+      });
+
+      // Assign levels using a greedy algorithm
+      weekSpans.forEach((span) => {
+        let level = 0;
+        let hasConflict = true;
+
+        while (hasConflict) {
+          hasConflict = false;
+
+          // Check if this level conflicts with any existing span at the same level
+          for (const otherSpan of weekSpans) {
+            if (otherSpan === span || otherSpan.level !== level) continue;
+
+            // Check for overlap
+            const spanEnd = span.colStart + span.colSpan - 1;
+            const otherEnd = otherSpan.colStart + otherSpan.colSpan - 1;
+
+            const hasOverlap = !(
+              spanEnd < otherSpan.colStart || span.colStart > otherEnd
+            );
+
+            if (hasOverlap) {
+              hasConflict = true;
+              break;
+            }
+          }
+
+          if (hasConflict) {
+            level++;
+          }
+        }
+
+        span.level = level;
+      });
     });
 
     return spans;
@@ -133,6 +193,22 @@ export const LeaveCalendar = ({ leaveRequests }: LeaveCalendarProps) => {
   };
 
   const leaveSpans = calculateLeaveSpans();
+
+  // Calculate the maximum number of levels in any week to adjust cell height
+  const maxLevelsInWeek = Math.max(
+    ...Object.values(
+      leaveSpans.reduce(
+        (acc, span) => {
+          acc[span.week] = Math.max(acc[span.week] || 0, span.level + 1);
+          return acc;
+        },
+        {} as Record<number, number>,
+      ),
+    ),
+    1,
+  );
+
+  const cellHeight = Math.max(100, 60 + maxLevelsInWeek * 24); // Base height + space for levels
 
   return (
     <div className="w-full space-y-4">
@@ -187,10 +263,11 @@ export const LeaveCalendar = ({ leaveRequests }: LeaveCalendarProps) => {
                 <div
                   key={i}
                   className={cn(
-                    "relative min-h-[100px] rounded-md border p-1",
+                    "relative rounded-md border p-1",
                     !isCurrentMonth && "bg-border/30 opacity-50",
                     isToday && "bg-accent border-accent-foreground",
                   )}
+                  style={{ minHeight: `${cellHeight}px` }}
                 >
                   <div className="text-right text-sm font-medium">
                     {format(day, "d")}
@@ -216,7 +293,7 @@ export const LeaveCalendar = ({ leaveRequests }: LeaveCalendarProps) => {
                   "border-l-4",
                 )}
                 style={{
-                  top: `${span.week * 104 + 28}px`, // 100px min-height + 4px gap + 28px for day number
+                  top: `${span.week * (cellHeight + 4) + 28 + span.level * 24}px`, // Adjusted for dynamic height and level
                   left: `${(span.colStart * 100) / 7 + span.colStart * 0.25}%`,
                   width: `${(span.colSpan * 100) / 7 - 0.125}%`,
                   height: "20px",

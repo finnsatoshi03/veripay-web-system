@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Search } from "@/components/custom/search";
 
 import { LeaveRequestCard } from "./leave-request-card";
+import { LeaveRequestCardSkeleton } from "./leave-request-card-skeleton";
 import { LeaveRequestDialog } from "./leave-request-dialog";
 import { CreateLeaveRequestForm } from "./create-leave-request-form";
 
 import { KanbanBoard } from "@/components/custom/kanban/board";
 import type { LeaveRequestCardProps } from "./leave-request-card";
 import type { LeaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LeaveRequestSectionProps {
   leaveRequests?: {
@@ -84,7 +86,9 @@ export const LeaveRequestSection = ({
             </Button>
           </div>
         </div>
-        <div className="bg-border/50 h-64 animate-pulse rounded"></div>
+        <div className="flex h-full min-h-0 flex-1 gap-4">
+          <BoardSkeleton />
+        </div>
       </div>
     );
   }
@@ -153,6 +157,29 @@ export const LeaveRequestSection = ({
         onOpenChange={setIsRequestFormOpen}
         allowance={allowanceObject}
       />
+    </div>
+  );
+};
+
+const BoardSkeleton = () => {
+  return (
+    <div className="grid h-full w-full grid-cols-3 gap-4">
+      {[1, 2, 3].map((column) => (
+        <div
+          key={column}
+          className="bg-card flex-shrink-0 rounded-lg border p-4"
+        >
+          <div className="flex justify-between pb-4">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-6 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            {[1, 2].map((item) => (
+              <LeaveRequestCardSkeleton key={item} />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

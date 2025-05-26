@@ -38,9 +38,16 @@ export const ReviewerDisplay = ({
 
   if (useHrData && isLoading) {
     return (
-      <div className="flex justify-end space-x-2 py-2">
-        <Skeleton className="size-9 rounded-lg" />
-        <Skeleton className="size-9 rounded-lg" />
+      <div className="space-y-1">
+        <div className="relative flex justify-end">
+          <Skeleton className="border-background size-9 rounded-full border-2" />
+          <Skeleton className="border-background relative -ml-1.5 size-9 rounded-full border-2" />
+          <Skeleton className="border-background relative -ml-1.5 size-9 rounded-full border-2" />
+        </div>
+        <p className="text-muted-foreground text-right text-sm leading-none">
+          Assigned HR reviewers <br />
+          {description}
+        </p>
       </div>
     );
   }
@@ -60,9 +67,7 @@ export const ReviewerDisplay = ({
                 }}
               >
                 <AvatarImage src={reviewer.image} alt={reviewer.name} />
-                <AvatarFallback className="rounded-lg">
-                  {formatInitials(reviewer.name)}
-                </AvatarFallback>
+                <AvatarFallback>{formatInitials(reviewer.name)}</AvatarFallback>
               </Avatar>
             </TooltipTrigger>
             <TooltipContent>{reviewer.name}</TooltipContent>

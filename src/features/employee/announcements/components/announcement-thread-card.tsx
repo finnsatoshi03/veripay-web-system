@@ -90,12 +90,12 @@ export const AnnouncementThreadCard = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Author Avatar */}
-            <Avatar className="size-8 rounded-lg">
+            <Avatar className="size-8">
               <AvatarImage
                 src={announcement.created_by?.user_profiles?.profile_image}
                 alt={getAuthorName()}
               />
-              <AvatarFallback className="rounded-lg text-xs font-medium">
+              <AvatarFallback className="text-xs font-medium">
                 {formatInitials(getAuthorName())}
               </AvatarFallback>
             </Avatar>
@@ -108,9 +108,15 @@ export const AnnouncementThreadCard = ({
               </div>
               <div className="text-muted-foreground flex items-center gap-2 text-xs">
                 <span>
-                  {formatDistanceToNow(new Date(announcement.created_at), {
-                    addSuffix: true,
-                  })}
+                  {formatDistanceToNow(
+                    new Date(
+                      new Date(announcement.created_at).getTime() +
+                        8 * 60 * 60 * 1000,
+                    ),
+                    {
+                      addSuffix: true,
+                    },
+                  )}
                 </span>
                 <span>•</span>
                 <Badge

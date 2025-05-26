@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { LeaveAllowanceItem } from "./leave-allowance-item";
+import { LeaveAllowanceItemSkeleton } from "./leave-allowance-item-skeleton";
 import type { LeaveAllowance } from "../../_lib/mock/mock-leaveAllowance";
 
 interface LeaveAllowanceSectionProps {
@@ -35,10 +36,7 @@ export const LeaveAllowanceSection = ({
         </div>
         <div className="grid grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-border/50 h-32 animate-pulse rounded"
-            ></div>
+            <LeaveAllowanceItemSkeleton key={i} />
           ))}
         </div>
       </div>

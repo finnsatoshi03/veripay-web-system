@@ -130,7 +130,7 @@ const EmployeeList = ({
       employees.slice(0, 5).map((employee) => (
         <div key={employee.id} className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Avatar className="size-8 rounded-md">
+            <Avatar className="size-8">
               <AvatarImage src={employee.avatar} />
               <AvatarFallback>
                 {employee.name.substring(0, 2).toUpperCase()}

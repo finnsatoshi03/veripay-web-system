@@ -4,6 +4,7 @@ import { ArrowLeft, Bell } from "lucide-react";
 import { formatInitials } from "@/lib/helpers/formatters";
 
 import { DateRangePicker } from "@/components/custom/date-range-picker";
+import { SingleDatePicker } from "@/components/custom/single-date-picker";
 import { ThemeToggle } from "@/components/custom/theme-toggle";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,6 +22,7 @@ export const Header = () => {
   const navigate = useNavigate();
 
   const isDashboard = pathname.includes("dashboard");
+  const isActiveEmployeePage = pathname.includes("/hr/active-employee");
 
   // Get notification stats for badge
   const { data: notificationStats } = useNotificationStats(userId || 0);
@@ -61,7 +63,10 @@ export const Header = () => {
 
       <div className="flex items-center gap-2">
         {isDashboard && <SpotlightSearch />}
-        <DateRangePicker />
+
+        {/* Conditionally render date pickers based on route */}
+        {isActiveEmployeePage ? <SingleDatePicker /> : <DateRangePicker />}
+
         <ThemeToggle />
 
         {/* Notifications */}

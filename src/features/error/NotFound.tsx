@@ -35,7 +35,7 @@ export default function NotFound({
   };
 
   return (
-    <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-8 p-4 text-center">
+    <div className="flex h-screen w-full flex-col items-center justify-center gap-8 p-4 text-center">
       <div className="space-y-4">
         <h1 className="text-primary text-9xl font-bold">404</h1>
         <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>

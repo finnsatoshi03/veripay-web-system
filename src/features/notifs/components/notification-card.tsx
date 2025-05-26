@@ -86,6 +86,8 @@ export const NotificationCard = ({
   const iconColor = notificationColors[notification.type];
   const typeLabel = notificationLabels[notification.type];
 
+  console.log(notification.created_at);
+
   return (
     <div
       className={cn(
@@ -167,9 +169,15 @@ export const NotificationCard = ({
           <div className="text-muted-foreground flex items-center gap-1">
             <Bell className="size-2.5" />
             <span>
-              {formatDistanceToNow(new Date(notification.created_at), {
-                addSuffix: true,
-              })}
+              {formatDistanceToNow(
+                new Date(
+                  new Date(notification.created_at).getTime() +
+                    8 * 60 * 60 * 1000,
+                ),
+                {
+                  addSuffix: true,
+                },
+              )}
             </span>
           </div>
 

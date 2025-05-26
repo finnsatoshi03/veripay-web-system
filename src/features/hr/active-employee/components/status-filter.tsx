@@ -1,6 +1,6 @@
-import { CheckCircle2, Clock, UserX } from "lucide-react";
+import { CheckCircle2, Clock, UserX, UserMinus } from "lucide-react";
 import { FacetedFilter } from "@/components/custom/table/faceted-filter";
-import type { EmployeeStatus } from "../lib/data";
+import type { EmployeeStatus } from "../lib/helpers";
 
 interface StatusFilterProps {
   selectedStatuses: EmployeeStatus[];
@@ -16,7 +16,7 @@ export const statusOptions = [
   },
   {
     label: "Late",
-    value: "Late", 
+    value: "Late",
     icon: Clock,
     count: 0, // This will be dynamically updated
   },
@@ -24,6 +24,12 @@ export const statusOptions = [
     label: "On leave",
     value: "On leave",
     icon: UserX,
+    count: 0, // This will be dynamically updated
+  },
+  {
+    label: "Absent",
+    value: "Absent",
+    icon: UserMinus,
     count: 0, // This will be dynamically updated
   },
 ];

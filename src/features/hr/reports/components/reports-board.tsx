@@ -210,11 +210,11 @@ export const ReportsBoard = () => {
 
 const BoardSkeleton = () => {
   return (
-    <div className="flex h-full w-full gap-4">
+    <div className="grid h-full grid-cols-4 gap-4">
       {[1, 2, 3, 4].map((column) => (
         <div
           key={column}
-          className="bg-card w-72 flex-shrink-0 rounded-lg border p-4"
+          className="bg-card w-full flex-shrink-0 rounded-lg border p-4"
         >
           <div className="flex justify-between pb-4">
             <Skeleton className="h-6 w-24" />

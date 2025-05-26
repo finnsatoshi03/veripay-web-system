@@ -91,7 +91,7 @@ export const AnnouncementViewer = ({
               {/* Author and Metadata */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <Avatar className="size-10 rounded-lg">
+                  <Avatar className="size-10">
                     <AvatarImage
                       src={
                         selectedAnnouncement.created_by?.user_profiles
@@ -99,7 +99,7 @@ export const AnnouncementViewer = ({
                       }
                       alt={getAuthorName(selectedAnnouncement)}
                     />
-                    <AvatarFallback className="rounded-lg">
+                    <AvatarFallback>
                       {formatInitials(getAuthorName(selectedAnnouncement))}
                     </AvatarFallback>
                   </Avatar>
@@ -115,7 +115,12 @@ export const AnnouncementViewer = ({
                       <span>
                         Published{" "}
                         {formatDistanceToNow(
-                          new Date(selectedAnnouncement.created_at),
+                          new Date(
+                            new Date(
+                              selectedAnnouncement.created_at,
+                            ).getTime() +
+                              8 * 60 * 60 * 1000,
+                          ),
                           {
                             addSuffix: true,
                           },

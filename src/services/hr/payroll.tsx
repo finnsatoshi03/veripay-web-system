@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import supabase from "@/lib/supabase";
 import { format, parseISO, addDays } from 'date-fns';
 
@@ -29,7 +30,7 @@ export const generatePayroll = async () => {
   try {
     const periodStart = "2025-05-01";
     const periodEnd = "2025-05-30";
-    const createdBy = 27; 
+    const createdBy = 27;
 
     const { error } = await supabase.rpc("generate_payroll", {
       p_period_start: periodStart,
@@ -41,27 +42,19 @@ export const generatePayroll = async () => {
     console.log("success");
     
     return "success"
-  } catch (error:any) {
+  } catch (error : any) {
     console.log(error.message || "Something went wrong");
   }
 };
 
-export const getPayrollSummary = async (): Promise<{
-  success: boolean;
-  data?: any;
-  lastPayrollDate?: string | null;
-  nextPayrollDate?: string;
-  late_submissions?: number;
-  error?: any;
-}> => {
+export const getPayrollSummary = async () => {
   try {
     const { data: payrolls, error: payrollError } = await supabase
       .from('payrolls')
       .select(`
         *,
         payslips: payslips (*)
-      `)
-      .order('created_at', { ascending: false });
+      `);
 
     if (payrollError) {
       console.error('Error fetching payrolls:', payrollError);
@@ -79,9 +72,9 @@ export const getPayrollSummary = async (): Promise<{
       return { success: false, error: dedError };
     }
 
-    const payrollsWithDeductions = payrolls.map((payroll: Payroll) => {
-      const payslipsWithDeds = payroll.payslips.map((payslip: Payslip) => {
-        const deductions = mandatoryDeductions.map((ded: Deduction) => {
+    const payrollsWithDeductions = payrolls.map((payroll) => {
+      const payslipsWithDeds = payroll.payslips.map((payslip : any) => {
+        const deductions = mandatoryDeductions.map((ded) => {
           let amount = 0;
           if (ded.amount_type === 'fixed') {
             amount = ded.value;
@@ -120,21 +113,24 @@ export const getPayrollSummary = async (): Promise<{
 
       return {
         ...payroll,
-        payroll_period: formattedPeriod,
-        date_processed: formattedDateProcessed,
-        created_at: format(parseISO(payroll.created_at), 'MMMM dd, yyyy'),
+        period_formatted: formattedPeriod,
+        date_processed_formatted: formattedDateProcessed,
         payslips: payslipsWithDeds,
       };
     });
 
-    const processedPayrolls = payrollsWithDeductions.filter(
-      (p) => p.date_processed !== null
+    const processedPayrolls = payrolls.filter((p) => p.date_processed !== null);
+    const sortedByDate = processedPayrolls.sort(
+      (a, b) => new Date(b.date_processed) - new Date(a.date_processed)
     );
-    const lastPayroll = processedPayrolls[0];
-    const lastPayrollDate = lastPayroll?.date_processed || null;
+    const lastPayrollDateRaw = sortedByDate.length ? sortedByDate[0].date_processed : null;
+    const lastPayrollDate = lastPayrollDateRaw
+      ? format(parseISO(lastPayrollDateRaw), 'MMMM dd, yyyy')
+      : null;
 
     let nextPayrollDateRaw;
-    if (lastPayroll) {
+    if (lastPayrollDateRaw) {
+      const lastPayroll = sortedByDate[0];
       const lastPeriodEnd = parseISO(lastPayroll.period_end);
       nextPayrollDateRaw = addDays(lastPeriodEnd, 1).toISOString().split('T')[0];
     } else {
@@ -147,7 +143,7 @@ export const getPayrollSummary = async (): Promise<{
       data: payrollsWithDeductions,
       lastPayrollDate,
       nextPayrollDate,
-      late_submissions: 0, // you can replace with actual logic if needed
+      late_submissions: 0,
     };
   } catch (err) {
     console.error('Unexpected error:', err);
@@ -156,7 +152,8 @@ export const getPayrollSummary = async (): Promise<{
 };
 
 
-// rpc 
+
+// rpc
 
 // CREATE OR REPLACE FUNCTION generate_payroll(p_period_start date, p_period_end date, p_created_by INT)
 // RETURNS VOID AS $$
@@ -258,4 +255,3 @@ export const getPayrollSummary = async (): Promise<{
 
 // END;
 // $$ LANGUAGE plpgsql;
-

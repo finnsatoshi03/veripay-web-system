@@ -46,7 +46,10 @@ export const AnnouncementCard = ({
   const formatDate = (dateString: string) => {
     try {
       const parsedDate = new Date(dateString);
-      return formatDistanceToNow(parsedDate, { addSuffix: true });
+      return formatDistanceToNow(
+        new Date(parsedDate.getTime() + 8 * 60 * 60 * 1000),
+        { addSuffix: true },
+      );
     } catch {
       return dateString;
     }
@@ -83,9 +86,9 @@ export const AnnouncementCard = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Author Avatar */}
-            <Avatar className="size-8 rounded-lg">
+            <Avatar className="size-8">
               <AvatarImage src={author_avatar} alt={author_name} />
-              <AvatarFallback className="rounded-lg text-xs font-medium">
+              <AvatarFallback className="text-xs font-medium">
                 {formatInitials(author_name)}
               </AvatarFallback>
             </Avatar>

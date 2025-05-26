@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search } from "@/components/custom/search";
 import { ColumnToggle } from "@/components/custom/table/column-toggle";
 import { Pagination } from "@/components/custom/table/pagination";
@@ -9,21 +9,25 @@ import {
 } from "./active-employee-table";
 import { StatusFilter, statusOptions } from "./status-filter";
 
-import type { ActiveEmployee, EmployeeStatus } from "../lib/data";
-// import { useActiveEmployees } from "../mutations/employee-service";
-import { mockActiveEmployees } from "../lib/data"; // New import
+import type { EmployeeStatus } from "../lib/helpers";
+import { transformToActiveEmployee } from "../lib/helpers";
+import { useActiveEmployees } from "../mutations/useActiveEmployees";
 import { Error } from "@/features/error";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ActiveEmployeeBoard() {
-  // React Query hooks
-  // const { data: employees = [], isLoading, error } = useActiveEmployees();
-  const employees = mockActiveEmployees;
-  const isLoading = false;
-  const error = null;
+interface ActiveEmployeeBoardProps {
+  isLoading?: boolean;
+}
 
-  const [filteredEmployees, setFilteredEmployees] = useState<ActiveEmployee[]>(
-    [],
-  );
+export default function ActiveEmployeeBoard({
+  isLoading: externalLoading,
+}: ActiveEmployeeBoardProps) {
+  // React Query hook
+  const { data, isLoading: queryLoading, error } = useActiveEmployees();
+
+  // Use external loading prop if provided, otherwise use query loading
+  const isLoading = externalLoading ?? queryLoading;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState<EmployeeStatus[]>(
     [],
@@ -39,36 +43,42 @@ export default function ActiveEmployeeBoard() {
     "actions",
   ]);
 
-  // Initialize filtered employees when data is loaded
-  useEffect(() => {
-    if (employees) {
-      let filtered = [...employees];
+  // Transform service employees to UI employees with memoization
+  const employees = useMemo(() => {
+    if (!data?.employees) return [];
+    return data.employees.map(transformToActiveEmployee);
+  }, [data?.employees]);
 
-      if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        filtered = filtered.filter(
-          (employee) =>
-            employee.name.toLowerCase().includes(lowerQuery) ||
-            employee.department.toLowerCase().includes(lowerQuery),
-        );
-      }
+  // Filter employees with memoization for performance
+  const filteredEmployees = useMemo(() => {
+    let filtered = [...employees];
 
-      if (selectedStatuses.length > 0) {
-        filtered = filtered.filter((employee) =>
-          selectedStatuses.includes(employee.status),
-        );
-      }
-
-      setFilteredEmployees(filtered);
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (employee) =>
+          employee.name.toLowerCase().includes(lowerQuery) ||
+          employee.department.toLowerCase().includes(lowerQuery) ||
+          employee.employeeCode.toLowerCase().includes(lowerQuery),
+      );
     }
+
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((employee) =>
+        selectedStatuses.includes(employee.status),
+      );
+    }
+
+    return filtered;
   }, [employees, searchQuery, selectedStatuses]);
 
-  // Update status counts
-  useEffect(() => {
+  // Update status counts with memoization
+  const statusCounts = useMemo(() => {
     const counts: Record<EmployeeStatus, number> = {
       "On time": 0,
       Late: 0,
       "On leave": 0,
+      Absent: 0,
     };
 
     employees.forEach((employee) => {
@@ -77,20 +87,25 @@ export default function ActiveEmployeeBoard() {
       }
     });
 
-    statusOptions.forEach((option) => {
-      const status = option.value as EmployeeStatus;
-      option.count = counts[status] || 0;
-    });
+    return counts;
   }, [employees]);
 
-  // Pagination calculations
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredEmployees.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
+  // Update status options with counts
+  useEffect(() => {
+    statusOptions.forEach((option) => {
+      const status = option.value as EmployeeStatus;
+      option.count = statusCounts[status] || 0;
+    });
+  }, [statusCounts]);
 
+  // Pagination calculations with memoization
+  const paginatedEmployees = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredEmployees, currentPage, itemsPerPage]);
+
+  // handlers
   const handleStatusFilterChange = (statuses: EmployeeStatus[]) => {
     setSelectedStatuses(statuses);
     setCurrentPage(1);
@@ -120,8 +135,111 @@ export default function ActiveEmployeeBoard() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        Loading active employees...
+      <div className="flex h-full flex-col space-y-4">
+        <div>
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex flex-1 items-center gap-4">
+              <Search
+                size="sm"
+                placeholder="Search active employee"
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+              <StatusFilter
+                selectedStatuses={selectedStatuses}
+                onChange={handleStatusFilterChange}
+              />
+            </div>
+            <div>
+              <ColumnToggle
+                columns={EMPLOYEE_TABLE_COLUMNS}
+                visibleColumns={visibleColumns}
+                onColumnToggle={handleColumnToggle}
+                primaryColumnId="name"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto rounded-md border">
+          <div className="w-full">
+            <div className="sticky top-0 z-20 bg-zinc-200 dark:bg-zinc-800">
+              <div className="flex border-b">
+                {EMPLOYEE_TABLE_COLUMNS.filter((col) =>
+                  visibleColumns.includes(col.id),
+                ).map((column) => (
+                  <div
+                    key={column.id}
+                    className={`px-4 py-3 text-left text-sm font-medium ${
+                      column.id === "actions"
+                        ? "w-[100px]"
+                        : column.id === "name"
+                          ? "min-w-[350px]"
+                          : "flex-1"
+                    }`}
+                  >
+                    {column.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="divide-y">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="hover:bg-muted/50 flex items-center">
+                  {visibleColumns.includes("name") && (
+                    <div className="min-w-[350px] flex-1 px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                    </div>
+                  )}
+                  {visibleColumns.includes("department") && (
+                    <div className="flex-1 px-4 py-2">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("timeIn") && (
+                    <div className="flex-1 px-4 py-2">
+                      <div className="flex items-center gap-1">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                  )}
+                  {visibleColumns.includes("timeOut") && (
+                    <div className="flex-1 px-4 py-2">
+                      <div className="flex items-center gap-1">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <div className="flex-1 px-4 py-2">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </div>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <div className="w-[100px] px-4 py-2">
+                      <Skeleton className="h-8 w-8 rounded" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-32" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -129,7 +247,10 @@ export default function ActiveEmployeeBoard() {
   if (error) {
     return (
       <Error
-      // title={`Error loading active employees: ${error instanceof Error ? error.message : "Unknown error"}`}
+        title="Error loading active employees"
+        message={
+          error instanceof Error ? error.message : "Unknown error occurred"
+        }
       />
     );
   }
@@ -162,7 +283,7 @@ export default function ActiveEmployeeBoard() {
 
       <div className="flex-1 overflow-auto rounded-md border">
         <ActiveEmployeeTable
-          employees={currentItems}
+          employees={paginatedEmployees}
           visibleColumns={visibleColumns}
         />
       </div>

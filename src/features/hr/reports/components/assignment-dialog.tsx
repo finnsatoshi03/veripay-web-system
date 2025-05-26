@@ -101,12 +101,12 @@ export const AssignmentDialog = ({
                         value={employee.user_id.id.toString()}
                       >
                         <div className="flex items-center gap-2">
-                          <Avatar className="size-6 rounded-md">
+                          <Avatar className="size-6">
                             <AvatarImage
                               src={employee.user_id.user_profiles.profile_image}
                               alt={name}
                             />
-                            <AvatarFallback className="rounded-md">
+                            <AvatarFallback>
                               {formatInitials(name)}
                             </AvatarFallback>
                           </Avatar>

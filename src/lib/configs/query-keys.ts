@@ -9,6 +9,7 @@ export const queryKeys = {
     employeeSummary: "employeeSummary",
   },
   HR: {
+    activeEmployees: "activeEmployees",
     hrEmployees: "hrEmployees",
     reportsToReview: "reportsToReview",
     accountRequests: "accountRequests",

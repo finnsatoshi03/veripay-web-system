@@ -17,11 +17,9 @@ export const BirthdayCard = ({ date, name, avatarUrl }: BirthdayCardProps) => {
         <Calendar1 className="size-4" /> {date}
       </div>
       <div className="flex items-center gap-2">
-        <Avatar className="size-12 rounded-md">
+        <Avatar className="size-12">
           <AvatarImage src={avatarUrl} />
-          <AvatarFallback className="rounded-md">
-            {formatInitials(name)}
-          </AvatarFallback>
+          <AvatarFallback>{formatInitials(name)}</AvatarFallback>
         </Avatar>
         <div>
           <h3 className="text-3xl font-semibold">{name}</h3>

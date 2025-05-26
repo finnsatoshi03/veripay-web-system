@@ -3,6 +3,7 @@ import { Building2, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PositionSelectionDialog } from "./position-selection-dialog";
 import type { Department, Employee, Position } from "../../_lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,6 +17,7 @@ interface DepartmentsGridProps {
     departmentId: number,
     positionId: number,
   ) => void;
+  isLoading?: boolean;
 }
 
 export const DepartmentsGrid = ({
@@ -23,6 +25,7 @@ export const DepartmentsGrid = ({
   employees,
   positions,
   onAssignEmployee,
+  isLoading,
 }: DepartmentsGridProps) => {
   const [draggedOver, setDraggedOver] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -74,6 +77,44 @@ export const DepartmentsGrid = ({
   const getDepartmentPositions = (departmentId: number) => {
     return positions.filter((pos) => pos.department_id === departmentId);
   };
+
+  if (isLoading) {
+    return (
+      <ScrollArea className="h-full min-h-0">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card
+              key={index}
+              className="transition-all duration-200 hover:shadow-md"
+            >
+              <CardHeader>
+                <CardTitle className="grid grid-cols-[1fr_auto] items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 truncate">
+                    <Building2 className="size-5" />
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                  <Skeleton className="h-5 w-8 rounded-full" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="mb-3 h-4 w-full" />
+                <Skeleton className="mb-3 h-4 w-3/4" />
+
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-32" />
+                  <div className="flex flex-wrap gap-1">
+                    <Skeleton className="h-4 w-16 rounded-full" />
+                    <Skeleton className="h-4 w-20 rounded-full" />
+                    <Skeleton className="h-4 w-12 rounded-full" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </ScrollArea>
+    );
+  }
 
   return (
     <>

@@ -34,7 +34,7 @@ interface HrData {
   lastName: string;
   address: string;
   contactNumber: string;
-  gender: "Male" | "Female" | "Other";
+  gender: "Male" | "Female";
   birthdate: string;
   departmentId: string;
   positionId: string;

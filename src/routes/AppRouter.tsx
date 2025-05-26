@@ -49,9 +49,9 @@ export default function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
         </Route>
-        {/* Reset password route - accessible to both authenticated and unauthenticated users */}
+        {/* Reset password and verify email route - accessible to both authenticated and unauthenticated users */}
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
 

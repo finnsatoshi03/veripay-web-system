@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +25,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export const ForgotPasswordForm = () => {
+  const [isTimeoutActive, setIsTimeoutActive] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,9 +37,46 @@ export const ForgotPasswordForm = () => {
 
   const forgotPasswordMutation = useForgotPassword();
 
+  // Timer effect for countdown
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isTimeoutActive && remainingTime > 0) {
+      interval = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            setIsTimeoutActive(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isTimeoutActive, remainingTime]);
+
   const handleSubmit = (values: FormValues) => {
-    forgotPasswordMutation.mutate(values.email);
+    forgotPasswordMutation.mutate(values.email, {
+      onSuccess: () => {
+        // Start 3-minute timeout (180 seconds)
+        setIsTimeoutActive(true);
+        setRemainingTime(180);
+      },
+    });
   };
+
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const isFormDisabled = forgotPasswordMutation.isPending || isTimeoutActive;
 
   return (
     <Form {...form}>
@@ -53,7 +94,7 @@ export const ForgotPasswordForm = () => {
                 <Input
                   placeholder="example@email.com"
                   {...field}
-                  disabled={forgotPasswordMutation.isPending}
+                  disabled={isFormDisabled}
                 />
               </FormControl>
               <FormMessage />
@@ -67,7 +108,7 @@ export const ForgotPasswordForm = () => {
               type="button"
               variant="outline"
               className="w-full"
-              disabled={forgotPasswordMutation.isPending}
+              disabled={isFormDisabled}
             >
               Back to Login
             </Button>
@@ -76,11 +117,13 @@ export const ForgotPasswordForm = () => {
             type="submit"
             variant="secondary"
             className="w-full"
-            disabled={forgotPasswordMutation.isPending}
+            disabled={isFormDisabled}
           >
             {forgotPasswordMutation.isPending
               ? "Sending..."
-              : "Send Reset Link"}
+              : isTimeoutActive
+                ? `Resend in (${formatTime(remainingTime)})`
+                : "Send Reset Link"}
           </Button>
         </div>
       </form>

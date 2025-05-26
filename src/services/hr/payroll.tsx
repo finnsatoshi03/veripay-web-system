@@ -26,24 +26,41 @@ type Payroll = {
 };
 
 
-export const generatePayroll = async () => {
-  try {
-    const periodStart = "2025-05-01";
-    const periodEnd = "2025-05-30";
-    const createdBy = 27;
+// export const generatePayroll = async () => {
+//   try {
+//     const periodStart = "2025-05-01";
+//     const periodEnd = "2025-05-30";
+//     const createdBy = 27;
 
-    const { error } = await supabase.rpc("generate_payroll", {
-      p_period_start: periodStart,
-      p_period_end: periodEnd,
-      p_created_by: createdBy,
+//     const { error } = await supabase.rpc("generate_payroll", {
+//       p_period_start: periodStart,
+//       p_period_end: periodEnd,
+//       p_created_by: createdBy,
+//     });
+
+//     if (error) throw error;
+//     console.log("success");
+    
+//     return "success"
+//   } catch (error : any) {
+//     console.log(error.message || "Something went wrong");
+//   }
+// };
+
+export const markPaidPayslips = async (payrollId: number, cebuanaMap: any) => {
+  try {
+    const { data, error } = await supabase.rpc('mark_payslips_paid', {
+      p_payroll_id: payrollId,
+      p_cebuana_ids: cebuanaMap
     });
 
-    if (error) throw error;
-    console.log("success");
+    if (error) {      
+      throw new Error(`${error.message}`);
+    }
     
-    return "success"
-  } catch (error : any) {
-    console.log(error.message || "Something went wrong");
+    return data;
+  } catch (err) {    
+    throw err;
   }
 };
 

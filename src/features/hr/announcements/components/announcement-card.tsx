@@ -95,14 +95,14 @@ export const AnnouncementCard = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Author Avatar */}
-            <Avatar className="size-8 rounded-lg">
+            <Avatar className="size-8">
               <AvatarImage
                 src={
                   announcement.created_by_profile?.user_profiles?.profile_image
                 }
                 alt={getAuthorName()}
               />
-              <AvatarFallback className="rounded-lg text-xs font-medium">
+              <AvatarFallback className="text-xs font-medium">
                 {formatInitials(getAuthorName())}
               </AvatarFallback>
             </Avatar>

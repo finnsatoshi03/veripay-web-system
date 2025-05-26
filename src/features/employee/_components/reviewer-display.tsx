@@ -67,9 +67,7 @@ export const ReviewerDisplay = ({
                 }}
               >
                 <AvatarImage src={reviewer.image} alt={reviewer.name} />
-                <AvatarFallback className="rounded-lg">
-                  {formatInitials(reviewer.name)}
-                </AvatarFallback>
+                <AvatarFallback>{formatInitials(reviewer.name)}</AvatarFallback>
               </Avatar>
             </TooltipTrigger>
             <TooltipContent>{reviewer.name}</TooltipContent>

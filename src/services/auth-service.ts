@@ -140,11 +140,7 @@ export const setupAuthListener = () => {
     async (event, session) => {
       console.log("Auth state change:", event, session?.user?.email);
 
-      // Check if user is on reset password page - don't auto-login during password reset
-      const isOnResetPasswordPage =
-        window.location.pathname === "/reset-password";
-
-      if (event === "SIGNED_IN" && session && !isOnResetPasswordPage) {
+      if (event === "SIGNED_IN" && session) {
         // Store both tokens
         setAuthToken(session.access_token);
         if (session.refresh_token) {
@@ -191,11 +187,7 @@ export const setupAuthListener = () => {
         // Clear user data
         const userStore = useUserStore.getState();
         userStore.clearUser();
-      } else if (
-        event === "TOKEN_REFRESHED" &&
-        session &&
-        !isOnResetPasswordPage
-      ) {
+      } else if (event === "TOKEN_REFRESHED" && session) {
         console.log("Token refreshed successfully");
         // Update stored tokens after refresh
         setAuthToken(session.access_token);
@@ -287,16 +279,50 @@ export const createRegistrationRequest = async (employee: NewUser) => {
   }
 };
 
-// Keep only the simple password reset email function
+// Use custom password reset edge function
 export const sendPasswordResetEmail = async (email: string): Promise<void> => {
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    const { data, error } = await supabase.functions.invoke(
+      "send-password-reset",
+      {
+        body: { email },
+      },
+    );
 
     if (error) throw error;
+
+    if (!data?.success) {
+      throw new Error("Failed to send password reset email");
+    }
   } catch (error) {
     console.error("Error sending password reset email:", error);
+    throw error;
+  }
+};
+
+// Reset password with token
+export const resetPasswordWithToken = async (
+  accessToken: string,
+  refreshToken: string,
+  newPassword: string,
+): Promise<void> => {
+  try {
+    // Set the session with the tokens from the URL
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+
+    if (sessionError) throw sessionError;
+
+    // Update the password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) throw updateError;
+  } catch (error) {
+    console.error("Error resetting password:", error);
     throw error;
   }
 };
@@ -350,6 +376,34 @@ export const verifyEmailWithTokens = async (
     }
   } catch (error) {
     console.error("Error verifying email with tokens:", error);
+    throw error;
+  }
+};
+
+// Enhanced registration request with email verification
+export const createRegistrationRequestWithVerification = async (
+  employee: NewUser,
+) => {
+  try {
+    const { data, error } = await anonymousSupabase.functions.invoke(
+      "create-registration-request-with-verification",
+      {
+        body: {
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          email: employee.email,
+        },
+      },
+    );
+
+    if (error && error instanceof FunctionsHttpError) {
+      const errorMessage = await error.context.json();
+      throw new Error(errorMessage.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error creating registration request:", error);
     throw error;
   }
 };

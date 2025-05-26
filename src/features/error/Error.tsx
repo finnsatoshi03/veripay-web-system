@@ -26,7 +26,7 @@ export default function Error({
   };
 
   return (
-    <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-6 p-4 text-center">
+    <div className="flex h-screen w-full flex-col items-center justify-center gap-6 p-4 text-center">
       <AlertTriangle className="text-destructive size-16" />
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">{title}</h2>

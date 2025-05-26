@@ -53,118 +53,73 @@ export const ResetPasswordForm = () => {
   });
 
   useEffect(() => {
-    const handleResetPasswordSession = async () => {
-      const error = searchParams.get("error");
-      const errorDescription = searchParams.get("error_description");
-      const accessToken = searchParams.get("access_token");
-      const refreshToken = searchParams.get("refresh_token");
+    // Set up auth state listener to detect PASSWORD_RECOVERY event
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event) => {
+        console.log("Reset password auth event:", event);
 
-      // Check for errors first
-      if (error) {
-        console.error(
-          "Reset password error from URL:",
-          error,
-          errorDescription,
-        );
-        setResetStatus("error");
-        return;
-      }
-
-      try {
-        // If we have tokens in the URL, verify them but DON'T set the session yet
-        // We'll only set the session after password is successfully updated
-        if (accessToken && refreshToken) {
-          // Just verify the tokens are valid by checking with Supabase
-          try {
-            const { data: userData, error: userError } =
-              await supabase.auth.getUser(accessToken);
-
-            if (userError || !userData.user) {
-              console.error("Invalid tokens:", userError);
-              setResetStatus("error");
-              return;
-            }
-
-            // Tokens are valid, user can proceed with password reset
-            setResetStatus("ready");
-            return;
-          } catch (tokenError) {
-            console.error("Token validation error:", tokenError);
-            setResetStatus("error");
-            return;
-          }
+        if (event === "PASSWORD_RECOVERY") {
+          // User has successfully clicked the reset link and is authenticated
+          setResetStatus("ready");
+        } else if (event === "SIGNED_OUT") {
+          // After password update, user will be signed out
+          console.log("User signed out after password reset");
         }
+      },
+    );
 
-        // If no tokens, this is an invalid reset attempt
-        setResetStatus("error");
-      } catch (error) {
-        console.error("Reset password session error:", error);
-        setResetStatus("error");
-      }
-    };
+    // Check URL parameters for errors
+    const error = searchParams.get("error");
+    const errorDescription = searchParams.get("error_description");
 
-    // Add a small delay to ensure URL processing is complete
-    const timer = setTimeout(handleResetPasswordSession, 500);
+    if (error) {
+      console.error("Reset password error from URL:", error, errorDescription);
+      setResetStatus("error");
+      return () => authListener.subscription.unsubscribe();
+    }
 
-    return () => clearTimeout(timer);
+    // Check if we have the necessary tokens in URL (indicates valid reset link)
+    const accessToken = searchParams.get("access_token");
+    const refreshToken = searchParams.get("refresh_token");
+
+    if (!accessToken || !refreshToken) {
+      // No tokens means invalid or expired link
+      setResetStatus("error");
+    }
+    // If tokens exist, wait for PASSWORD_RECOVERY event
+
+    // Cleanup listener on unmount
+    return () => authListener.subscription.unsubscribe();
   }, [searchParams]);
 
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
 
     try {
-      const accessToken = searchParams.get("access_token");
-      const refreshToken = searchParams.get("refresh_token");
-
-      if (!accessToken || !refreshToken) {
-        throw new Error(
-          "Invalid reset session. Please request a new password reset.",
-        );
-      }
-
-      // Set the session temporarily to update the password
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-
-      if (sessionError || !sessionData.user) {
-        throw new Error("Failed to authenticate for password reset.");
-      }
-
-      // Update the user's password
-      const { error: updateError } = await supabase.auth.updateUser({
+      // Following Supabase's recommended approach: just call updateUser
+      // The session should already be set from the PASSWORD_RECOVERY event
+      const { data, error } = await supabase.auth.updateUser({
         password: values.password,
       });
 
-      if (updateError) {
-        throw updateError;
+      if (error) {
+        throw error;
       }
 
-      // Sign out immediately after password update to prevent auto-login
-      await supabase.auth.signOut();
+      if (data.user) {
+        setResetStatus("success");
+        toast.success("Password updated successfully!");
 
-      setResetStatus("success");
-      toast.success("Password updated successfully!");
+        // Sign out the user after successful password update
+        await supabase.auth.signOut();
 
-      // Redirect to login after a short delay
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      }
     } catch (error: unknown) {
       console.error("Password update error:", error);
-
-      // Make sure to sign out even if there was an error
-      try {
-        await supabase.auth.signOut();
-      } catch (signOutError) {
-        console.error(
-          "Error signing out after failed password reset:",
-          signOutError,
-        );
-      }
-
       toast.error(
         error instanceof Error
           ? error.message

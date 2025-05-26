@@ -139,3 +139,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+body {
+  pointer-events: auto !important;
+}

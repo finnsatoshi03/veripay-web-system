@@ -306,3 +306,28 @@ export const resetPassword = async (newPassword: string): Promise<void> => {
     throw error;
   }
 };
+
+export const updatePasswordWithCurrentPassword = async (
+  newPassword: string,
+  currentPassword: string,
+  userId: string,
+) => {
+  try {
+    const { data, error } = await supabase.rpc("update_password", {
+      current_id: userId,
+      current_plain_password: currentPassword,
+      new_plain_password: newPassword,
+    });
+
+    if (data === "success") {
+      return true;
+    } else if (data === "incorrect") {
+      throw new Error("Current password is incorrect");
+    }
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error updating password:", error);
+    throw error;
+  }
+};

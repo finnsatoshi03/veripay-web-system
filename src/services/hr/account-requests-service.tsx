@@ -1,4 +1,5 @@
 import { supabase } from "../supabase";
+import { emailService } from "@/services/email-service";
 
 export const getAccountRequest = async () => {
   try {
@@ -30,13 +31,31 @@ export const processRegistrationRequest = async (
     );
 
     if (error) {
-      console.error("Error fetching registration request:", error);
+      console.error("Error updating registration request:", error);
       throw error;
+    }
+
+    // Send approval/rejection email
+    if (data && data.user) {
+      await emailService.sendAccountApprovalEmail({
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        email: data.user.email,
+        status: newStatus === "approved" ? "approved" : "rejected",
+        welcomeUrl:
+          newStatus === "approved"
+            ? `${window.location.origin}/login`
+            : undefined,
+        rejectionReason:
+          newStatus === "rejected"
+            ? "Please contact HR for more information."
+            : undefined,
+      });
     }
 
     return data;
   } catch (error) {
-    console.error("Exception in getRegistrationRequest:", error);
+    console.error("Exception in processRegistrationRequest:", error);
     throw error;
   }
 };

@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useForgotPassword } from "@/features/auth/mutations/forgot-password-service";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -20,21 +21,28 @@ const formSchema = z.object({
   }),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 export const ForgotPasswordForm = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const forgotPasswordMutation = useForgotPassword();
+
+  const handleSubmit = (values: FormValues) => {
+    forgotPasswordMutation.mutate(values.email);
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="w-full space-y-6"
+      >
         <FormField
           control={form.control}
           name="email"
@@ -42,7 +50,11 @@ export const ForgotPasswordForm = () => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="example@email.com" {...field} />
+                <Input
+                  placeholder="example@email.com"
+                  {...field}
+                  disabled={forgotPasswordMutation.isPending}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -51,12 +63,24 @@ export const ForgotPasswordForm = () => {
 
         <div className="grid w-full grid-cols-[0.4fr_1fr] gap-2">
           <Link to="/login">
-            <Button type="button" variant="outline" className="w-full">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={forgotPasswordMutation.isPending}
+            >
               Back to Login
             </Button>
           </Link>
-          <Button type="submit" variant="secondary" className="w-full">
-            Send Reset Link
+          <Button
+            type="submit"
+            variant="secondary"
+            className="w-full"
+            disabled={forgotPasswordMutation.isPending}
+          >
+            {forgotPasswordMutation.isPending
+              ? "Sending..."
+              : "Send Reset Link"}
           </Button>
         </div>
       </form>

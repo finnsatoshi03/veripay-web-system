@@ -191,7 +191,7 @@ const customFetch = async (
       console.error("Failed to refresh token on 401:", error);
       processQueue(null, error as Error);
       // Redirect to login or handle auth failure
-      window.location.href = "/auth/login";
+      window.location.href = "/login";
     }
   }
 

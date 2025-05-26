@@ -327,7 +327,7 @@ export const resetPasswordWithToken = async (
   }
 };
 
-// Verify email with token
+// Verify email with token hash
 export const verifyEmail = async (token: string): Promise<void> => {
   try {
     const { error } = await supabase.auth.verifyOtp({
@@ -335,7 +335,19 @@ export const verifyEmail = async (token: string): Promise<void> => {
       type: "email",
     });
 
-    if (error) throw error;
+    if (error) {
+      // Handle already confirmed emails gracefully
+      if (
+        error.message.includes("already confirmed") ||
+        error.message.includes("already verified")
+      ) {
+        console.log("Email already verified");
+        return; // Don't throw error for already verified emails
+      }
+      throw error;
+    }
+
+    console.log("Email verified successfully");
   } catch (error) {
     console.error("Error verifying email:", error);
     throw error;
@@ -349,15 +361,19 @@ export const verifyEmailWithTokens = async (
 ): Promise<void> => {
   try {
     // Set the session with the tokens from the URL
-    const { error: sessionError } = await supabase.auth.setSession({
+    const { data, error: sessionError } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     });
 
     if (sessionError) throw sessionError;
 
-    // The email is automatically verified when the session is set from email link
-    console.log("Email verified successfully through token session");
+    // Check if email is confirmed
+    if (data.user?.email_confirmed_at) {
+      console.log("Email verified successfully through token session");
+    } else {
+      throw new Error("Email verification failed");
+    }
   } catch (error) {
     console.error("Error verifying email with tokens:", error);
     throw error;

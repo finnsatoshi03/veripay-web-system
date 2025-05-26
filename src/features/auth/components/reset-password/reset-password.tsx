@@ -71,44 +71,31 @@ export const ResetPasswordForm = () => {
       }
 
       try {
-        // If we have tokens in the URL, set the session
+        // If we have tokens in the URL, verify them but DON'T set the session yet
+        // We'll only set the session after password is successfully updated
         if (accessToken && refreshToken) {
-          const { data: sessionData, error: sessionError } =
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
+          // Just verify the tokens are valid by checking with Supabase
+          try {
+            const { data: userData, error: userError } =
+              await supabase.auth.getUser(accessToken);
 
-          if (sessionError) {
-            console.error("Session error:", sessionError);
+            if (userError || !userData.user) {
+              console.error("Invalid tokens:", userError);
+              setResetStatus("error");
+              return;
+            }
+
+            // Tokens are valid, user can proceed with password reset
+            setResetStatus("ready");
+            return;
+          } catch (tokenError) {
+            console.error("Token validation error:", tokenError);
             setResetStatus("error");
             return;
           }
-
-          // Session set successfully, user can now reset password
-          if (sessionData.user) {
-            setResetStatus("ready");
-            return;
-          }
         }
 
-        // If no tokens, check if user already has a valid session
-        const { data: sessionData, error: sessionError } =
-          await supabase.auth.getSession();
-
-        if (sessionError) {
-          console.error("Session check error:", sessionError);
-          setResetStatus("error");
-          return;
-        }
-
-        // If user has a valid session, they can reset password
-        if (sessionData.session?.user) {
-          setResetStatus("ready");
-          return;
-        }
-
-        // No valid session or tokens
+        // If no tokens, this is an invalid reset attempt
         setResetStatus("error");
       } catch (error) {
         console.error("Reset password session error:", error);
@@ -126,14 +113,37 @@ export const ResetPasswordForm = () => {
     setIsSubmitting(true);
 
     try {
+      const accessToken = searchParams.get("access_token");
+      const refreshToken = searchParams.get("refresh_token");
+
+      if (!accessToken || !refreshToken) {
+        throw new Error(
+          "Invalid reset session. Please request a new password reset.",
+        );
+      }
+
+      // Set the session temporarily to update the password
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+      if (sessionError || !sessionData.user) {
+        throw new Error("Failed to authenticate for password reset.");
+      }
+
       // Update the user's password
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password: values.password,
       });
 
-      if (error) {
-        throw error;
+      if (updateError) {
+        throw updateError;
       }
+
+      // Sign out immediately after password update to prevent auto-login
+      await supabase.auth.signOut();
 
       setResetStatus("success");
       toast.success("Password updated successfully!");
@@ -144,6 +154,17 @@ export const ResetPasswordForm = () => {
       }, 2000);
     } catch (error: unknown) {
       console.error("Password update error:", error);
+
+      // Make sure to sign out even if there was an error
+      try {
+        await supabase.auth.signOut();
+      } catch (signOutError) {
+        console.error(
+          "Error signing out after failed password reset:",
+          signOutError,
+        );
+      }
+
       toast.error(
         error instanceof Error
           ? error.message

@@ -137,7 +137,11 @@ export const setupAuthListener = () => {
         session?.user?.email,
       );
 
-      if (event === "SIGNED_IN" && session) {
+      // Check if user is on reset password page - don't auto-login during password reset
+      const isOnResetPasswordPage =
+        window.location.pathname === "/reset-password";
+
+      if (event === "SIGNED_IN" && session && !isOnResetPasswordPage) {
         const userData = session.user;
         const userRole = userData.user_metadata?.role || "USER";
 
@@ -151,7 +155,7 @@ export const setupAuthListener = () => {
         setUser(null);
         setSigningOut(false); // Ensure signing out state is cleared
         clearAllTokens(); // Ensure tokens are cleared
-      } else if (event === "TOKEN_REFRESHED") {
+      } else if (event === "TOKEN_REFRESHED" && !isOnResetPasswordPage) {
         console.log("Auth store - Token refreshed successfully");
         // Token refresh is handled automatically by the supabase client
         // No need to update user state here as it remains the same

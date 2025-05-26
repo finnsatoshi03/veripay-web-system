@@ -140,7 +140,11 @@ export const setupAuthListener = () => {
     async (event, session) => {
       console.log("Auth state change:", event, session?.user?.email);
 
-      if (event === "SIGNED_IN" && session) {
+      // Check if user is on reset password page - don't auto-login during password reset
+      const isOnResetPasswordPage =
+        window.location.pathname === "/reset-password";
+
+      if (event === "SIGNED_IN" && session && !isOnResetPasswordPage) {
         // Store both tokens
         setAuthToken(session.access_token);
         if (session.refresh_token) {
@@ -187,7 +191,11 @@ export const setupAuthListener = () => {
         // Clear user data
         const userStore = useUserStore.getState();
         userStore.clearUser();
-      } else if (event === "TOKEN_REFRESHED" && session) {
+      } else if (
+        event === "TOKEN_REFRESHED" &&
+        session &&
+        !isOnResetPasswordPage
+      ) {
         console.log("Token refreshed successfully");
         // Update stored tokens after refresh
         setAuthToken(session.access_token);
@@ -342,34 +350,6 @@ export const verifyEmailWithTokens = async (
     }
   } catch (error) {
     console.error("Error verifying email with tokens:", error);
-    throw error;
-  }
-};
-
-// Enhanced registration request with email verification
-export const createRegistrationRequestWithVerification = async (
-  employee: NewUser,
-) => {
-  try {
-    const { data, error } = await anonymousSupabase.functions.invoke(
-      "create-registration-request-with-verification",
-      {
-        body: {
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          email: employee.email,
-        },
-      },
-    );
-
-    if (error && error instanceof FunctionsHttpError) {
-      const errorMessage = await error.context.json();
-      throw new Error(errorMessage.error);
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error creating registration request:", error);
     throw error;
   }
 };

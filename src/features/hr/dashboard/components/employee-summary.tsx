@@ -189,28 +189,10 @@ const EmployeeSummarySkeleton = () => (
   </div>
 );
 
-
-import { useEffect } from "react";
-import { getPayrollSummary } from "@/services/hr/payroll";
 // Main component
 export const EmployeeSummary = () => {
   const { data, isLoading, error } = useEmployeeSummary();
-  useEffect(() => {
-    const fetchData = async () => {
-      const page = 1;
-      const limit = 10;
-      const startDate = '2025-01-01'; // optional, can leave undefined
-      const endDate = '2025-12-31';   // optional, can leave undefined
-      const employeeId = 4
-      const result = await getPayrollSummary()
 
-
-      console.log(result);
-      
-    };
-
-    fetchData();
-  }, []);
   if (isLoading) {
     return <EmployeeSummarySkeleton />;
   }

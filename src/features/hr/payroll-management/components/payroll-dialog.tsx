@@ -47,7 +47,7 @@ interface PayrollDialogProps {
 }
 
 interface CebuanaMapping {
-  employee_id: number;
+  payslip_id: number;
   cebuana_id: string;
 }
 
@@ -128,7 +128,7 @@ const PayslipsTableDialog = ({
               <TableBody>
                 {rawData.payslips.map((payslip, index) => {
                   const mapping = cebuanaMappings.find(
-                    (m) => m.employee_id === payslip.employee_id,
+                    (m) => m.payslip_id === payslip.id,
                   );
                   return (
                     <TableRow key={payslip.id}>
@@ -264,11 +264,11 @@ export const PayrollDialog = ({
         const line = lines[i].trim();
         if (!line) continue;
 
-        const [employee_id, cebuana_id] = line.split(",");
-        if (employee_id && cebuana_id) {
+        const [payslip_id, cebuana_ref] = line.split(",");
+        if (payslip_id && cebuana_ref) {
           mappings.push({
-            employee_id: parseInt(employee_id.trim()),
-            cebuana_id: cebuana_id.trim(),
+            payslip_id: parseInt(payslip_id.trim()),
+            cebuana_id: cebuana_ref.trim(),
           });
         }
       }
@@ -284,8 +284,8 @@ export const PayrollDialog = ({
 
   const downloadTemplate = () => {
     const csvContent = [
-      "employee_id,cebuana_id",
-      ...rawData.payslips.map((payslip) => `${payslip.employee_id},`),
+      "payslip_id,cebuana_id",
+      ...rawData.payslips.map((payslip) => `${payslip.id},`),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -305,10 +305,10 @@ export const PayrollDialog = ({
 
     setIsMarkingPaid(true);
 
-    // Convert mappings to the format expected by the API (only employee_id -> cebuana_id)
+    // Convert mappings to the format expected by the API (only payslip_id -> cebuana_id)
     const cebuanaMap = cebuanaMappings.reduce(
       (acc, mapping) => {
-        acc[mapping.employee_id.toString()] = mapping.cebuana_id;
+        acc[mapping.payslip_id.toString()] = mapping.cebuana_id;
         return acc;
       },
       {} as Record<string, string>,
@@ -341,9 +341,7 @@ export const PayrollDialog = ({
   // Fix the logic to check if all employees with pay actually have mappings
   const employeesWithPay = rawData.payslips.filter((p) => p.net_pay > 0);
   const allPayslipsMapped = employeesWithPay.every((payslip) =>
-    cebuanaMappings.some(
-      (mapping) => mapping.employee_id === payslip.employee_id,
-    ),
+    cebuanaMappings.some((mapping) => mapping.payslip_id === payslip.id),
   );
 
   return (
@@ -603,7 +601,7 @@ export const PayrollDialog = ({
                         track which payments have been processed.
                         <br />
                         <strong>File format:</strong>{" "}
-                        employee_id,reference_number
+                        payslip_id,reference_number
                       </AlertDescription>
                     </Alert>
 

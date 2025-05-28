@@ -1,5 +1,5 @@
 import supabase from "@/lib/supabase";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO } from "date-fns";
 
 export interface RecentPayslipProp {
   grossPay: number;
@@ -20,6 +20,7 @@ export interface PayslipProp {
   datePaid: string | null;
   status: string;
   period: string;
+  mandatoryDeductions?: MandatoryDeductionProp[];
 }
 
 export interface PayslipQueryParams {
@@ -27,34 +28,45 @@ export interface PayslipQueryParams {
   page?: number;
   limit?: number;
   startDate?: string; // ISO string
-  endDate?: string;   // ISO string
+  endDate?: string; // ISO string
 }
 
 export interface MandatoryDeductionProp {
   name: string;
-  amountType: 'fixed' | 'percentage';
+  amountType: "fixed" | "percentage";
   value: number;
   calculatedAmount: number;
 }
 
+type ServiceError =
+  | {
+      message: string;
+      code?: string;
+      details?: string;
+    }
+  | string;
+
 export const getRecentPayslip = async (
-  employeeId: number
-): Promise<{ success: boolean; data?: RecentPayslipProp; error?: any }> => {
+  employeeId: number,
+): Promise<{
+  success: boolean;
+  data?: RecentPayslipProp;
+  error?: ServiceError;
+}> => {
   try {
     const { data: payslips, error } = await supabase
-      .from('payslips')
-      .select('*')
-      .eq('employee_id', employeeId)
-      .order('date_paid', { ascending: false })
-      .limit(2); // get latest + previous
+      .from("payslips")
+      .select("*")
+      .eq("employee_id", employeeId)
+      .order("date_paid", { ascending: false });
 
     if (error) {
-      console.error('Error fetching payslips:', error);
+      console.error("Error fetching payslips:", error);
       return { success: false, error };
     }
 
     if (!payslips || payslips.length === 0) {
-      return { success: false, error: 'No payslips found for this employee.' };
+      return { success: false, error: "No payslips found for this employee." };
     }
 
     const recentPayslip = payslips[0];
@@ -86,8 +98,8 @@ export const getRecentPayslip = async (
       },
     };
   } catch (err) {
-    console.error('Unexpected error:', err);
-    return { success: false, error: err };
+    console.error("Unexpected error:", err);
+    return { success: false, error: err as ServiceError };
   }
 };
 
@@ -97,14 +109,18 @@ export const getPayslips = async ({
   limit = 10,
   startDate,
   endDate,
-}: PayslipQueryParams): Promise<{ success: boolean; data?: PayslipProp[]; error?: any }> => {
+}: PayslipQueryParams): Promise<{
+  success: boolean;
+  data?: PayslipProp[];
+  error?: ServiceError;
+}> => {
   try {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
     // Fetch payslips
     let query = supabase
-      .from('payslips')
+      .from("payslips")
       .select(
         `
         *,
@@ -114,32 +130,32 @@ export const getPayslips = async ({
           status,
           date_processed
         )
-      `
+      `,
       )
-      .eq('employee_id', employeeId)
-      .order('date_paid', { ascending: false })
+      .eq("employee_id", employeeId)
+      .order("date_paid", { ascending: false })
       .range(from, to);
 
     if (startDate && endDate) {
-      query = query.gte('date_paid', startDate).lte('date_paid', endDate);
+      query = query.gte("date_paid", startDate).lte("date_paid", endDate);
     }
 
     const { data: payslips, error: payslipError } = await query;
 
     if (payslipError) {
-      console.error('Error fetching payslips:', payslipError);
+      console.error("Error fetching payslips:", payslipError);
       return { success: false, error: payslipError };
     }
 
     // Fetch active mandatory deductions
     const { data: mandatoryDeductions, error: deductionError } = await supabase
-      .from('deductions')
-      .select('name, amount_type, value')
-      .eq('is_active', true)
-      .eq('type', 'mandatory');
+      .from("deductions")
+      .select("name, amount_type, value")
+      .eq("is_active", true)
+      .eq("type", "mandatory");
 
     if (deductionError) {
-      console.error('Error fetching mandatory deductions:', deductionError);
+      console.error("Error fetching mandatory deductions:", deductionError);
       return { success: false, error: deductionError };
     }
 
@@ -154,26 +170,27 @@ export const getPayslips = async ({
 
       const periodStart = parseISO(payslip.payrolls.period_start);
       const periodEnd = parseISO(payslip.payrolls.period_end);
-      const formattedPeriod = `${format(periodStart, 'MMMM dd')}-${format(periodEnd, 'dd, yyyy')}`;
+      const formattedPeriod = `${format(periodStart, "MMMM dd")}-${format(periodEnd, "dd, yyyy")}`;
 
       const datePaid = payslip.payrolls.date_processed
-        ? format(parseISO(payslip.payrolls.date_processed), 'MMMM dd, yyyy')
+        ? format(parseISO(payslip.payrolls.date_processed), "MMMM dd, yyyy")
         : null;
 
-      const mappedDeductions = mandatoryDeductions.map((ded) => {
-        let calculatedAmount = 0;
-        if (ded.amount_type === 'fixed') {
-          calculatedAmount = ded.value;
-        } else if (ded.amount_type === 'percentage') {
-          calculatedAmount = (ded.value / 100) * payslip.basic_pay;
-        }
-        return {
-          name: ded.name,
-          amountType: ded.amount_type,
-          value: ded.value,
-          calculatedAmount,
-        };
-      });
+      const mappedDeductions: MandatoryDeductionProp[] =
+        mandatoryDeductions.map((ded) => {
+          let calculatedAmount = 0;
+          if (ded.amount_type === "fixed") {
+            calculatedAmount = ded.value;
+          } else if (ded.amount_type === "percentage") {
+            calculatedAmount = (ded.value / 100) * payslip.basic_pay;
+          }
+          return {
+            name: ded.name,
+            amountType: ded.amount_type,
+            value: ded.value,
+            calculatedAmount,
+          };
+        });
 
       return {
         id: payslip.id,
@@ -184,7 +201,7 @@ export const getPayslips = async ({
         percentageNet,
         percentageDeductions,
         datePaid,
-        status: payslip.payrolls.status || 'unknown',
+        status: payslip.payrolls.status || "unknown",
         period: formattedPeriod,
         mandatoryDeductions: mappedDeductions,
       };
@@ -192,7 +209,7 @@ export const getPayslips = async ({
 
     return { success: true, data: processedPayslips };
   } catch (err) {
-    console.error('Unexpected error:', err);
-    return { success: false, error: err };
+    console.error("Unexpected error:", err);
+    return { success: false, error: err as ServiceError };
   }
 };

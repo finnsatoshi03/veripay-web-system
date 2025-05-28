@@ -1,30 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import supabase from "@/lib/supabase";
-import { format, parseISO, addDays } from 'date-fns';
-
-type Deduction = {
-  name: string;
-  amount_type: 'fixed' | 'percentage';
-  value: number;
-};
-
-type Payslip = {
-  id: number;
-  employee_id: number;
-  basic_pay: number;
-  [key: string]: any; // for any extra fields
-};
-
-type Payroll = {
-  id: number;
-  period_start: string;
-  period_end: string;
-  date_processed: string | null;
-  created_at: string;
-  payslips: Payslip[];
-  [key: string]: any; // for any extra fields
-};
-
+import { format, parseISO, addDays } from "date-fns";
 
 // export const generatePayroll = async () => {
 //   try {
@@ -40,7 +16,7 @@ type Payroll = {
 
 //     if (error) throw error;
 //     console.log("success");
-    
+
 //     return "success"
 //   } catch (error : any) {
 //     console.log(error.message || "Something went wrong");
@@ -48,67 +24,66 @@ type Payroll = {
 // };
 
 export const markPaidPayslips = async (payrollId: number, cebuanaMap: any) => {
-  try {
-    const { data, error } = await supabase.rpc('mark_payslips_paid', {
-      p_payroll_id: payrollId,
-      p_cebuana_ids: cebuanaMap
-    });
+  const { data, error } = await supabase.rpc("mark_payslips_paid", {
+    p_payroll_id: payrollId,
+    p_cebuana_ids: cebuanaMap,
+  });
 
-    if (error) {      
-      throw new Error(`${error.message}`);
-    }
-    
-    return data;
-  } catch (err) {    
-    throw err;
+  if (error) {
+    throw new Error(`${error.message}`);
   }
+
+  return data;
 };
 
 export const getPayrollSummary = async () => {
   try {
-    const { data: payrolls, error: payrollError } = await supabase
-      .from('payrolls')
-      .select(`
+    const { data: payrolls, error: payrollError } = await supabase.from(
+      "payrolls",
+    ).select(`
         *,
         payslips: payslips (*)
       `);
 
     if (payrollError) {
-      console.error('Error fetching payrolls:', payrollError);
+      console.error("Error fetching payrolls:", payrollError);
       return { success: false, error: payrollError };
     }
 
     const { data: mandatoryDeductions, error: dedError } = await supabase
-      .from('deductions')
-      .select('name, amount_type, value')
-      .eq('is_active', true)
-      .eq('type', 'mandatory');
+      .from("deductions")
+      .select("name, amount_type, value")
+      .eq("is_active", true)
+      .eq("type", "mandatory");
 
     if (dedError) {
-      console.error('Error fetching mandatory deductions:', dedError);
+      console.error("Error fetching mandatory deductions:", dedError);
       return { success: false, error: dedError };
     }
 
     const payrollsWithDeductions = payrolls.map((payroll) => {
-      const payslipsWithDeds = payroll.payslips.map((payslip : any) => {
+      const payslipsWithDeds = payroll.payslips.map((payslip: any) => {
         const deductions = mandatoryDeductions.map((ded) => {
           let amount = 0;
-          if (ded.amount_type === 'fixed') {
+          if (ded.amount_type === "fixed") {
             amount = ded.value;
-          } else if (ded.amount_type === 'percentage') {
+          } else if (ded.amount_type === "percentage") {
             amount = (ded.value / 100) * payslip.basic_pay;
           }
           return {
             name: ded.name,
             amount,
             displayValue:
-              ded.amount_type === 'percentage'
+              ded.amount_type === "percentage"
                 ? `${ded.value}%`
                 : `${ded.value}`,
           };
         });
 
-        const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0);
+        const totalDeductions = deductions.reduce(
+          (sum, d) => sum + d.amount,
+          0,
+        );
 
         return {
           ...payslip,
@@ -119,13 +94,13 @@ export const getPayrollSummary = async () => {
 
       const periodStart = parseISO(payroll.period_start);
       const periodEnd = parseISO(payroll.period_end);
-      const formattedPeriod = `${format(periodStart, 'MMMM dd')} - ${format(
+      const formattedPeriod = `${format(periodStart, "MMMM dd")} - ${format(
         periodEnd,
-        'dd, yyyy'
+        "dd, yyyy",
       )}`;
 
       const formattedDateProcessed = payroll.date_processed
-        ? format(parseISO(payroll.date_processed), 'MMMM dd, yyyy')
+        ? format(parseISO(payroll.date_processed), "MMMM dd, yyyy")
         : null;
 
       return {
@@ -138,22 +113,31 @@ export const getPayrollSummary = async () => {
 
     const processedPayrolls = payrolls.filter((p) => p.date_processed !== null);
     const sortedByDate = processedPayrolls.sort(
-      (a, b) => new Date(b.date_processed) - new Date(a.date_processed)
+      (a, b) =>
+        new Date(b.date_processed!).getTime() -
+        new Date(a.date_processed!).getTime(),
     );
-    const lastPayrollDateRaw = sortedByDate.length ? sortedByDate[0].date_processed : null;
+    const lastPayrollDateRaw = sortedByDate.length
+      ? sortedByDate[0].date_processed
+      : null;
     const lastPayrollDate = lastPayrollDateRaw
-      ? format(parseISO(lastPayrollDateRaw), 'MMMM dd, yyyy')
+      ? format(parseISO(lastPayrollDateRaw), "MMMM dd, yyyy")
       : null;
 
     let nextPayrollDateRaw;
     if (lastPayrollDateRaw) {
       const lastPayroll = sortedByDate[0];
       const lastPeriodEnd = parseISO(lastPayroll.period_end);
-      nextPayrollDateRaw = addDays(lastPeriodEnd, 1).toISOString().split('T')[0];
+      nextPayrollDateRaw = addDays(lastPeriodEnd, 1)
+        .toISOString()
+        .split("T")[0];
     } else {
-      nextPayrollDateRaw = new Date().toISOString().split('T')[0];
+      nextPayrollDateRaw = new Date().toISOString().split("T")[0];
     }
-    const nextPayrollDate = format(parseISO(nextPayrollDateRaw), 'MMMM dd, yyyy');
+    const nextPayrollDate = format(
+      parseISO(nextPayrollDateRaw),
+      "MMMM dd, yyyy",
+    );
 
     return {
       success: true,
@@ -163,12 +147,10 @@ export const getPayrollSummary = async () => {
       late_submissions: 0,
     };
   } catch (err) {
-    console.error('Unexpected error:', err);
+    console.error("Unexpected error:", err);
     return { success: false, error: err };
   }
 };
-
-
 
 // rpc
 

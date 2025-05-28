@@ -1,66 +1,147 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { mockPayrollPeriods, type PayrollPeriod } from "../lib/data";
+import { getPayrollSummary, markPaidPayslips } from "@/services/hr/payroll";
 
-type PayrollAction = "process" | "view" | "edit";
-
-interface ProcessPayrollActionParams {
-  payrollId: string;
-  action: PayrollAction;
+// Types for payroll data
+export interface PayrollSummaryData {
+  success: boolean;
+  data: PayrollPeriod[];
+  lastPayrollDate: string | null;
+  nextPayrollDate: string;
+  late_submissions: number;
 }
 
-// Mock hook for fetching payroll periods
-export const usePayrollPeriods = () => {
+export interface PayrollPeriod {
+  id: number;
+  period_start: string;
+  period_end: string;
+  date_processed: string | null;
+  created_at: string;
+  period_formatted: string;
+  date_processed_formatted: string | null;
+  total_gross_pay?: number;
+  total_deductions?: number;
+  total_net_pay?: number;
+  status: string;
+  total_employees?: number;
+  notes?: string;
+  created_by?: number;
+  payslips: PayslipData[];
+}
+
+export interface PayslipData {
+  id: number;
+  employee_id: number;
+  basic_pay: number;
+  gross_pay: number;
+  net_pay: number;
+  allowances: number;
+  deductions: number;
+  net_salary: number;
+  status: string;
+  date_paid: string | null;
+  cebuana_id: string | null;
+  overtime_pay: number;
+  remarks: string | null;
+  issued_at: string;
+  payroll_id: number;
+  mandatory_deductions: DeductionData[];
+  total_mandatory_deductions: number;
+}
+
+export interface DeductionData {
+  name: string;
+  amount: number;
+  displayValue: string;
+}
+
+export interface MarkPaidPayslipsParams {
+  payrollId: number;
+  cebuanaMap: Record<string, unknown>;
+}
+
+// Query Keys
+export const payrollKeys = {
+  all: ["payroll"] as const,
+  summary: () => [...payrollKeys.all, "summary"] as const,
+  periods: () => [...payrollKeys.all, "periods"] as const,
+};
+
+// Hook for fetching payroll summary
+export const usePayrollSummary = () => {
   return useQuery({
-    queryKey: ['payroll-periods'],
-    queryFn: async (): Promise<PayrollPeriod[]> => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockPayrollPeriods;
+    queryKey: payrollKeys.summary(),
+    queryFn: async (): Promise<PayrollSummaryData> => {
+      const result = await getPayrollSummary();
+
+      if (!result.success) {
+        const errorMessage =
+          typeof result.error === "object" &&
+          result.error &&
+          "message" in result.error
+            ? (result.error as { message: string }).message
+            : "Failed to fetch payroll summary";
+        throw new Error(errorMessage);
+      }
+
+      return result as PayrollSummaryData;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
+
+// Hook for marking payslips as paid
+export const useMarkPaidPayslips = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ payrollId, cebuanaMap }: MarkPaidPayslipsParams) => {
+      return await markPaidPayslips(payrollId, cebuanaMap);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch payroll data
+      queryClient.invalidateQueries({ queryKey: payrollKeys.summary() });
+      queryClient.invalidateQueries({ queryKey: payrollKeys.periods() });
+    },
+    onError: (error) => {
+      console.error("Failed to mark payslips as paid:", error);
     },
   });
 };
 
-// Mock hook for processing payroll actions
+// Hook for processing payroll actions (legacy support)
 export const useProcessPayrollAction = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ payrollId, action }: ProcessPayrollActionParams) => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock API call logic here
-      const response = await fetch(`/api/payroll/${payrollId}/actions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to process payroll action');
-      }
-      
-      return response.json();
+    mutationFn: async ({
+      payrollId,
+      action,
+    }: {
+      payrollId: string;
+      action: string;
+    }) => {
+      // This can be extended based on specific action requirements
+      console.log(`Processing ${action} for payroll ${payrollId}`);
+
+      // For now, just simulate the action
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      return { success: true, payrollId, action };
     },
     onSuccess: (_data, variables) => {
-      // Handle different actions
-      switch (variables.action) {
-        case 'process':
-          console.log(`Processing payroll ${variables.payrollId}`);
-          break;
-        case 'view':
-          console.log(`Viewing payroll ${variables.payrollId}`);
-          break;
-        case 'edit':
-          console.log(`Editing payroll ${variables.payrollId}`);
-          break;
-      }
-      
+      console.log(
+        `Successfully processed ${variables.action} for payroll ${variables.payrollId}`,
+      );
+
       // Invalidate and refetch payroll data
-      queryClient.invalidateQueries({ queryKey: ['payroll-periods'] });
+      queryClient.invalidateQueries({ queryKey: payrollKeys.all });
     },
     onError: (error) => {
-      console.error('Payroll action failed:', error);
+      console.error("Payroll action failed:", error);
     },
   });
 };
+
+// Alias for backward compatibility
+export const usePayrollPeriods = usePayrollSummary;

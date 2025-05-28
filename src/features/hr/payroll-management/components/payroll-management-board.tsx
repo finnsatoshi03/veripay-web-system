@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import { Search } from "@/components/custom/search";
 import { ColumnToggle } from "@/components/custom/table/column-toggle";
@@ -8,19 +8,63 @@ import {
   PAYROLL_TABLE_COLUMNS,
   PayrollPeriodsTable,
 } from "./payroll-periods-table";
-import { PayrollStatusFilter, payrollStatusOptions } from "./payroll-status-filter";
+import { PayrollStatusFilter } from "./payroll-status-filter";
 
 import type { PayrollPeriod, PayrollStatus } from "../lib/data";
-// import { usePayrollPeriods } from "../mutations/payroll-service"; 
-import { mockPayrollPeriods } from "../lib/data"; // New import
+import { usePayrollSummary } from "../mutations/payroll-service";
 import { Error } from "@/features/error";
 
 export const PayrollManagementBoard = () => {
   // React Query hooks
-  // const { data: payrolls = [], isLoading, error } = usePayrollPeriods();
-  const payrolls = mockPayrollPeriods;
-  const isLoading = false;
-  const error = null;
+  const { data: payrollData, isLoading, error } = usePayrollSummary();
+
+  // Transform service data to table format using useMemo for performance
+  const payrolls = useMemo((): PayrollPeriod[] => {
+    if (!payrollData?.data) return [];
+
+    return payrollData.data.map((payroll) => {
+      let uiStatus: PayrollStatus;
+
+      if (payroll.status === "approved") {
+        uiStatus = "processed";
+      } else if (payroll.status === "scheduled") {
+        uiStatus = "scheduled";
+      } else {
+        uiStatus = "processing";
+      }
+
+      return {
+        id: payroll.id.toString(),
+        period: payroll.period_formatted,
+        status: uiStatus,
+        employeeCount: payroll.total_employees || payroll.payslips.length,
+        totalGross: payroll.total_gross_pay || 0,
+        totalDeductions: payroll.total_deductions || 0,
+        totalNet: payroll.total_net_pay || 0,
+        startDate: payroll.period_start,
+        endDate: payroll.period_end,
+        // Add raw data for dialog
+        rawData: payroll,
+      };
+    });
+  }, [payrollData]);
+
+  // Calculate status counts using useMemo
+  const statusCounts = useMemo(() => {
+    const counts: Record<PayrollStatus, number> = {
+      processed: 0,
+      processing: 0,
+      scheduled: 0,
+    };
+
+    payrolls.forEach((payroll) => {
+      if (payroll.status in counts) {
+        counts[payroll.status]++;
+      }
+    });
+
+    return counts;
+  }, [payrolls]);
 
   const [filteredPayrolls, setFilteredPayrolls] = useState<PayrollPeriod[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,67 +81,47 @@ export const PayrollManagementBoard = () => {
     "actions",
   ]);
 
-  // Initialize filtered payrolls when data is loaded
-  useEffect(() => {
-    if (payrolls) {
-      // Apply current filters to the data
-      let filtered = [...payrolls];
+  // Apply filters using useMemo for performance
+  const filteredData = useMemo(() => {
+    let filtered = [...payrolls];
 
-      // Apply status filter
-      if (selectedStatuses.length > 0) {
-        filtered = filtered.filter((payroll) =>
-          selectedStatuses.includes(payroll.status),
-        );
-      }
-
-      // Apply search filter
-      if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        filtered = filtered.filter((payroll) =>
-          payroll.period.toLowerCase().includes(lowerQuery),
-        );
-      }
-
-      setFilteredPayrolls(filtered);
+    // Apply status filter
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((payroll) =>
+        selectedStatuses.includes(payroll.status),
+      );
     }
+
+    // Apply search filter
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter((payroll) =>
+        payroll.period.toLowerCase().includes(lowerQuery),
+      );
+    }
+
+    return filtered;
   }, [payrolls, searchQuery, selectedStatuses]);
 
-  // Update status counts
+  // Update filtered payrolls when filters change
   useEffect(() => {
-    const counts: Record<PayrollStatus, number> = {
-      processed: 0,
-      processing: 0,
-      scheduled: 0,
-    };
+    setFilteredPayrolls(filteredData);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [filteredData]);
 
-    payrolls.forEach((payroll) => {
-      if (payroll.status in counts) {
-        counts[payroll.status as keyof typeof counts]++;
-      }
-    });
-
-    payrollStatusOptions.forEach((option) => {
-      const status = option.value as PayrollStatus;
-      option.count = counts[status];
-    });
-  }, [payrolls]);
-
-  // Pagination calculations
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredPayrolls.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
+  // Pagination calculations using useMemo
+  const paginatedData = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredPayrolls.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredPayrolls, currentPage, itemsPerPage]);
 
   const handleStatusFilterChange = (statuses: PayrollStatus[]) => {
     setSelectedStatuses(statuses);
-    setCurrentPage(1);
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -120,7 +144,10 @@ export const PayrollManagementBoard = () => {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        Loading payroll periods...
+        <div className="text-center">
+          <div className="border-primary mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2"></div>
+          <p className="text-muted-foreground">Loading payroll periods...</p>
+        </div>
       </div>
     );
   }
@@ -128,7 +155,7 @@ export const PayrollManagementBoard = () => {
   if (error) {
     return (
       <Error
-        // title={`Error loading payroll periods: ${error instanceof Error ? error.message : "Unknown error"}`}
+        title={`Error loading payroll periods: ${error instanceof Error ? error.message : "Unknown error"}`}
       />
     );
   }
@@ -146,6 +173,7 @@ export const PayrollManagementBoard = () => {
             <PayrollStatusFilter
               selectedStatuses={selectedStatuses}
               onChange={handleStatusFilterChange}
+              statusCounts={statusCounts}
             />
           </div>
           <div>
@@ -160,7 +188,7 @@ export const PayrollManagementBoard = () => {
 
       <div className="flex-1 overflow-auto rounded-md border">
         <PayrollPeriodsTable
-          payrolls={currentItems}
+          payrolls={paginatedData}
           visibleColumns={visibleColumns}
         />
       </div>

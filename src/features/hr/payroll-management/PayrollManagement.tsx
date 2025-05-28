@@ -1,12 +1,22 @@
 import { PayrollManagementBoard } from "./components/payroll-management-board";
 import { PayrollSummary } from "./components/payroll-summary";
 import { today } from "@/features/employee/_lib/helpers";
-import { getCurrentPayrollPeriod, getNextCutOff } from "./lib/helper/helper";
+import { usePayrollSummary } from "./mutations/payroll-service";
 
 export default function PayrollManagement() {
+  const { data: payrollData, isLoading } = usePayrollSummary();
+
   const summaryItems = [
-    { label: "Current Payroll Period", value: getCurrentPayrollPeriod() },
-    { label: "Next Cut-off", value: getNextCutOff() },
+    {
+      label: "Last Payroll Date",
+      value: isLoading
+        ? "Loading..."
+        : payrollData?.lastPayrollDate || "No payroll processed yet",
+    },
+    {
+      label: "Next Payroll Date",
+      value: isLoading ? "Loading..." : payrollData?.nextPayrollDate || "TBD",
+    },
   ];
 
   return (

@@ -1,3 +1,5 @@
+import type { PayrollPeriod as ServicePayrollPeriod } from "../mutations/payroll-service";
+
 export type PayrollStatus = "processed" | "processing" | "scheduled";
 
 export interface PayrollPeriod {
@@ -10,6 +12,7 @@ export interface PayrollPeriod {
   totalNet: number;
   startDate: string;
   endDate: string;
+  rawData?: ServicePayrollPeriod; // Store original service data for dialog
 }
 
 export const mockPayrollPeriods: PayrollPeriod[] = [
@@ -18,9 +21,9 @@ export const mockPayrollPeriods: PayrollPeriod[] = [
     period: "April 16 - April 30, 2025",
     status: "processed",
     employeeCount: 139,
-    totalGross: 1482000.00,
-    totalDeductions: 276500.00,
-    totalNet: 1205500.00,
+    totalGross: 1482000.0,
+    totalDeductions: 276500.0,
+    totalNet: 1205500.0,
     startDate: "2025-04-16",
     endDate: "2025-04-30",
   },
@@ -29,9 +32,9 @@ export const mockPayrollPeriods: PayrollPeriod[] = [
     period: "May 1 - May 15, 2025",
     status: "processed",
     employeeCount: 138,
-    totalGross: 1460000.00,
-    totalDeductions: 271200.00,
-    totalNet: 1188800.00,
+    totalGross: 1460000.0,
+    totalDeductions: 271200.0,
+    totalNet: 1188800.0,
     startDate: "2025-05-01",
     endDate: "2025-05-15",
   },
@@ -40,9 +43,9 @@ export const mockPayrollPeriods: PayrollPeriod[] = [
     period: "May 16 - May 31, 2025",
     status: "processing",
     employeeCount: 138,
-    totalGross: 1490000.00,
-    totalDeductions: 282900.00,
-    totalNet: 1207100.00,
+    totalGross: 1490000.0,
+    totalDeductions: 282900.0,
+    totalNet: 1207100.0,
     startDate: "2025-05-16",
     endDate: "2025-05-31",
   },

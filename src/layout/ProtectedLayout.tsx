@@ -21,7 +21,7 @@ export default function ProtectedLayout() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        Loading...
+        Checking authentication...
       </div>
     );
   }

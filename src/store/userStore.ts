@@ -46,6 +46,7 @@ export interface UserState {
   role: string;
   profile: UserProfile | null;
   employee: Employee | null;
+  employeeId: number | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -68,6 +69,7 @@ const initialState: UserState = {
   role: "",
   profile: null,
   employee: null,
+  employeeId: null,
   isLoading: false,
   error: null,
 };
@@ -170,6 +172,7 @@ export const useUserStore = create<UserState & UserActions>()(
             role: roleToUse, // Use the determined role
             profile,
             employee,
+            employeeId: employee?.id || null,
             isLoading: false,
           });
         } catch (error) {
@@ -189,6 +192,7 @@ export const useUserStore = create<UserState & UserActions>()(
         role: state.role,
         profile: state.profile,
         employee: state.employee,
+        employeeId: state.employeeId,
         // Excluding transient states
         isLoading: undefined,
         error: undefined,
@@ -206,6 +210,7 @@ export const useUser = () => {
     role,
     profile,
     employee,
+    employeeId,
     isLoading,
     error,
   } = useUserStore();
@@ -251,6 +256,7 @@ export const useUser = () => {
     role,
     profile,
     employee,
+    employeeId,
     isLoading,
     error,
 

@@ -26,6 +26,13 @@ export const queryKeys = {
     userNotifications: "userNotifications",
     notificationStats: "notificationStats",
   },
+  PAYSLIPS: {
+    list: "payslips",
+    detail: "payslip",
+    summary: "payslipSummary",
+    infinite: "payslipsInfinite",
+    all: "allPayslips",
+  },
   REPORTS: "reports",
   ATTENDANCE_HISTORY: "attendanceHistory",
   ANNOUNCEMENTS: "announcements",

@@ -1,5 +1,71 @@
-import supabase from "@/lib/supabase";
-import { format, parseISO } from "date-fns";
+import { supabase } from "@/services/supabase";
+
+// Types based on the database schema
+export interface PayslipData {
+  id: number;
+  employee_id: number;
+  payroll_id: number;
+  basic_pay: number;
+  gross_pay: number;
+  net_pay: number;
+  allowances: number;
+  deductions: number;
+  overtime_pay: number;
+  status: string;
+  remarks: string | null;
+  issued_at: string;
+  date_paid: string | null;
+  cebuana_id: string | null;
+  // Related data - matching actual API response (single objects)
+  payrolls: {
+    id: number;
+    period_start: string;
+    period_end: string;
+    status: string;
+    date_processed: string | null;
+    notes?: string;
+  };
+  employees: {
+    id: number;
+    employee_code: string | null;
+    users: {
+      user_profiles: {
+        first_name: string;
+        last_name: string;
+        profile_image: string | null;
+        contact_number?: string;
+        address?: string;
+      };
+    };
+    departments?: {
+      name: string;
+    };
+    positions?: {
+      title: string;
+      base_salary: number;
+    };
+  };
+}
+
+export interface PayslipSummary {
+  totalPayslips: number;
+  totalGrossPay: number;
+  totalNetPay: number;
+  totalDeductions: number;
+  totalAllowances: number;
+  averageNetPay: number;
+  lastPayslipDate: string | null;
+}
+
+export interface PayslipQueryParams {
+  employeeId?: number;
+  payrollId?: number;
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+}
 
 export interface RecentPayslipProp {
   grossPay: number;
@@ -23,19 +89,38 @@ export interface PayslipProp {
   mandatoryDeductions?: MandatoryDeductionProp[];
 }
 
-export interface PayslipQueryParams {
-  employeeId: number;
-  page?: number;
-  limit?: number;
-  startDate?: string; // ISO string
-  endDate?: string; // ISO string
-}
-
 export interface MandatoryDeductionProp {
   name: string;
   amountType: "fixed" | "percentage";
   value: number;
   calculatedAmount: number;
+}
+
+export interface DetailedPayslipData extends PayslipData {
+  employee_benefits?: {
+    id: number;
+    benefit_id: number;
+    value: number;
+    effective_date: string;
+    end_date: string | null;
+    benefits: {
+      id: number;
+      name: string;
+      type: string;
+      description: string | null;
+      amount_type: string;
+      default_value: number | null;
+      is_taxable: boolean | null;
+      is_mandatory: boolean | null;
+      is_deductible: boolean;
+    }[];
+  }[];
+  mandatory_deductions?: {
+    name: string;
+    amount_type: string;
+    value: number;
+    calculated_amount: number;
+  }[];
 }
 
 type ServiceError =
@@ -58,7 +143,8 @@ export const getRecentPayslip = async (
       .from("payslips")
       .select("*")
       .eq("employee_id", employeeId)
-      .order("date_paid", { ascending: false });
+      .order("date_paid", { ascending: false })
+      .limit(2);
 
     if (error) {
       console.error("Error fetching payslips:", error);
@@ -75,7 +161,7 @@ export const getRecentPayslip = async (
     const grossPay = recentPayslip.gross_pay || 0;
     const netPay = recentPayslip.net_pay || 0;
     const totalDeductions = recentPayslip.deductions || 0;
-    const totalAllowance = recentPayslip.allowance || 0;
+    const totalAllowance = recentPayslip.allowances || 0;
 
     let percentageIncrease: number | null = null;
     if (previousPayslip) {
@@ -103,113 +189,353 @@ export const getRecentPayslip = async (
   }
 };
 
-export const getPayslips = async ({
-  employeeId,
-  page = 1,
-  limit = 10,
-  startDate,
-  endDate,
-}: PayslipQueryParams): Promise<{
-  success: boolean;
-  data?: PayslipProp[];
-  error?: ServiceError;
-}> => {
+export const getPayslips = async (params: PayslipQueryParams = {}) => {
   try {
+    const {
+      employeeId,
+      payrollId,
+      page = 1,
+      limit = 10,
+      startDate,
+      endDate,
+      status,
+    } = params;
+
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    // Fetch payslips
     let query = supabase
       .from("payslips")
       .select(
         `
-        *,
-        payrolls: payroll_id (
+        id,
+        employee_id,
+        payroll_id,
+        basic_pay,
+        gross_pay,
+        net_pay,
+        allowances,
+        deductions,
+        overtime_pay,
+        status,
+        remarks,
+        issued_at,
+        date_paid,
+        cebuana_id,
+        payrolls!inner (
+          id,
           period_start,
           period_end,
           status,
           date_processed
+        ),
+        employees!inner (
+          id,
+          employee_code,
+          users!inner (
+            user_profiles (
+              first_name,
+              last_name,
+              profile_image
+            )
+          )
         )
       `,
       )
-      .eq("employee_id", employeeId)
       .order("date_paid", { ascending: false })
       .range(from, to);
+
+    // Apply filters
+    if (employeeId) {
+      query = query.eq("employee_id", employeeId);
+    }
+
+    if (payrollId) {
+      query = query.eq("payroll_id", payrollId);
+    }
+
+    if (status) {
+      query = query.eq("status", status);
+    }
 
     if (startDate && endDate) {
       query = query.gte("date_paid", startDate).lte("date_paid", endDate);
     }
 
-    const { data: payslips, error: payslipError } = await query;
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error("Error fetching payslips:", error);
+      throw error;
+    }
+
+    return {
+      data: data || [],
+      count: count || 0,
+      page,
+      limit,
+      totalPages: Math.ceil((count || 0) / limit),
+    };
+  } catch (error) {
+    console.error("Error in getPayslips:", error);
+    throw error;
+  }
+};
+
+export const getPayslipById = async (payslipId: number) => {
+  try {
+    const { data, error } = await supabase
+      .from("payslips")
+      .select(
+        `
+        id,
+        employee_id,
+        payroll_id,
+        basic_pay,
+        gross_pay,
+        net_pay,
+        allowances,
+        deductions,
+        overtime_pay,
+        status,
+        remarks,
+        issued_at,
+        date_paid,
+        cebuana_id,
+        payrolls!inner (
+          id,
+          period_start,
+          period_end,
+          status,
+          date_processed,
+          notes
+        ),
+        employees!inner (
+          id,
+          employee_code,
+          users!inner (
+            user_profiles (
+              first_name,
+              last_name,
+              profile_image,
+              contact_number,
+              address
+            )
+          ),
+          departments (
+            name
+          ),
+          positions (
+            title,
+            base_salary
+          )
+        )
+      `,
+      )
+      .eq("id", payslipId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching payslip:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in getPayslipById:", error);
+    throw error;
+  }
+};
+
+export const getPayslipSummary = async (
+  employeeId: number,
+): Promise<PayslipSummary> => {
+  try {
+    const { data, error } = await supabase
+      .from("payslips")
+      .select("gross_pay, net_pay, deductions, allowances, date_paid")
+      .eq("employee_id", employeeId)
+      .not("date_paid", "is", null);
+
+    if (error) {
+      console.error("Error fetching payslip summary:", error);
+      throw error;
+    }
+
+    const payslips = data || [];
+    const totalPayslips = payslips.length;
+
+    if (totalPayslips === 0) {
+      return {
+        totalPayslips: 0,
+        totalGrossPay: 0,
+        totalNetPay: 0,
+        totalDeductions: 0,
+        totalAllowances: 0,
+        averageNetPay: 0,
+        lastPayslipDate: null,
+      };
+    }
+
+    const totals = payslips.reduce(
+      (acc, payslip) => ({
+        grossPay: acc.grossPay + (payslip.gross_pay || 0),
+        netPay: acc.netPay + (payslip.net_pay || 0),
+        deductions: acc.deductions + (payslip.deductions || 0),
+        allowances: acc.allowances + (payslip.allowances || 0),
+      }),
+      { grossPay: 0, netPay: 0, deductions: 0, allowances: 0 },
+    );
+
+    const lastPayslipDate =
+      payslips
+        .map((p) => p.date_paid)
+        .filter(Boolean)
+        .sort()
+        .pop() || null;
+
+    return {
+      totalPayslips,
+      totalGrossPay: totals.grossPay,
+      totalNetPay: totals.netPay,
+      totalDeductions: totals.deductions,
+      totalAllowances: totals.allowances,
+      averageNetPay: totals.netPay / totalPayslips,
+      lastPayslipDate,
+    };
+  } catch (error) {
+    console.error("Error in getPayslipSummary:", error);
+    throw error;
+  }
+};
+
+export const getDetailedPayslipById = async (
+  payslipId: number,
+): Promise<DetailedPayslipData> => {
+  try {
+    // Get the payslip with all related data
+    const { data: payslip, error: payslipError } = await supabase
+      .from("payslips")
+      .select(
+        `
+        id,
+        employee_id,
+        payroll_id,
+        basic_pay,
+        gross_pay,
+        net_pay,
+        allowances,
+        deductions,
+        overtime_pay,
+        status,
+        remarks,
+        issued_at,
+        date_paid,
+        cebuana_id,
+        payrolls!inner (
+          id,
+          period_start,
+          period_end,
+          status,
+          date_processed,
+          notes
+        ),
+        employees!inner (
+          id,
+          employee_code,
+          users!inner (
+            user_profiles (
+              first_name,
+              last_name,
+              profile_image,
+              contact_number,
+              address
+            )
+          ),
+          departments (
+            name
+          ),
+          positions (
+            title,
+            base_salary
+          )
+        )
+      `,
+      )
+      .eq("id", payslipId)
+      .single();
 
     if (payslipError) {
-      console.error("Error fetching payslips:", payslipError);
-      return { success: false, error: payslipError };
+      console.error("Error fetching payslip:", payslipError);
+      throw payslipError;
     }
 
-    // Fetch active mandatory deductions
-    const { data: mandatoryDeductions, error: deductionError } = await supabase
+    // Get employee benefits for this employee with proper relationship to benefits table
+    const { data: employeeBenefits, error: benefitsError } = await supabase
+      .from("employee_benefits")
+      .select(
+        `
+        id,
+        benefit_id,
+        value,
+        effective_date,
+        end_date,
+        benefits!inner (
+          id,
+          name,
+          type,
+          description,
+          amount_type,
+          default_value,
+          is_taxable,
+          is_mandatory,
+          is_deductible
+        )
+      `,
+      )
+      .eq("employee_id", payslip.employee_id)
+      .is("end_date", null); // Only get active benefits
+
+    if (benefitsError) {
+      console.error("Error fetching employee benefits:", benefitsError);
+    }
+
+    // Get mandatory deductions
+    const { data: deductions, error: deductionsError } = await supabase
       .from("deductions")
-      .select("name, amount_type, value")
+      .select("name, amount_type, value, is_taxable")
       .eq("is_active", true)
-      .eq("type", "mandatory");
+      .eq("type", "mandatory"); // Only get mandatory deductions
 
-    if (deductionError) {
-      console.error("Error fetching mandatory deductions:", deductionError);
-      return { success: false, error: deductionError };
+    if (deductionsError) {
+      console.error("Error fetching deductions:", deductionsError);
     }
 
-    const processedPayslips: PayslipProp[] = payslips.map((payslip) => {
-      const gross = payslip.gross_pay || 0;
-      const net = payslip.net_pay || 0;
-      const deductions = payslip.deductions || 0;
-      const allowance = payslip.allowance || 0;
+    // Calculate mandatory deductions for this payslip
+    const mandatoryDeductions =
+      deductions?.map((deduction) => {
+        let calculatedAmount = 0;
+        if (deduction.amount_type === "fixed") {
+          calculatedAmount = deduction.value;
+        } else if (deduction.amount_type === "percentage") {
+          calculatedAmount = (deduction.value / 100) * payslip.basic_pay;
+        }
 
-      const percentageNet = gross > 0 ? (net / gross) * 100 : 0;
-      const percentageDeductions = gross > 0 ? (deductions / gross) * 100 : 0;
+        return {
+          name: deduction.name,
+          amount_type: deduction.amount_type,
+          value: deduction.value,
+          calculated_amount: calculatedAmount,
+        };
+      }) || [];
 
-      const periodStart = parseISO(payslip.payrolls.period_start);
-      const periodEnd = parseISO(payslip.payrolls.period_end);
-      const formattedPeriod = `${format(periodStart, "MMMM dd")}-${format(periodEnd, "dd, yyyy")}`;
-
-      const datePaid = payslip.payrolls.date_processed
-        ? format(parseISO(payslip.payrolls.date_processed), "MMMM dd, yyyy")
-        : null;
-
-      const mappedDeductions: MandatoryDeductionProp[] =
-        mandatoryDeductions.map((ded) => {
-          let calculatedAmount = 0;
-          if (ded.amount_type === "fixed") {
-            calculatedAmount = ded.value;
-          } else if (ded.amount_type === "percentage") {
-            calculatedAmount = (ded.value / 100) * payslip.basic_pay;
-          }
-          return {
-            name: ded.name,
-            amountType: ded.amount_type,
-            value: ded.value,
-            calculatedAmount,
-          };
-        });
-
-      return {
-        id: payslip.id,
-        grossPay: gross,
-        netPay: net,
-        totalDeductions: deductions,
-        totalAllowance: allowance,
-        percentageNet,
-        percentageDeductions,
-        datePaid,
-        status: payslip.payrolls.status || "unknown",
-        period: formattedPeriod,
-        mandatoryDeductions: mappedDeductions,
-      };
-    });
-
-    return { success: true, data: processedPayslips };
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return { success: false, error: err as ServiceError };
+    return {
+      ...payslip,
+      employee_benefits: employeeBenefits || [],
+      mandatory_deductions: mandatoryDeductions,
+    } as unknown as DetailedPayslipData;
+  } catch (error) {
+    console.error("Error in getDetailedPayslipById:", error);
+    throw error;
   }
 };

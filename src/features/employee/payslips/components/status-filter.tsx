@@ -1,31 +1,14 @@
-import { CheckCircle2, FileText, XCircle } from "lucide-react";
 import { FacetedFilter } from "@/components/custom/table/faceted-filter";
-import type { PayslipStatus } from "../lib/data";
 
 interface StatusFilterProps {
-  selectedStatuses: PayslipStatus[];
-  onChange: (statuses: PayslipStatus[]) => void;
+  selectedStatuses: string[];
+  onChange: (statuses: string[]) => void;
 }
 
 export const statusOptions = [
-  {
-    label: "Paid",
-    value: "Paid",
-    icon: CheckCircle2,
-    count: 0,
-  },
-  {
-    label: "Generated",
-    value: "Generated",
-    icon: FileText,
-    count: 0,
-  },
-  {
-    label: "Voided",
-    value: "Voided",
-    icon: XCircle,
-    count: 0,
-  },
+  { label: "Paid", value: "paid", count: 0 },
+  { label: "Generated", value: "generated", count: 0 },
+  { label: "Draft", value: "draft", count: 0 },
 ];
 
 export const StatusFilter = ({
@@ -37,7 +20,7 @@ export const StatusFilter = ({
       title="Status"
       options={statusOptions}
       value={selectedStatuses}
-      onChange={onChange as (value: string[]) => void}
+      onChange={onChange}
     />
   );
 };

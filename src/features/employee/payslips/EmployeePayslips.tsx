@@ -90,10 +90,7 @@ export default function EmployeePayslips() {
   if (isSummaryLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="border-primary mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2"></div>
-          <p className="text-muted-foreground">Loading payslips data...</p>
-        </div>
+        <p className="text-muted-foreground">Loading payslips data...</p>
       </div>
     );
   }

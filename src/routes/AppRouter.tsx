@@ -5,6 +5,9 @@ import ProtectedLayout from "@/layout/ProtectedLayout";
 import { ProtectedRoute } from "@/components/custom/protected-route";
 import { PublicRoute } from "@/components/custom/public-route";
 
+// Payment Reminder
+import PaymentReminder from "@/features/error/PaymentReminder";
+
 // Protected Routes
 // hr routes
 import HrDashboard from "@/features/hr/dashboard/HrDashboard";
@@ -42,6 +45,7 @@ export default function AppRouter() {
       <Route index element={<Navigate to="/login" replace />} />
 
       <Route path="*" element={<NotFound />} />
+      <Route path="/payment-reminder" element={<PaymentReminder />} />
 
       {/* Public routes - redirects if already authenticated */}
       <Route element={<PublicLayout />}>

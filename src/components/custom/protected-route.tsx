@@ -22,6 +22,7 @@ export const ProtectedRoute = ({
     fetchUserData,
   } = useUserStore();
 
+  const paymentOverdue = true;
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
@@ -85,6 +86,10 @@ export const ProtectedRoute = ({
   // Not authenticated - redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!isAuthenticated && paymentOverdue) {
+    return <Navigate to="/payment-reminder" replace />;
   }
 
   if (allowedRoles && allowedRoles.length > 0) {

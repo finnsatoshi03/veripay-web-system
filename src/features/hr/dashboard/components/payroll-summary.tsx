@@ -1,70 +1,15 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { useMemo } from "react";
-import { Label, Pie, PieChart, ResponsiveContainer } from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-
-// Define types for our data
-type PayrollData = {
-  status: string;
-  statusColor: string;
-  lastPayrollDate: string;
-  employeesInQueue: number;
-  payrollPeriod: string;
-  nextPayrollDate: string;
-  lateSubmissions: number;
-  grossPay: number;
-  chartData: {
-    data: string;
-    value: number;
-    fill: string;
-  }[];
-};
-
-// Mock data
-const mockPayrollData: PayrollData = {
-  status: "Upcoming",
-  statusColor: "text-yellow-500",
-  lastPayrollDate: "May 15, 2025",
-  employeesInQueue: 208,
-  payrollPeriod: "May 16 - 31, 2025",
-  nextPayrollDate: "June 15, 2025",
-  lateSubmissions: 10,
-  grossPay: 1180000,
-  chartData: [
-    {
-      data: "estimated deductions",
-      value: 106000,
-      fill: "var(--chart-2)",
-    },
-    { data: "estimated net pay", value: 1074000, fill: "var(--chart-1)" },
-  ],
-};
-
-// Chart configuration
-const chartConfig = {
-  value: {
-    label: "Gross Pay",
-  },
-  estimatedDeductions: {
-    label: "Estimated Deductions",
-    color: "var(--chart-2)",
-  },
-  estimatedNetPay: {
-    label: "Estimated Net Pay",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig;
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import { usePayrollSummary } from "@/features/hr/payroll-management/mutations/payroll-service";
+import { AlertCircle } from "lucide-react";
 
 // Header component
 const SummaryHeader = () => (
   <div className="flex items-center justify-between">
-    <h2 className="text-lg font-semibold">Payroll Summary</h2>
+    <h2 className="text-lg font-semibold">Latest Payroll Summary</h2>
     <Link to="/hr/payroll-management">
       <Button variant="outline" size="sm">
         Go to Payroll
@@ -73,152 +18,284 @@ const SummaryHeader = () => (
   </div>
 );
 
-// Payroll metrics grid
-const PayrollMetrics = ({ data }: { data: PayrollData }) => (
-  <div className="grid grid-cols-3 gap-4">
-    <div>
-      <p className="text-muted-foreground text-sm">Status</p>
-      <p className={`text-2xl leading-none font-semibold ${data.statusColor}`}>
-        {data.status}
-      </p>
+// Main summary component - similar to AttendanceSummary structure
+const PayrollOverview = ({
+  data,
+}: {
+  data: {
+    totalEmployees: number;
+    totalGrossPay: number;
+    period_formatted: string;
+    date_processed_formatted: string | null;
+  };
+}) => (
+  <div className="space-y-3">
+    {/* Top metrics - similar to attendance overview */}
+    <div className="flex justify-between">
+      <div className="space-y-1">
+        <h3 className="text-3xl leading-none font-semibold">
+          {data.totalEmployees === 0 ? "0" : data.totalEmployees}
+        </h3>
+        <p className="text-muted-foreground text-sm">
+          {data.totalEmployees === 0 ? "No employees" : "Employees Paid"}
+        </p>
+      </div>
+      <div className="space-y-1 text-right">
+        <div className="flex items-center justify-end gap-1">
+          <h3 className="text-3xl leading-none font-semibold">
+            {data.totalGrossPay === 0
+              ? "₱0"
+              : `₱${(data.totalGrossPay / 1000).toFixed(0)}K`}
+          </h3>
+          <Badge
+            className={`h-fit py-0 ${
+              data.totalGrossPay === 0
+                ? "bg-gray-200 text-gray-700"
+                : "bg-green-200 text-green-700"
+            }`}
+          >
+            {data.totalGrossPay === 0 ? "No Data" : "Processed"}
+          </Badge>
+        </div>
+        <p className="text-muted-foreground text-sm">
+          {data.totalGrossPay === 0 ? "No payroll amount" : "Total Gross Pay"}
+        </p>
+      </div>
     </div>
-    <div>
-      <p className="text-muted-foreground text-sm">Last Payroll Date</p>
-      <p className="text-2xl leading-none font-semibold">
-        {data.lastPayrollDate}
-      </p>
-    </div>
-    <div>
-      <p className="text-muted-foreground text-sm">Employees In Queue</p>
-      <p className="text-2xl leading-none font-semibold">
-        {data.employeesInQueue}
-      </p>
-    </div>
-    <div>
-      <p className="text-muted-foreground text-sm">Payroll Period</p>
-      <p className="text-2xl leading-none font-semibold">
-        {data.payrollPeriod}
-      </p>
-    </div>
-    <div>
-      <p className="text-muted-foreground text-sm">Next Payroll Date</p>
-      <p className="text-2xl leading-none font-semibold">
-        {data.nextPayrollDate}
-      </p>
-    </div>
-    <div>
-      <p className="text-muted-foreground text-sm">Late Submissions</p>
-      <p className="text-2xl leading-none font-semibold">
-        {data.lateSubmissions}
-      </p>
+
+    {/* Payroll period info */}
+    <div className="bg-muted/30 rounded-lg p-3">
+      <div className="flex items-center justify-between text-sm">
+        <div>
+          <span className="text-muted-foreground">Period: </span>
+          <span className="font-medium">
+            {data.period_formatted || "Not specified"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground">Processed: </span>
+          <span className="font-medium">
+            {data.date_processed_formatted || "Not processed"}
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 );
 
-// PayrollChart component
-const PayrollChart = ({
+// Payroll breakdown - visual progress bar approach
+const PayrollBreakdown = ({
   data,
   totalGrossPay,
 }: {
-  data: PayrollData["chartData"];
+  data: {
+    totalNetPay: number;
+    totalDeductions: number;
+  };
   totalGrossPay: number;
-}) => (
-  <div className="grid grid-cols-4 gap-4">
-    <ResponsiveContainer className="col-span-2">
-      <ChartContainer config={chartConfig} className="h-full w-full">
-        <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="data"
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={80}
-            paddingAngle={2}
-            strokeWidth={5}
-          >
-            <Label
-              content={({ viewBox }) => {
-                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                  return (
-                    <text
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                    >
-                      <tspan
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        className="fill-foreground text-2xl font-bold"
-                      >
-                        {totalGrossPay.toLocaleString()}
-                      </tspan>
-                      <tspan
-                        x={viewBox.cx}
-                        y={(viewBox.cy || 0) + 20}
-                        className="fill-muted-foreground text-xs"
-                      >
-                        Gross Pay
-                      </tspan>
-                    </text>
-                  );
-                }
-                return null;
-              }}
-            />
-          </Pie>
-        </PieChart>
-      </ChartContainer>
-    </ResponsiveContainer>
+}) => {
+  // Calculate percentages safely
+  const netPayPercentage =
+    totalGrossPay > 0 ? (data.totalNetPay / totalGrossPay) * 100 : 0;
+  const deductionsPercentage =
+    totalGrossPay > 0 ? (data.totalDeductions / totalGrossPay) * 100 : 0;
 
-    <div className="flex flex-col justify-center gap-4">
-      {data.map((item) => (
-        <div key={item.data} className="flex flex-col">
-          <div className="flex items-center gap-1">
-            <div
-              className="size-2.5 rounded"
-              style={{ backgroundColor: item.fill }}
-            />
-            <p className="text-muted-foreground text-sm capitalize">
-              {item.data.replace("estimated ", "")}
-            </p>
+  // Check if there's no payroll data
+  const hasNoData =
+    totalGrossPay === 0 ||
+    (data.totalNetPay === 0 && data.totalDeductions === 0);
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-medium">Pay Distribution</h3>
+
+      {/* Visual progress bar - similar to attendance visualization */}
+      {hasNoData ? (
+        <div className="bg-muted flex h-4 w-full overflow-hidden rounded">
+          <div className="flex w-full items-center justify-center">
+            <span className="text-muted-foreground text-xs">
+              No payroll data
+            </span>
           </div>
-          <p className="text-2xl font-semibold">
-            {item.value.toLocaleString()}
+        </div>
+      ) : (
+        <div className="flex h-4 w-full overflow-hidden rounded">
+          <div
+            className="bg-primary"
+            style={{ width: `${netPayPercentage}%` }}
+          />
+          <div
+            className="bg-secondary"
+            style={{ width: `${deductionsPercentage}%` }}
+          />
+        </div>
+      )}
+
+      {/* Metrics cards in grid - similar to attendance stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col items-center rounded-lg border p-3">
+          <div className="flex items-center gap-1.5">
+            <span className="bg-primary h-3 w-3 rounded-full" />
+            <span className="text-sm font-medium">Net Pay</span>
+          </div>
+          <p className="text-xl font-semibold">
+            {data.totalNetPay === 0
+              ? "₱0"
+              : `₱${(data.totalNetPay / 1000).toFixed(0)}K`}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {hasNoData ? "0.0%" : `${netPayPercentage.toFixed(1)}%`}
           </p>
         </div>
-      ))}
+
+        <div className="flex flex-col items-center rounded-lg border p-3">
+          <div className="flex items-center gap-1.5">
+            <span className="bg-secondary h-3 w-3 rounded-full" />
+            <span className="text-sm font-medium">Deductions</span>
+          </div>
+          <p className="text-xl font-semibold">
+            {data.totalDeductions === 0
+              ? "₱0"
+              : `₱${(data.totalDeductions / 1000).toFixed(0)}K`}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {hasNoData ? "0.0%" : `${deductionsPercentage.toFixed(1)}%`}
+          </p>
+        </div>
+      </div>
+
+      {/* Detailed amounts */}
+      <div className="grid grid-cols-2 gap-4 pt-2">
+        <div>
+          <p className="text-muted-foreground text-sm">Total Net Pay</p>
+          <p className="text-lg font-semibold">
+            {data.totalNetPay === 0
+              ? "₱0.00"
+              : `₱${data.totalNetPay.toLocaleString()}`}
+          </p>
+        </div>
+        <div>
+          <p className="text-muted-foreground text-sm">Total Deductions</p>
+          <p className="text-lg font-semibold">
+            {data.totalDeductions === 0
+              ? "₱0.00"
+              : `₱${data.totalDeductions.toLocaleString()}`}
+          </p>
+        </div>
+      </div>
     </div>
-    <div className="flex flex-col justify-center text-center">
-      <p className="text-3xl leading-none font-semibold">
-        {totalGrossPay.toLocaleString()}
-      </p>
-      <p className="text-muted-foreground text-sm">Gross Pay</p>
+  );
+};
+
+// Loading skeleton component
+const PayrollSummarySkeleton = () => (
+  <div className="w-full space-y-2 rounded-lg border p-2">
+    <div className="flex items-center justify-between">
+      <Skeleton className="h-6 w-40" />
+      <Skeleton className="h-8 w-28" />
+    </div>
+    <div className="bg-border -mx-2 h-px px-2" />
+    <div className="space-y-3">
+      <div className="flex justify-between">
+        <div className="space-y-1">
+          <Skeleton className="h-9 w-16" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="space-y-1 text-right">
+          <div className="flex items-center justify-end gap-1">
+            <Skeleton className="h-9 w-12" />
+            <Skeleton className="h-5 w-12" />
+          </div>
+          <Skeleton className="h-4 w-20" />
+        </div>
+      </div>
+      <Skeleton className="h-12 w-full rounded-lg" />
+    </div>
+    <div className="bg-border -mx-2 h-px px-2" />
+    <div className="space-y-4">
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-4 w-full rounded" />
+      <div className="grid grid-cols-2 gap-3">
+        {[1, 2].map((i) => (
+          <Skeleton key={i} className="h-20 w-full rounded-lg" />
+        ))}
+      </div>
     </div>
   </div>
 );
 
-// Main component
 export const PayrollSummary = () => {
-  const data = mockPayrollData;
+  const { data: payrollData, isLoading, error } = usePayrollSummary();
 
-  const totalGrossPay = useMemo(() => {
-    return data.grossPay;
-  }, [data.grossPay]);
+  const latestPayrollData = useMemo(() => {
+    if (!payrollData?.data || payrollData.data.length === 0) return null;
+
+    // Get the most recent processed payroll
+    const processedPayrolls = payrollData.data.filter(
+      (p) => p.date_processed !== null,
+    );
+
+    if (processedPayrolls.length === 0) return null;
+
+    const latest = processedPayrolls.sort(
+      (a, b) =>
+        new Date(b.date_processed!).getTime() -
+        new Date(a.date_processed!).getTime(),
+    )[0];
+
+    // Calculate totals from payslips
+    const totalGrossPay = latest.payslips.reduce(
+      (sum, payslip) => sum + payslip.gross_pay,
+      0,
+    );
+    const totalDeductions = latest.payslips.reduce(
+      (sum, payslip) => sum + payslip.total_mandatory_deductions,
+      0,
+    );
+    const totalNetPay = totalGrossPay - totalDeductions;
+
+    return {
+      ...latest,
+      totalGrossPay,
+      totalDeductions,
+      totalNetPay,
+      totalEmployees: latest.payslips.length,
+    };
+  }, [payrollData]);
+
+  if (isLoading) {
+    return <PayrollSummarySkeleton />;
+  }
+
+  if (error || !latestPayrollData) {
+    return (
+      <div className="w-full space-y-2 rounded-lg border p-2">
+        <SummaryHeader />
+        <div className="bg-border -mx-2 h-px px-2" />
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <AlertCircle className="text-muted-foreground mx-auto h-12 w-12" />
+            <p className="text-muted-foreground mt-2 text-sm">
+              {error
+                ? "Failed to load payroll data"
+                : "No payroll data available"}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-2 rounded-lg border p-2">
       <SummaryHeader />
       <div className="bg-border -mx-2 h-px px-2" />
-      <PayrollMetrics data={data} />
+      <PayrollOverview data={latestPayrollData} />
       <div className="bg-border -mx-2 h-px px-2" />
-      <PayrollChart data={data.chartData} totalGrossPay={totalGrossPay} />
+      <PayrollBreakdown
+        data={latestPayrollData}
+        totalGrossPay={latestPayrollData.totalGrossPay}
+      />
     </div>
   );
 };

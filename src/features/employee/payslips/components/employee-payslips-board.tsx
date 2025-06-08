@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search } from "@/components/custom/search";
 import { ColumnToggle } from "@/components/custom/table/column-toggle";
 import { Pagination } from "@/components/custom/table/pagination";
@@ -18,6 +19,7 @@ import type { PayslipData } from "@/services/employee/payslips";
 
 export default function EmployeePayslipsBoard() {
   const { employeeId } = useUser();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Fetch payslips data
   const {
@@ -52,6 +54,24 @@ export default function EmployeePayslipsBoard() {
     // Type assertion to handle the mismatch between interface and actual API response
     return (payslipsResponse?.data || []) as unknown as PayslipData[];
   }, [payslipsResponse]);
+
+  // Handle auto-opening payslip from URL parameter
+  useEffect(() => {
+    const payslipIdToOpen = searchParams.get("open");
+    if (payslipIdToOpen && payslips.length > 0) {
+      const payslipToOpen = payslips.find(
+        (p) => p.id.toString() === payslipIdToOpen,
+      );
+      if (payslipToOpen) {
+        setSelectedPayslip(payslipToOpen);
+        setIsSheetOpen(true);
+        // Remove the parameter from URL after opening
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.delete("open");
+        setSearchParams(newSearchParams);
+      }
+    }
+  }, [payslips, searchParams, setSearchParams]);
 
   // Initialize filtered payslips when data is loaded
   useEffect(() => {

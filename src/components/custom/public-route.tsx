@@ -6,7 +6,7 @@ import { Loader } from "./loader";
 export const PublicRoute = () => {
   const { user, isAuthenticated, isLoading, clearAllData } = useAuthStore();
 
-  const isPaymentOverdue = true;
+  const isPaymentOverdue = false;
 
   // Handle timeout for infinite loading states
   useEffect(() => {

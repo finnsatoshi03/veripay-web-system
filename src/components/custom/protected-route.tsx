@@ -27,7 +27,7 @@ export const ProtectedRoute = ({
     fetchUserData,
   } = useUserStore();
 
-  const isPaymentOverdue = true;
+  const isPaymentOverdue = false;
 
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);

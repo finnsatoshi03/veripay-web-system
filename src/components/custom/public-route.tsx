@@ -1,11 +1,24 @@
+import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { Loader } from "./loader";
 
 export const PublicRoute = () => {
-  const { user, isAuthenticated, isLoading } = useAuthStore();
+  const { user, isAuthenticated, isLoading, clearAllData } = useAuthStore();
 
-  const isPaymentOverdue = true;
+  const isPaymentOverdue = false;
+
+  // Handle timeout for infinite loading states
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const timeoutId = setTimeout(() => {
+      // Clear localStorage and auth data if loading persists for 5 seconds
+      clearAllData();
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, clearAllData]);
 
   // Show loading screen while checking authentication
   if (isLoading) {

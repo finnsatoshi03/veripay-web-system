@@ -14,7 +14,12 @@ export const ProtectedRoute = ({
   allowedRoles,
   requireCompleteProfile = true,
 }: ProtectedRouteProps) => {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const {
+    user,
+    isAuthenticated,
+    isLoading: authLoading,
+    clearAllData,
+  } = useAuthStore();
   const {
     id: userId,
     profile,
@@ -22,9 +27,22 @@ export const ProtectedRoute = ({
     fetchUserData,
   } = useUserStore();
 
-  const paymentOverdue = true;
+  const isPaymentOverdue = false;
+
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+
+  // Handle timeout for infinite loading states
+  useEffect(() => {
+    if (!authLoading) return;
+
+    const timeoutId = setTimeout(() => {
+      // Clear localStorage and auth data if loading persists for 5 seconds
+      clearAllData();
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [authLoading, clearAllData]);
 
   // Check if profile is incomplete
   const isProfileIncomplete = () => {
@@ -88,7 +106,7 @@ export const ProtectedRoute = ({
     return <Navigate to="/login" replace />;
   }
 
-  if (!isAuthenticated && paymentOverdue) {
+  if (!isAuthenticated && isPaymentOverdue) {
     return <Navigate to="/payment-reminder" replace />;
   }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { Search } from "@/components/custom/search";
 import { ColumnToggle } from "@/components/custom/table/column-toggle";
@@ -14,7 +15,14 @@ import type { PayrollPeriod, PayrollStatus } from "../lib/data";
 import { usePayrollSummary } from "../mutations/payroll-service";
 import { Error } from "@/features/error";
 
-export const PayrollManagementBoard = () => {
+interface PayrollManagementBoardProps {
+  payrollIdToOpen?: string | null;
+}
+
+export const PayrollManagementBoard = ({
+  payrollIdToOpen,
+}: PayrollManagementBoardProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   // React Query hooks
   const { data: payrollData, isLoading, error } = usePayrollSummary();
 
@@ -48,6 +56,19 @@ export const PayrollManagementBoard = () => {
       };
     });
   }, [payrollData]);
+
+  // Handle auto-opening payroll from URL parameter
+  useEffect(() => {
+    if (payrollIdToOpen && payrolls.length > 0) {
+      const payrollToOpen = payrolls.find((p) => p.id === payrollIdToOpen);
+      if (payrollToOpen) {
+        // Remove the parameter from URL after finding the payroll
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.delete("open");
+        setSearchParams(newSearchParams);
+      }
+    }
+  }, [payrolls, payrollIdToOpen, searchParams, setSearchParams]);
 
   // Calculate status counts using useMemo
   const statusCounts = useMemo(() => {
@@ -189,6 +210,7 @@ export const PayrollManagementBoard = () => {
         <PayrollPeriodsTable
           payrolls={paginatedData}
           visibleColumns={visibleColumns}
+          payrollIdToOpen={payrollIdToOpen}
         />
       </div>
 

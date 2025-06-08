@@ -2,8 +2,10 @@ import { PayrollManagementBoard } from "./components/payroll-management-board";
 import { PayrollSummary } from "./components/payroll-summary";
 import { today } from "@/features/employee/_lib/helpers";
 import { usePayrollSummary } from "./mutations/payroll-service";
+import { useSearchParams } from "react-router-dom";
 
 export default function PayrollManagement() {
+  const [searchParams] = useSearchParams();
   const { data: payrollData, isLoading } = usePayrollSummary();
 
   const summaryItems = [
@@ -19,6 +21,9 @@ export default function PayrollManagement() {
     },
   ];
 
+  // Get payroll ID to open from URL parameters
+  const payrollIdToOpen = searchParams.get("open");
+
   return (
     <div className="flex h-full flex-col gap-4 !overflow-hidden">
       <div className="flex items-center justify-between">
@@ -32,7 +37,7 @@ export default function PayrollManagement() {
       </div>
 
       <div className="relative h-full min-h-0 flex-1 overflow-auto">
-        <PayrollManagementBoard />
+        <PayrollManagementBoard payrollIdToOpen={payrollIdToOpen} />
       </div>
     </div>
   );

@@ -7,14 +7,23 @@ import { usePayrollSummary } from "@/features/hr/payroll-management/mutations/pa
 import { AlertCircle } from "lucide-react";
 
 // Header component
-const SummaryHeader = () => (
+const SummaryHeader = ({ payrollId }: { payrollId?: number }) => (
   <div className="flex items-center justify-between">
     <h2 className="text-lg font-semibold">Latest Payroll Summary</h2>
-    <Link to="/hr/payroll-management">
-      <Button variant="outline" size="sm">
-        Go to Payroll
-      </Button>
-    </Link>
+    <div className="flex gap-2">
+      {payrollId && (
+        <Link to={`/hr/payroll-management?open=${payrollId}`}>
+          <Button variant="outline" size="sm">
+            View Breakdown
+          </Button>
+        </Link>
+      )}
+      <Link to="/hr/payroll-management">
+        <Button variant="outline" size="sm">
+          Go to Payroll
+        </Button>
+      </Link>
+    </div>
   </div>
 );
 
@@ -270,7 +279,7 @@ export const PayrollSummary = () => {
   if (error || !latestPayrollData) {
     return (
       <div className="w-full space-y-2 rounded-lg border p-2">
-        <SummaryHeader />
+        <SummaryHeader payrollId={latestPayrollData?.id} />
         <div className="bg-border -mx-2 h-px px-2" />
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
@@ -288,7 +297,7 @@ export const PayrollSummary = () => {
 
   return (
     <div className="w-full space-y-2 rounded-lg border p-2">
-      <SummaryHeader />
+      <SummaryHeader payrollId={latestPayrollData.id} />
       <div className="bg-border -mx-2 h-px px-2" />
       <PayrollOverview data={latestPayrollData} />
       <div className="bg-border -mx-2 h-px px-2" />

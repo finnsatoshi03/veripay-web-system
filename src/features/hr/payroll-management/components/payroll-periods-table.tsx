@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2, Clock, Loader2, AlertTriangle } from "lucide-react";
 import {
   Table,
@@ -16,6 +16,7 @@ import type { PayrollPeriod } from "../lib/data";
 interface PayrollPeriodsTableProps {
   payrolls: PayrollPeriod[];
   visibleColumns?: string[];
+  payrollIdToOpen?: string | null;
 }
 
 export const PAYROLL_TABLE_COLUMNS = [
@@ -39,11 +40,23 @@ export const PayrollPeriodsTable = ({
     "totalNet",
     "actions",
   ],
+  payrollIdToOpen,
 }: PayrollPeriodsTableProps) => {
   const [selectedPayroll, setSelectedPayroll] = useState<PayrollPeriod | null>(
     null,
   );
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Handle auto-opening payroll from URL parameter
+  useEffect(() => {
+    if (payrollIdToOpen && payrolls.length > 0) {
+      const payrollToOpen = payrolls.find((p) => p.id === payrollIdToOpen);
+      if (payrollToOpen) {
+        setSelectedPayroll(payrollToOpen);
+        setDialogOpen(true);
+      }
+    }
+  }, [payrollIdToOpen, payrolls]);
 
   // Filter columns by visibility
   const columns = PAYROLL_TABLE_COLUMNS.filter((col) =>

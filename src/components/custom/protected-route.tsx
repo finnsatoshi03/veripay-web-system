@@ -27,7 +27,7 @@ export const ProtectedRoute = ({
     fetchUserData,
   } = useUserStore();
 
-  const isPaymentOverdue = false;
+  const isPaymentOverdue = true;
 
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
@@ -106,7 +106,7 @@ export const ProtectedRoute = ({
     return <Navigate to="/login" replace />;
   }
 
-  if (!isAuthenticated && isPaymentOverdue) {
+  if (isPaymentOverdue) {
     return <Navigate to="/payment-reminder" replace />;
   }
 

@@ -8,7 +8,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Fingerprint, Shield, SkipForward, AlertTriangle } from "lucide-react";
+import {
+  Fingerprint,
+  Shield,
+  SkipForward,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 import {
   useFingerprintSettings,
   useFingerprintStatus,
@@ -31,6 +37,7 @@ export const FingerprintSetupDialog = ({
   onComplete,
 }: FingerprintSetupDialogProps) => {
   const [isSetupInProgress, setIsSetupInProgress] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const { data: settings } = useFingerprintSettings();
   const { data: fingerprintStatus } = useFingerprintStatus(employeeId);
@@ -38,12 +45,18 @@ export const FingerprintSetupDialog = ({
   const setupMutation = useInitiateFingerprintSetup();
   const timeoutMutation = useMarkFingerprintTimeout();
 
-  // Watch for fingerprint status changes and close dialog when setup is complete
+  // Watch for fingerprint status changes and show success when setup is complete
   useEffect(() => {
     if (isSetupInProgress && fingerprintStatus?.status === "done") {
       setIsSetupInProgress(false);
-      onComplete();
-      onOpenChange(false);
+      setShowSuccess(true);
+
+      // Show success for 3 seconds then close dialog
+      setTimeout(() => {
+        setShowSuccess(false);
+        onComplete();
+        onOpenChange(false);
+      }, 3000);
     }
   }, [fingerprintStatus?.status, isSetupInProgress, onComplete, onOpenChange]);
 
@@ -127,7 +140,7 @@ export const FingerprintSetupDialog = ({
         </AlertDialogHeader>
 
         <div className="space-y-4">
-          {settings?.force_fingerprint && (
+          {settings?.force_fingerprint && !showSuccess && (
             <Alert>
               <Shield className="size-4" />
               <AlertDescription>
@@ -137,7 +150,18 @@ export const FingerprintSetupDialog = ({
             </Alert>
           )}
 
-          {isSetupInProgress && (
+          {showSuccess && (
+            <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+              <CheckCircle className="size-4" />
+              <AlertDescription>
+                <strong>Success!</strong> Your fingerprint has been set up
+                successfully. You can now use fingerprint authentication to
+                access your account.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isSetupInProgress && !showSuccess && (
             <Alert>
               <Fingerprint className="size-4 animate-pulse" />
               <AlertDescription>
@@ -147,32 +171,34 @@ export const FingerprintSetupDialog = ({
             </Alert>
           )}
 
-          <div className="space-y-3">
-            <Button
-              onClick={handleSetupFingerprint}
-              disabled={isLoading}
-              className="w-full"
-              size="lg"
-            >
-              <Fingerprint className="mr-2 size-4" />
-              {isSetupInProgress ? "Setting up..." : "Set Up Fingerprint"}
-            </Button>
-
-            {canSkip && (
+          {!showSuccess && (
+            <div className="space-y-3">
               <Button
-                variant="outline"
-                onClick={handleSkipSetup}
+                onClick={handleSetupFingerprint}
                 disabled={isLoading}
                 className="w-full"
                 size="lg"
               >
-                <SkipForward className="mr-2 size-4" />
-                Skip for Now
+                <Fingerprint className="mr-2 size-4" />
+                {isSetupInProgress ? "Setting up..." : "Set Up Fingerprint"}
               </Button>
-            )}
-          </div>
 
-          {canSkip && (
+              {canSkip && (
+                <Button
+                  variant="outline"
+                  onClick={handleSkipSetup}
+                  disabled={isLoading}
+                  className="w-full"
+                  size="lg"
+                >
+                  <SkipForward className="mr-2 size-4" />
+                  Skip for Now
+                </Button>
+              )}
+            </div>
+          )}
+
+          {canSkip && !showSuccess && (
             <div className="bg-muted rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />

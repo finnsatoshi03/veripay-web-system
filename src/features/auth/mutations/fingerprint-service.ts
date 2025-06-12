@@ -154,7 +154,7 @@ export const useSkipFingerprint = () => {
           .from("register_requests")
           .insert({
             employee_id: employeeId,
-            status: "failed",
+            status: "skipped",
             result: "skipped_by_user",
             updated_at: new Date().toISOString(),
           })

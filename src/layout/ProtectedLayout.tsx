@@ -9,13 +9,25 @@ import { Navigate } from "react-router-dom";
 import { useTheme } from "@/components/custom/theme-provider";
 
 export default function ProtectedLayout() {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, clearAllData } = useAuthStore();
 
   const { setTheme } = useTheme();
 
   useEffect(() => {
     setTheme("system");
   }, []);
+
+  // Handle timeout for infinite loading states
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const timeoutId = setTimeout(() => {
+      // Clear localStorage and auth data if loading persists for 5 seconds
+      clearAllData();
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, clearAllData]);
 
   // Show loading or splash screen while checking authentication
   if (isLoading) {

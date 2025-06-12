@@ -3,6 +3,8 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { useUserStore } from "@/store/userStore";
 import { ProfileCompletionDialog } from "@/features/profile/components/profile-completion-dialog";
+import { FingerprintSetupDialog } from "./fingerprint/fingerprint-setup-dialog";
+import { useFingerprintStatus } from "@/features/auth/mutations/fingerprint-service";
 import { Loader } from "./loader";
 
 type ProtectedRouteProps = {
@@ -22,6 +24,7 @@ export const ProtectedRoute = ({
   } = useAuthStore();
   const {
     id: userId,
+    employeeId,
     profile,
     isLoading: userLoading,
     fetchUserData,
@@ -30,7 +33,12 @@ export const ProtectedRoute = ({
   const isPaymentOverdue = false;
 
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showFingerprintDialog, setShowFingerprintDialog] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+
+  // Fetch fingerprint status
+  const { data: fingerprintStatus, isLoading: fingerprintLoading } =
+    useFingerprintStatus(employeeId);
 
   // Handle timeout for infinite loading states
   useEffect(() => {
@@ -62,6 +70,27 @@ export const ProtectedRoute = ({
     );
   };
 
+  // Check if fingerprint setup is required
+  const isFingerprintSetupRequired = () => {
+    if (!fingerprintStatus) return true; // No record means setup required
+
+    // If user has skipped, don't require setup
+    if (
+      fingerprintStatus.status === "failed" &&
+      fingerprintStatus.result === "skipped_by_user"
+    ) {
+      return false;
+    }
+
+    // If status is 'done', setup is complete
+    if (fingerprintStatus.status === "done") {
+      return false;
+    }
+
+    // All other cases require setup (including null status and other failed cases)
+    return true;
+  };
+
   useEffect(() => {
     if (isAuthenticated && user && !userLoading && !hasAttemptedFetch) {
       setHasAttemptedFetch(true);
@@ -69,25 +98,37 @@ export const ProtectedRoute = ({
     }
   }, [isAuthenticated, user, userLoading, hasAttemptedFetch]);
 
-  // Update dialog visibility based on profile completeness
+  // Update dialog visibility based on profile completeness and fingerprint setup
   useEffect(() => {
     // Only check when we have loaded user data
-    if (hasAttemptedFetch && !userLoading) {
+    if (hasAttemptedFetch && !userLoading && !fingerprintLoading) {
       const isIncomplete = isProfileIncomplete();
+      const needsFingerprint = isFingerprintSetupRequired();
 
-      // Update dialog visibility
+      // Show profile dialog first if profile is incomplete
       if (requireCompleteProfile && isAuthenticated && userId && isIncomplete) {
         setShowProfileDialog(true);
-      } else {
+        setShowFingerprintDialog(false);
+      }
+      // Then show fingerprint dialog if profile is complete but fingerprint is not set up
+      else if (isAuthenticated && userId && needsFingerprint) {
         setShowProfileDialog(false);
+        setShowFingerprintDialog(true);
+      }
+      // Hide both dialogs if everything is complete
+      else {
+        setShowProfileDialog(false);
+        setShowFingerprintDialog(false);
       }
     }
   }, [
     requireCompleteProfile,
     isAuthenticated,
     userLoading,
+    fingerprintLoading,
     userId,
     profile,
+    fingerprintStatus,
     hasAttemptedFetch,
   ]);
 
@@ -95,6 +136,10 @@ export const ProtectedRoute = ({
     setShowProfileDialog(false);
     // Reset fetch state so we can fetch new profile data
     setHasAttemptedFetch(false);
+  };
+
+  const handleFingerprintComplete = () => {
+    setShowFingerprintDialog(false);
   };
 
   if (authLoading || (userLoading && hasAttemptedFetch)) {
@@ -123,6 +168,14 @@ export const ProtectedRoute = ({
               onComplete={handleProfileComplete}
             />
           )}
+          {showFingerprintDialog && userId && (
+            <FingerprintSetupDialog
+              open={showFingerprintDialog}
+              onOpenChange={setShowFingerprintDialog}
+              employeeId={employeeId ?? 0}
+              onComplete={handleFingerprintComplete}
+            />
+          )}
         </>
       );
     }
@@ -147,6 +200,14 @@ export const ProtectedRoute = ({
           userId={userId}
           profile={profile}
           onComplete={handleProfileComplete}
+        />
+      )}
+      {showFingerprintDialog && userId && (
+        <FingerprintSetupDialog
+          open={showFingerprintDialog}
+          onOpenChange={setShowFingerprintDialog}
+          employeeId={employeeId ?? 0}
+          onComplete={handleFingerprintComplete}
         />
       )}
     </>

@@ -6,13 +6,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Shield, Palette, User, Bell, Globe, HelpCircle } from "lucide-react";
+import {
+  Shield,
+  Palette,
+  User,
+  Bell,
+  Globe,
+  HelpCircle,
+  Fingerprint,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PasswordChangeForm } from "./password-change-form";
 import { AppearanceSettings } from "./appearance-settings";
+import { FingerprintSettings } from "./fingerprint-settings";
 
 type SettingsTab =
   | "security"
+  | "fingerprint"
   | "appearance"
   | "profile"
   | "notifications"
@@ -30,6 +40,12 @@ const settingsNavigation = [
     label: "Security",
     icon: Shield,
     description: "Password and security settings",
+  },
+  {
+    id: "fingerprint" as SettingsTab,
+    label: "Fingerprint",
+    icon: Fingerprint,
+    description: "Fingerprint authentication settings",
   },
   {
     id: "appearance" as SettingsTab,
@@ -81,6 +97,8 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     switch (activeTab) {
       case "security":
         return <PasswordChangeForm />;
+      case "fingerprint":
+        return <FingerprintSettings />;
       case "appearance":
         return <AppearanceSettings />;
       default:
@@ -131,7 +149,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                       <Icon className="mt-0.5 size-4 shrink-0" />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-medium">{item.label}</div>
-                        <div className="text-muted-foreground mt-0.5 text-xs">
+                        <div className="text-muted-foreground mt-0.5 text-xs text-wrap">
                           {item.description}
                         </div>
                       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,6 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,57 +24,23 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react";
-import {
-  useFingerprintStatus,
-  useInitiateFingerprintSetup,
-  useMarkFingerprintTimeout,
-} from "@/features/auth/mutations/fingerprint-service";
+import { useFingerprintStatus } from "@/features/auth/mutations/fingerprint-service";
 import { useUserStore } from "@/store/userStore";
 
 export const FingerprintSettings = () => {
   const { employeeId } = useUserStore();
-  const [isSetupInProgress, setIsSetupInProgress] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: fingerprintStatus, isLoading: fingerprintLoading } =
     useFingerprintStatus(employeeId);
-  const setupMutation = useInitiateFingerprintSetup();
-  const timeoutMutation = useMarkFingerprintTimeout();
 
-  const handleSetupFingerprint = async () => {
-    if (!employeeId) return;
-
-    setIsSetupInProgress(true);
-    try {
-      await setupMutation.mutateAsync(employeeId);
-      // Don't auto-stop loading - wait for realtime updates
-    } catch {
-      setIsSetupInProgress(false);
-    }
+  const handleSetupFingerprint = () => {
+    setIsDialogOpen(true);
   };
 
-  // Watch for fingerprint status changes and stop loading when setup is complete
-  useEffect(() => {
-    if (isSetupInProgress && fingerprintStatus?.status === "done") {
-      setIsSetupInProgress(false);
-    }
-  }, [fingerprintStatus?.status, isSetupInProgress]);
-
-  // Fallback timeout for setup process
-  useEffect(() => {
-    if (!isSetupInProgress || !employeeId) return;
-
-    const timeoutId = setTimeout(async () => {
-      setIsSetupInProgress(false);
-      // Mark the setup as timed out in the database
-      try {
-        await timeoutMutation.mutateAsync(employeeId);
-      } catch (error) {
-        console.error("Failed to mark fingerprint timeout:", error);
-      }
-    }, 60000);
-
-    return () => clearTimeout(timeoutId);
-  }, [isSetupInProgress, timeoutMutation, employeeId]);
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
 
   const getStatusInfo = () => {
     if (!fingerprintStatus) {
@@ -146,9 +120,8 @@ export const FingerprintSettings = () => {
 
   const statusInfo = getStatusInfo();
   const StatusIcon = statusInfo.icon;
-  const isLoading = setupMutation.isPending || isSetupInProgress;
 
-  if (fingerprintLoading || isLoading) {
+  if (fingerprintLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
@@ -211,23 +184,12 @@ export const FingerprintSettings = () => {
 
           {statusInfo.canSetup && (
             <div className="border-t pt-4">
-              {isSetupInProgress && (
-                <Alert className="mb-4">
-                  <Fingerprint className="size-4 animate-pulse" />
-                  <AlertDescription>
-                    Fingerprint setup in progress. Please place your finger on
-                    the IoT fingerprint scanner device...
-                  </AlertDescription>
-                </Alert>
-              )}
-
               <Button
                 onClick={handleSetupFingerprint}
-                disabled={isLoading}
                 className="w-full sm:w-auto"
               >
                 <Fingerprint className="mr-2 size-4" />
-                {isSetupInProgress ? "Setting up..." : "Set Up Fingerprint"}
+                Set Up Fingerprint
               </Button>
             </div>
           )}
@@ -261,6 +223,68 @@ export const FingerprintSettings = () => {
           protect your sensitive data.
         </AlertDescription>
       </Alert>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Fingerprint className="size-5" />
+              Set Up Fingerprint Authentication
+            </DialogTitle>
+            <DialogDescription>
+              Follow these steps to set up fingerprint authentication for your
+              account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <Alert>
+              <AlertTriangle className="size-4" />
+              <AlertDescription>
+                Please ensure you are near the IoT fingerprint scanner device
+                before proceeding.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 rounded-full p-2">
+                  <span className="text-primary text-sm font-semibold">1</span>
+                </div>
+                <p className="text-sm">
+                  Locate the IoT fingerprint scanner device
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 rounded-full p-2">
+                  <span className="text-primary text-sm font-semibold">2</span>
+                </div>
+                <p className="text-sm">
+                  Place your finger on the scanner when prompted
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 rounded-full p-2">
+                  <span className="text-primary text-sm font-semibold">3</span>
+                </div>
+                <p className="text-sm">
+                  Wait for confirmation of successful setup
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={handleCloseDialog}>
+              Cancel
+            </Button>
+            <Button onClick={handleCloseDialog}>
+              <Fingerprint className="mr-2 size-4" />
+              Start Setup
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -92,12 +92,7 @@ export const ProtectedRoute = ({
       return false;
     }
 
-    // If status is 'pending', setup is in progress - don't show dialog
-    if (fingerprintStatus.status === "pending") {
-      return false;
-    }
-
-    // All other cases require setup (including null status and other failed cases)
+    // All other cases require setup (including pending, null status and failed cases)
     return true;
   };
 

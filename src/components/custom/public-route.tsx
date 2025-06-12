@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { Loader } from "./loader";
+import toast from "react-hot-toast";
 
 export const PublicRoute = () => {
   const { user, isAuthenticated, isLoading, clearAllData } = useAuthStore();
@@ -15,6 +16,10 @@ export const PublicRoute = () => {
     const timeoutId = setTimeout(() => {
       // Clear localStorage and auth data if loading persists for 5 seconds
       clearAllData();
+      toast.error("Session expired. Please log in again.", {
+        duration: 5000,
+        position: "top-center",
+      });
     }, 5000);
 
     return () => clearTimeout(timeoutId);

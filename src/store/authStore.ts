@@ -80,11 +80,6 @@ export const useAuthStore = create<AuthState>()(
         // Clear tokens
         clearAllTokens();
 
-        toast.error("Session expired. Please log in again.", {
-          duration: 5000,
-          position: "top-center",
-        });
-
         set({
           user: null,
           isAuthenticated: false,

@@ -7,6 +7,7 @@ import { Header } from "@/components/custom/header";
 import { useAuthStore } from "@/store/authStore";
 import { Navigate } from "react-router-dom";
 import { useTheme } from "@/components/custom/theme-provider";
+import { toast } from "react-hot-toast";
 
 export default function ProtectedLayout() {
   const { isAuthenticated, isLoading, clearAllData } = useAuthStore();
@@ -24,6 +25,10 @@ export default function ProtectedLayout() {
     const timeoutId = setTimeout(() => {
       // Clear localStorage and auth data if loading persists for 5 seconds
       clearAllData();
+      toast.error("Session expired. Please log in again.", {
+        duration: 5000,
+        position: "top-center",
+      });
     }, 5000);
 
     return () => clearTimeout(timeoutId);

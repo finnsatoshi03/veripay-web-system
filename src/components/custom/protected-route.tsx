@@ -6,6 +6,7 @@ import { ProfileCompletionDialog } from "@/features/profile/components/profile-c
 import { FingerprintSetupDialog } from "./fingerprint/fingerprint-setup-dialog";
 import { useFingerprintStatus } from "@/features/auth/mutations/fingerprint-service";
 import { Loader } from "./loader";
+import { toast } from "react-hot-toast";
 
 type ProtectedRouteProps = {
   allowedRoles?: string[];
@@ -47,6 +48,10 @@ export const ProtectedRoute = ({
     const timeoutId = setTimeout(() => {
       // Clear localStorage and auth data if loading persists for 5 seconds
       clearAllData();
+      toast.error("Session expired. Please log in again.", {
+        duration: 5000,
+        position: "top-center",
+      });
     }, 5000);
 
     return () => clearTimeout(timeoutId);

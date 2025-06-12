@@ -50,18 +50,21 @@ export const FingerprintSetupDialog = ({
   const timeoutMutation = useMarkFingerprintTimeout();
   const deleteMutation = useDeleteFingerprintRecord();
 
-  // Ensure localStorage flag is maintained while dialog is open to prevent conflicts
+  // Check if this dialog was opened from settings (has the localStorage flag already set)
+  const wasOpenedFromSettings =
+    localStorage.getItem("fingerprint-setup-in-progress") === "true";
+
+  // Only maintain localStorage flag if it was already set (opened from settings)
   useEffect(() => {
-    if (open) {
+    if (open && wasOpenedFromSettings) {
       localStorage.setItem("fingerprint-setup-in-progress", "true");
-    } else {
-      // Only remove the flag if we're explicitly closing the dialog
-      // The onComplete callback will handle cleanup for successful setups
+    } else if (!open && wasOpenedFromSettings) {
+      // Only remove the flag if we're explicitly closing the dialog and it was from settings
       if (!isSetupInProgress && !showSuccess) {
         localStorage.removeItem("fingerprint-setup-in-progress");
       }
     }
-  }, [open, isSetupInProgress, showSuccess]);
+  }, [open, isSetupInProgress, showSuccess, wasOpenedFromSettings]);
 
   // Watch for fingerprint status changes and show success/failure when setup is complete
   useEffect(() => {
@@ -111,8 +114,6 @@ export const FingerprintSetupDialog = ({
 
   const handleSetupFingerprint = async () => {
     setIsSetupInProgress(true);
-    // Set flag to prevent protected route from showing another dialog
-    localStorage.setItem("fingerprint-setup-in-progress", "true");
 
     try {
       await setupMutation.mutateAsync(employeeId);

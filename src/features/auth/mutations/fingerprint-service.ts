@@ -5,7 +5,7 @@ import { supabase } from "@/services/supabase";
 
 export type FingerprintStatus = {
   id: number;
-  status: "failed" | "done" | "pending" | null;
+  status: "failed" | "done" | "pending" | "skipped" | "processing" | null;
   result: string | null;
   employee_id: number;
   created_at: string;

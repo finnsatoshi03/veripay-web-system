@@ -7,14 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,33 +17,34 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useFingerprintStatus } from "@/features/auth/mutations/fingerprint-service";
+import { FingerprintSetupDialog } from "../fingerprint/fingerprint-setup-dialog";
 import { useUserStore } from "@/store/userStore";
-import { FingerprintSetupDialog } from "@/components/custom/fingerprint/fingerprint-setup-dialog";
 
 export const FingerprintSettings = () => {
   const { employeeId } = useUserStore();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
+  const [showSetupDialog, setShowSetupDialog] = useState(false);
 
   const { data: fingerprintStatus, isLoading: fingerprintLoading } =
     useFingerprintStatus(employeeId);
 
   const handleSetupFingerprint = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-  };
-
-  const handleStartSetup = () => {
-    setIsDialogOpen(false);
-    setIsSetupDialogOpen(true);
+    setShowSetupDialog(true);
+    // Store in localStorage to prevent Protected Route from showing dialog
+    localStorage.setItem("fingerprint-setup-in-progress", "true");
   };
 
   const handleSetupComplete = () => {
-    setIsSetupDialogOpen(false);
-    // The fingerprint status will be refetched automatically
+    setShowSetupDialog(false);
+    // Remove localStorage flag
+    localStorage.removeItem("fingerprint-setup-in-progress");
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setShowSetupDialog(open);
+    if (!open) {
+      // Remove localStorage flag when dialog is closed
+      localStorage.removeItem("fingerprint-setup-in-progress");
+    }
   };
 
   const getStatusInfo = () => {
@@ -74,17 +67,16 @@ export const FingerprintSettings = () => {
           icon: CheckCircle,
           canSetup: false,
         };
+      case "skipped":
+        return {
+          status: "Skipped",
+          description:
+            "You previously skipped fingerprint setup. You can set it up now.",
+          variant: "outline" as const,
+          icon: AlertTriangle,
+          canSetup: true,
+        };
       case "failed":
-        if (fingerprintStatus.result === "skipped_by_user") {
-          return {
-            status: "Skipped",
-            description:
-              "You previously skipped fingerprint setup. You can set it up now.",
-            variant: "outline" as const,
-            icon: AlertTriangle,
-            canSetup: true,
-          };
-        }
         if (fingerprintStatus.result === "setup_timeout") {
           return {
             status: "Timed Out",
@@ -236,72 +228,10 @@ export const FingerprintSettings = () => {
         </AlertDescription>
       </Alert>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Fingerprint className="size-5" />
-              Set Up Fingerprint Authentication
-            </DialogTitle>
-            <DialogDescription>
-              Follow these steps to set up fingerprint authentication for your
-              account.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <Alert>
-              <AlertTriangle className="size-4" />
-              <AlertDescription>
-                Please ensure you are near the IoT fingerprint scanner device
-                before proceeding.
-              </AlertDescription>
-            </Alert>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 rounded-full p-2">
-                  <span className="text-primary text-sm font-semibold">1</span>
-                </div>
-                <p className="text-sm">
-                  Locate the IoT fingerprint scanner device
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 rounded-full p-2">
-                  <span className="text-primary text-sm font-semibold">2</span>
-                </div>
-                <p className="text-sm">
-                  Place your finger on the scanner when prompted
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 rounded-full p-2">
-                  <span className="text-primary text-sm font-semibold">3</span>
-                </div>
-                <p className="text-sm">
-                  Wait for confirmation of successful setup
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancel
-            </Button>
-            <Button onClick={handleStartSetup}>
-              <Fingerprint className="mr-2 size-4" />
-              Start Setup
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {employeeId && (
+      {showSetupDialog && employeeId && (
         <FingerprintSetupDialog
-          open={isSetupDialogOpen}
-          onOpenChange={setIsSetupDialogOpen}
+          open={showSetupDialog}
+          onOpenChange={handleDialogOpenChange}
           employeeId={employeeId}
           onComplete={handleSetupComplete}
         />

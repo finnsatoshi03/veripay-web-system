@@ -79,9 +79,14 @@ export const ProtectedRoute = ({
   const isFingerprintSetupRequired = () => {
     if (!fingerprintStatus) return true; // No record means setup required
 
+    // Check if setup is already in progress from settings page
+    if (localStorage.getItem("fingerprint-setup-in-progress") === "true") {
+      return false; // Don't show dialog if settings page is handling it
+    }
+
     // If user has skipped, don't require setup
     if (
-      fingerprintStatus.status === "failed" &&
+      fingerprintStatus.status === "skipped" &&
       fingerprintStatus.result === "skipped_by_user"
     ) {
       return false;
@@ -145,7 +150,29 @@ export const ProtectedRoute = ({
 
   const handleFingerprintComplete = () => {
     setShowFingerprintDialog(false);
+    // Clean up localStorage flag
+    localStorage.removeItem("fingerprint-setup-in-progress");
   };
+
+  // Cleanup localStorage on unmount
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("fingerprint-setup-in-progress");
+    };
+  }, []);
+
+  // Listen for storage changes to react to settings page dialog state
+  useEffect(() => {
+    const handleStorageChange = () => {
+      // Force re-evaluation of dialog visibility when localStorage changes
+      // This will trigger the dialog visibility useEffect
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   if (authLoading || (userLoading && hasAttemptedFetch)) {
     return <Loader />;

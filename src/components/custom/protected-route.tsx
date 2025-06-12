@@ -77,12 +77,12 @@ export const ProtectedRoute = ({
 
   // Check if fingerprint setup is required
   const isFingerprintSetupRequired = () => {
-    if (!fingerprintStatus) return true; // No record means setup required
-
     // Check if setup is already in progress from settings page
     if (localStorage.getItem("fingerprint-setup-in-progress") === "true") {
       return false; // Don't show dialog if settings page is handling it
     }
+
+    if (!fingerprintStatus) return true; // No record means setup required
 
     // If user has skipped, don't require setup
     if (

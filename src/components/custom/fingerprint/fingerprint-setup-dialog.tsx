@@ -50,6 +50,19 @@ export const FingerprintSetupDialog = ({
   const timeoutMutation = useMarkFingerprintTimeout();
   const deleteMutation = useDeleteFingerprintRecord();
 
+  // Ensure localStorage flag is maintained while dialog is open to prevent conflicts
+  useEffect(() => {
+    if (open) {
+      localStorage.setItem("fingerprint-setup-in-progress", "true");
+    } else {
+      // Only remove the flag if we're explicitly closing the dialog
+      // The onComplete callback will handle cleanup for successful setups
+      if (!isSetupInProgress && !showSuccess) {
+        localStorage.removeItem("fingerprint-setup-in-progress");
+      }
+    }
+  }, [open, isSetupInProgress, showSuccess]);
+
   // Watch for fingerprint status changes and show success/failure when setup is complete
   useEffect(() => {
     if (isSetupInProgress && fingerprintStatus?.status === "done") {
@@ -98,6 +111,9 @@ export const FingerprintSetupDialog = ({
 
   const handleSetupFingerprint = async () => {
     setIsSetupInProgress(true);
+    // Set flag to prevent protected route from showing another dialog
+    localStorage.setItem("fingerprint-setup-in-progress", "true");
+
     try {
       await setupMutation.mutateAsync(employeeId);
       // Don't close the dialog here - wait for status to change to "done"
@@ -118,6 +134,9 @@ export const FingerprintSetupDialog = ({
 
   const handleRetrySetup = async () => {
     try {
+      // Ensure localStorage flag is set to prevent protected route from showing its dialog
+      localStorage.setItem("fingerprint-setup-in-progress", "true");
+
       // Delete the existing record to clear IoT device conflicts
       await deleteMutation.mutateAsync(employeeId);
       // Reset states

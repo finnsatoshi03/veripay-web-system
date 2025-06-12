@@ -117,13 +117,21 @@ export const FingerprintSettings = () => {
           icon: XCircle,
           canSetup: true,
         };
-      case null:
+      case "pending":
         return {
           status: "Pending",
           description: "Fingerprint setup is in progress.",
           variant: "secondary" as const,
           icon: Clock,
           canSetup: false,
+        };
+      case null:
+        return {
+          status: "Not Set Up",
+          description: "Fingerprint authentication has not been configured.",
+          variant: "secondary" as const,
+          icon: XCircle,
+          canSetup: true,
         };
       default:
         return {

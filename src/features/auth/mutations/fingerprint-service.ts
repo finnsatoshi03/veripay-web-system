@@ -5,7 +5,7 @@ import { supabase } from "@/services/supabase";
 
 export type FingerprintStatus = {
   id: number;
-  status: "failed" | "done" | null;
+  status: "failed" | "done" | "pending" | null;
   result: string | null;
   employee_id: number;
   created_at: string;
@@ -225,7 +225,7 @@ export const useInitiateFingerprintSetup = () => {
         const { data, error } = await supabase
           .from("register_requests")
           .update({
-            status: null, // Set to null to indicate pending/in-progress
+            status: "pending", // Set to pending to indicate setup in progress
             result: "setup_initiated",
             updated_at: new Date().toISOString(),
           })
@@ -245,7 +245,7 @@ export const useInitiateFingerprintSetup = () => {
           .from("register_requests")
           .insert({
             employee_id: employeeId,
-            status: null, // Set to null to indicate pending/in-progress
+            status: "pending", // Set to pending to indicate setup in progress
             result: "setup_initiated",
             updated_at: new Date().toISOString(),
           })

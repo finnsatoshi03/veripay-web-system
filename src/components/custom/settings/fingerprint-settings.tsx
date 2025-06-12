@@ -26,10 +26,12 @@ import {
 } from "lucide-react";
 import { useFingerprintStatus } from "@/features/auth/mutations/fingerprint-service";
 import { useUserStore } from "@/store/userStore";
+import { FingerprintSetupDialog } from "@/components/custom/fingerprint/fingerprint-setup-dialog";
 
 export const FingerprintSettings = () => {
   const { employeeId } = useUserStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
 
   const { data: fingerprintStatus, isLoading: fingerprintLoading } =
     useFingerprintStatus(employeeId);
@@ -40,6 +42,16 @@ export const FingerprintSettings = () => {
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
+  };
+
+  const handleStartSetup = () => {
+    setIsDialogOpen(false);
+    setIsSetupDialogOpen(true);
+  };
+
+  const handleSetupComplete = () => {
+    setIsSetupDialogOpen(false);
+    // The fingerprint status will be refetched automatically
   };
 
   const getStatusInfo = () => {
@@ -278,13 +290,22 @@ export const FingerprintSettings = () => {
             <Button variant="outline" onClick={handleCloseDialog}>
               Cancel
             </Button>
-            <Button onClick={handleCloseDialog}>
+            <Button onClick={handleStartSetup}>
               <Fingerprint className="mr-2 size-4" />
               Start Setup
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {employeeId && (
+        <FingerprintSetupDialog
+          open={isSetupDialogOpen}
+          onOpenChange={setIsSetupDialogOpen}
+          employeeId={employeeId}
+          onComplete={handleSetupComplete}
+        />
+      )}
     </div>
   );
 };

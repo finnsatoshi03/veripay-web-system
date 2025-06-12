@@ -14,6 +14,8 @@ import {
   SkipForward,
   AlertTriangle,
   CheckCircle,
+  XCircle,
+  RotateCcw,
 } from "lucide-react";
 import {
   useFingerprintSettings,
@@ -21,6 +23,7 @@ import {
   useSkipFingerprint,
   useInitiateFingerprintSetup,
   useMarkFingerprintTimeout,
+  useDeleteFingerprintRecord,
 } from "@/features/auth/mutations/fingerprint-service";
 
 interface FingerprintSetupDialogProps {
@@ -38,14 +41,16 @@ export const FingerprintSetupDialog = ({
 }: FingerprintSetupDialogProps) => {
   const [isSetupInProgress, setIsSetupInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showFailure, setShowFailure] = useState(false);
 
   const { data: settings } = useFingerprintSettings();
   const { data: fingerprintStatus } = useFingerprintStatus(employeeId);
   const skipMutation = useSkipFingerprint();
   const setupMutation = useInitiateFingerprintSetup();
   const timeoutMutation = useMarkFingerprintTimeout();
+  const deleteMutation = useDeleteFingerprintRecord();
 
-  // Watch for fingerprint status changes and show success when setup is complete
+  // Watch for fingerprint status changes and show success/failure when setup is complete
   useEffect(() => {
     if (isSetupInProgress && fingerprintStatus?.status === "done") {
       setIsSetupInProgress(false);
@@ -57,8 +62,22 @@ export const FingerprintSetupDialog = ({
         onComplete();
         onOpenChange(false);
       }, 3000);
+    } else if (
+      isSetupInProgress &&
+      fingerprintStatus?.status === "failed" &&
+      fingerprintStatus?.result !== "setup_timeout"
+    ) {
+      // Only show failure for non-timeout failures (timeout is handled by useEffect timeout)
+      setIsSetupInProgress(false);
+      setShowFailure(true);
     }
-  }, [fingerprintStatus?.status, isSetupInProgress, onComplete, onOpenChange]);
+  }, [
+    fingerprintStatus?.status,
+    fingerprintStatus?.result,
+    isSetupInProgress,
+    onComplete,
+    onOpenChange,
+  ]);
 
   // Fallback timeout in case realtime updates don't work (60 seconds)
   useEffect(() => {
@@ -92,6 +111,18 @@ export const FingerprintSetupDialog = ({
       await skipMutation.mutateAsync(employeeId);
       onComplete();
       onOpenChange(false);
+    } catch {
+      // Error handling is done in the mutation
+    }
+  };
+
+  const handleRetrySetup = async () => {
+    try {
+      // Delete the existing record to clear IoT device conflicts
+      await deleteMutation.mutateAsync(employeeId);
+      // Reset states
+      setShowFailure(false);
+      // The deletion will trigger a realtime update and reset the dialog state
     } catch {
       // Error handling is done in the mutation
     }
@@ -161,6 +192,17 @@ export const FingerprintSetupDialog = ({
             </Alert>
           )}
 
+          {showFailure && (
+            <Alert className="border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+              <XCircle className="size-4" />
+              <AlertDescription>
+                <strong>Setup Failed!</strong> The fingerprint setup could not
+                be completed. Please ensure your finger is properly placed on
+                the IoT device and try again.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {isSetupInProgress && !showSuccess && (
             <Alert>
               <Fingerprint className="size-4 animate-pulse" />
@@ -173,17 +215,29 @@ export const FingerprintSetupDialog = ({
 
           {!showSuccess && (
             <div className="space-y-3">
-              <Button
-                onClick={handleSetupFingerprint}
-                disabled={isLoading}
-                className="w-full"
-                size="lg"
-              >
-                <Fingerprint className="mr-2 size-4" />
-                {isSetupInProgress ? "Setting up..." : "Set Up Fingerprint"}
-              </Button>
+              {showFailure ? (
+                <Button
+                  onClick={handleRetrySetup}
+                  disabled={deleteMutation.isPending}
+                  className="w-full"
+                  size="lg"
+                >
+                  <RotateCcw className="mr-2 size-4" />
+                  {deleteMutation.isPending ? "Clearing..." : "Retry Setup"}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSetupFingerprint}
+                  disabled={isLoading}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Fingerprint className="mr-2 size-4" />
+                  {isSetupInProgress ? "Setting up..." : "Set Up Fingerprint"}
+                </Button>
+              )}
 
-              {canSkip && (
+              {canSkip && !showFailure && (
                 <Button
                   variant="outline"
                   onClick={handleSkipSetup}

@@ -308,3 +308,34 @@ export const useMarkFingerprintTimeout = () => {
     },
   });
 };
+
+// Mutation to delete fingerprint record for retry
+export const useDeleteFingerprintRecord = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (employeeId: number) => {
+      const { error } = await supabase
+        .from("register_requests")
+        .delete()
+        .eq("employee_id", employeeId);
+
+      if (error) {
+        throw new Error(
+          `Failed to delete fingerprint record: ${error.message}`,
+        );
+      }
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast.success(
+        "Fingerprint record cleared. You can try setting up again.",
+      );
+      queryClient.invalidateQueries({ queryKey: ["fingerprint-status"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to clear fingerprint record: ${error.message}`);
+    },
+  });
+};

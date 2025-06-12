@@ -136,7 +136,7 @@ export const useSkipFingerprint = () => {
         const { data, error } = await supabase
           .from("register_requests")
           .update({
-            status: "failed",
+            status: "skipped",
             result: "skipped_by_user",
             updated_at: new Date().toISOString(),
           })
